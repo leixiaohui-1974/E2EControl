@@ -1,0 +1,28 @@
+[2025-11-24T09:38:18.584046] INFO - logger.info - ============================================================
+[2025-11-24T09:38:18.584145] INFO - logger.info - 智能闸门仿真系统启动
+[2025-11-24T09:38:18.584188] INFO - logger.info - ============================================================
+[2025-11-24T09:38:18.584220] INFO - logger.info - 语义解释器初始化完成，加载 5 个场景
+[2025-11-24T09:38:18.584256] INFO - logger.info - 监控系统初始化完成
+[2025-11-24T09:38:18.600312] INFO - logger.info - 数据库初始化完成: simulation_data.db
+[2025-11-24T09:38:18.600399] INFO - logger.info - 数据库已启用: simulation_data.db
+[2025-11-24T09:38:18.602404] INFO - logger.info - 创建仿真会话: ID=1
+[2025-11-24T09:38:18.602542] INFO - logger.info - 开始仿真: 总时长=50h, 步长=3600.0s
+[2025-11-24T09:38:18.602578] INFO - logger.info - 场景数量: 5
+[2025-11-24T09:38:18.602602] INFO - logger.info - 
+==================================================
+[2025-11-24T09:38:18.602627] INFO - logger.info - [时间 0h] 新指令: 保持水位平稳，正常供水。
+[2025-11-24T09:38:18.602649] INFO - logger.info - ==================================================
+
+[2025-11-24T09:38:18.603171] INFO - logger.info - 模糊匹配场景: 正常供水 (置信度: 0.90)
+[2025-11-24T09:38:18.603214] INFO - logger.info - 场景切换 [T=0h]: 保持水位平稳，正常供水。
+Traceback (most recent call last):
+  File "/workspace/main_enhanced.py", line 437, in <module>
+    main()
+  File "/workspace/main_enhanced.py", line 429, in main
+    sim.run()
+  File "/workspace/main_enhanced.py", line 173, in run
+    self.logger.log_optimization_result("optimal", solve_time=solve_time)
+  File "/workspace/logger.py", line 187, in log_optimization_result
+    f"优化成功: cost={cost:.4f}, time={solve_time:.3f}s",
+                     ^^^^^^^^^^
+TypeError: unsupported format string passed to NoneType.__format__

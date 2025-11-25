@@ -1,0 +1,113 @@
+# Smart Pool Agent 配置文件
+
+# 仿真参数
+simulation:
+  total_hours: 50
+  dt: 3600.0  # 时间步长（秒）
+  area: 10000.0  # 渠池面积（m²）
+  delay_steps: 1  # 系统延迟步数
+  initial_level: 3.0  # 初始水位（米）
+  random_seed: 42  # 随机种子
+
+# MPC求解器参数
+mpc:
+  horizon: 10  # 预测时域
+  Q_cap: 20.0  # 最大流量容量（m³/s）
+  Z_min: 0.0   # 最小水位（米）
+  Z_max: 10.0  # 最大水位（米）
+
+# 默认控制配置
+default_control:
+  W_level: 10.0  # 水位偏差权重
+  W_smooth: 5.0  # 平滑性权重
+  Z_ref: 3.0     # 目标水位（米）
+  delta_Q_max: 2.0  # 最大流量变化率（m³/s）
+
+# 场景定义
+scenarios:
+  - name: "正常供水"
+    keywords: ["保持水位平稳", "正常供水"]
+    config:
+      W_level: 10.0
+      W_smooth: 5.0
+      Z_ref: 3.0
+      delta_Q_max: 2.0
+      constraints: {}
+  
+  - name: "暴雨预警"
+    keywords: ["暴雨预警", "降低水位", "腾出库容", "安全第一"]
+    config:
+      W_level: 100.0
+      W_smooth: 5.0
+      Z_ref: 2.0
+      delta_Q_max: 5.0
+      constraints: {}
+  
+  - name: "冰期输水"
+    keywords: ["冰期", "严禁扰动", "冰盖"]
+    config:
+      W_level: 1.0
+      W_smooth: 500.0
+      Z_ref: 3.0
+      delta_Q_max: 0.1
+      constraints: {}
+  
+  - name: "污染切断"
+    keywords: ["污染", "紧急切断", "切断出流"]
+    config:
+      W_level: 10.0
+      W_smooth: 5.0
+      Z_ref: 3.0
+      delta_Q_max: 20.0
+      constraints:
+        Q_in_max: 0.0
+        Z_min: -10.0
+  
+  - name: "开环保持"
+    keywords: ["读数异常", "开环保持", "保持模式"]
+    config:
+      W_level: 0.0
+      W_smooth: 100.0
+      Z_ref: 3.0
+      delta_Q_max: 2.0
+      constraints: {}
+
+# 需求预测参数
+demand:
+  base_demand: 5.0  # 基础需求（m³/s）
+  noise_std: 0.5    # 噪声标准差
+
+# 监控告警配置
+monitoring:
+  level_warning_high: 8.0  # 水位高警戒
+  level_warning_low: 1.0   # 水位低警戒
+  level_critical_high: 9.5  # 水位高危
+  level_critical_low: 0.5   # 水位低危
+  flow_rate_max: 25.0      # 最大流量警戒
+
+# 日志配置
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "smart_pool.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+  console_output: true
+
+# 数据库配置
+database:
+  enabled: true
+  path: "simulation_data.db"
+  
+# API配置
+api:
+  enabled: true
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+
+# 可视化配置
+visualization:
+  chinese_font: ["SimHei", "Microsoft YaHei", "WenQuanYi Micro Hei", "Arial Unicode MS"]
+  dpi: 100
+  animation_fps: 10
+  animation_interval: 100

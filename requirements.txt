@@ -1,0 +1,117 @@
+# 智能水网控制与数字孪生系统 - 依赖清单
+# Smart Water Network Control and Digital Twin System - Requirements
+
+# ========================================
+# 核心依赖（必需）
+# Core Dependencies (Required)
+# ========================================
+
+# 数值计算
+numpy>=1.20.0
+
+# 数据可视化
+matplotlib>=3.3.0
+
+# 凸优化求解
+cvxpy>=1.1.0
+
+# 图论与网络分析
+networkx>=2.5
+
+# ========================================
+# 可选依赖（增强功能）
+# Optional Dependencies (Enhanced Features)
+# ========================================
+
+# 机器学习（Phase 4异常检测）
+scikit-learn>=0.24.0
+
+# 深度学习（Phase 4深度检测器）
+# torch>=1.8.0
+# 注意：PyTorch较大，如不需要深度学习检测器可不安装
+
+# ========================================
+# 开发工具（开发环境）
+# Development Tools (Development Only)
+# ========================================
+
+# 单元测试
+# pytest>=6.0.0
+
+# 代码格式化
+# black>=21.0
+
+# 代码检查
+# flake8>=3.9.0
+
+# 类型检查
+# mypy>=0.900
+
+# ========================================
+# 安装说明
+# Installation Instructions
+# ========================================
+
+# 1. 安装核心依赖（最小化安装）
+#    pip install -r requirements.txt
+
+# 2. 安装完整功能（包括机器学习）
+#    pip install numpy matplotlib cvxpy networkx scikit-learn
+
+# 3. 安装深度学习支持
+#    pip install torch torchvision
+
+# 4. 开发环境安装
+#    pip install -r requirements.txt pytest black flake8
+
+# ========================================
+# Python版本要求
+# Python Version Requirement
+# ========================================
+
+# Python >= 3.8
+
+# ========================================
+# 系统要求
+# System Requirements
+# ========================================
+
+# - CPU: 2核以上推荐
+# - 内存: 4GB以上推荐
+# - 存储: 500MB以上
+
+# ========================================
+# 已验证环境
+# Tested Environments
+# ========================================
+
+# - Ubuntu 20.04 + Python 3.8
+# - Ubuntu 22.04 + Python 3.10
+# - macOS + Python 3.9
+# - Windows 10 + Python 3.8
+
+# ========================================
+# 故障排查
+# Troubleshooting
+# ========================================
+
+# 问题1: CVXPY安装失败
+# 解决: pip install --upgrade pip setuptools wheel
+#       pip install cvxpy
+
+# 问题2: Matplotlib中文显示乱码
+# 解决: 安装中文字体
+#       Ubuntu: sudo apt-get install fonts-wqy-microhei
+#       macOS: 系统已自带中文字体
+
+# 问题3: NetworkX版本冲突
+# 解决: pip install --upgrade networkx
+
+# ========================================
+# 更多信息
+# More Information
+# ========================================
+
+# 项目主页: [GitHub Repository]
+# 文档: README.md, QUICK_START.md
+# 问题反馈: [GitHub Issues]
