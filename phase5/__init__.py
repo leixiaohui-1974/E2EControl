@@ -12,6 +12,7 @@ Complete autonomous water network control system with:
 - Phase 5.7: Full Scenario Certification Testing (103 scenarios)
 - Phase 5.8: Docker Containerization
 - Phase 5.9: Real-time Data Interface (OPC-UA, Modbus, SCADA)
+- Phase 5.10: L5 Autonomous Learning and Decision Making
 """
 
 __version__ = "1.0.0"
@@ -119,6 +120,35 @@ from .data_interface import (
     DataSource,
 )
 
+# Phase 5.10: L5 Autonomous Learning
+from .autonomous_learning import (
+    # Online Learning
+    OnlineLearningEngine,
+    LearningAlgorithm,
+    ModelUpdate,
+    LearningRate,
+    AdaptiveOptimizer,
+    # Experience Memory
+    ExperienceMemory,
+    Experience,
+    ExperienceType,
+    MemoryPriority,
+    ReplayBuffer,
+    # Knowledge Transfer
+    KnowledgeTransferEngine,
+    KnowledgeBase,
+    Pattern,
+    PatternType,
+    TransferStrategy,
+    # Autonomous Decision
+    AutonomousDecisionEngine,
+    DecisionContext,
+    Decision,
+    ConfidenceLevel,
+    DecisionOutcome,
+    L5Controller,
+)
+
 __all__ = [
     # Version
     '__version__',
@@ -207,4 +237,27 @@ __all__ = [
     'ReplayConfig',
     'TimeScaleMode',
     'DataSource',
+
+    # L5 Autonomous Learning (5.10)
+    'OnlineLearningEngine',
+    'LearningAlgorithm',
+    'ModelUpdate',
+    'LearningRate',
+    'AdaptiveOptimizer',
+    'ExperienceMemory',
+    'Experience',
+    'ExperienceType',
+    'MemoryPriority',
+    'ReplayBuffer',
+    'KnowledgeTransferEngine',
+    'KnowledgeBase',
+    'Pattern',
+    'PatternType',
+    'TransferStrategy',
+    'AutonomousDecisionEngine',
+    'DecisionContext',
+    'Decision',
+    'ConfidenceLevel',
+    'DecisionOutcome',
+    'L5Controller',
 ]
