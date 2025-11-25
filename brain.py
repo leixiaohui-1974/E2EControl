@@ -1,13 +1,12 @@
+import re
+
 class SemanticInterpreter:
     """
-    Cognitive Layer: Semantic Interpreter.
-
-    Simulates the 'Intent Recognition' and 'Parameter Mapping' process of a Large Language Model.
-    Translates natural language instructions into mathematical weights, constraints, and targets.
+    Cognitive Layer: Semantic Interpreter (Enhanced).
+    Translates natural language instructions into mathematical weights, constraints, and targets
+    using a keyword-based approach with numerical extraction and modifier logic.
     """
-
     def __init__(self):
-        # Default configuration (Baseline)
         self.default_config = {
             'W_level': 10.0,
             'W_smooth': 5.0,
@@ -16,83 +15,84 @@ class SemanticInterpreter:
             'constraints': {}
         }
 
-        # Scenario Library: Mapping instructions to parameter updates
-        self.scenario_map = {
-            "保持水位平稳，正常供水。": {
-                'W_level': 10.0,
-                'W_smooth': 5.0,
-                'Z_ref': 3.0,
-                'delta_Q_max': 2.0,
-                'constraints': {} # No special extra constraints
-            },
-            "收到暴雨预警，立刻降低水位腾出库容！安全第一！": {
-                'W_level': 100.0,
-                # W_smooth not specified, keep default or low?
-                # Prompt says "allow drastic action", so maybe smooth is low?
-                # Actually prompt only lists changes usually.
-                # But Scenario A lists all.
-                # I will assume W_smooth stays default (5.0) or I should infer.
-                # "Allow drastic action" is covered by delta_Q_max = 5.0
-                'W_smooth': 5.0,
-                'Z_ref': 2.0,
-                'delta_Q_max': 5.0,
-                'constraints': {}
-            },
-            "进入冰期输水模式，严禁扰动冰盖。": {
-                'W_level': 1.0,
-                'W_smooth': 500.0,
-                'delta_Q_max': 0.1,
-                # Z_ref not specified, assume normal 3.0
-                'Z_ref': 3.0,
-                'constraints': {}
-            },
-            "下游检测到污染，紧急切断出流！": {
-                # "Special handling"
-                # Prompt says: Add constraint Q_in_max = 0
-                # Other params? Maybe keep defaults?
-                'W_level': 10.0,
-                'W_smooth': 5.0,
-                'Z_ref': 3.0,
-                'delta_Q_max': 20.0, # Updated to allow immediate closure
-                'constraints': {
-                    'Q_in_max': 0.0,
-                    'Z_min': -10.0 # Relax level constraint to allow draining
-                }
-            },
-            "水位计读数异常，切换到开环保持模式。": {
-                'W_level': 0.0,
-                'W_smooth': 100.0,
-                # Assume keeping current flow means high smooth weight.
-                'Z_ref': 3.0, # Irrelevant since W_level is 0
-                'delta_Q_max': 2.0,
-                'constraints': {}
-            }
+        # Structure: keyword -> list of effects. Allows one keyword to have multiple effects.
+        self.keyword_map = {
+            # Keywords affecting level tracking (W_level)
+            '紧急': [{'param': 'W_level', 'action': 'multiply', 'value': 10.0}],
+            '暴雨': [{'param': 'W_level', 'action': 'multiply', 'value': 10.0}],
+            '安全第一': [{'param': 'W_level', 'action': 'multiply', 'value': 5.0}],
+            '重要': [{'param': 'W_level', 'action': 'multiply', 'value': 2.0}],
+
+            # Keywords affecting smoothness (W_smooth)
+            '平稳': [
+                {'param': 'W_smooth', 'action': 'multiply', 'value': 8.0},
+                {'param': 'W_level', 'action': 'multiply', 'value': 1.5}
+            ],
+            '稳定': [
+                {'param': 'W_smooth', 'action': 'multiply', 'value': 8.0},
+                {'param': 'W_level', 'action': 'multiply', 'value': 1.5}
+            ],
+            '小心': [{'param': 'W_smooth', 'action': 'multiply', 'value': 5.0}],
+
+            # Keywords affecting control action limits (delta_Q_max)
+            '立刻': [{'param': 'delta_Q_max', 'action': 'multiply', 'value': 2.5}],
+            '快速': [{'param': 'delta_Q_max', 'action': 'multiply', 'value': 2.0}],
+            '缓慢': [{'param': 'delta_Q_max', 'action': 'multiply', 'value': 0.5}],
+
+            # Keywords setting specific states or constraints
+            '降低水位': [{'param': 'Z_ref', 'action': 'set', 'value': 2.0}],
+            '提升水位': [{'param': 'Z_ref', 'action': 'set', 'value': 4.0}],
+            '切断': [{'param': 'constraints', 'action': 'set', 'value': {'Q_in_max': 0.0, 'Z_min': -10.0}}],
+            '污染': [{'param': 'constraints', 'action': 'set', 'value': {'Q_in_max': 0.0, 'Z_min': -10.0}}]
         }
 
+        self.negations = ['不要', '避免', '禁止']
+
     def interpret(self, instruction: str) -> dict:
-        """
-        Translates a natural language instruction into a control configuration.
-
-        Args:
-            instruction (str): The natural language command.
-
-        Returns:
-            dict: Configuration dictionary containing weights, constraints, and targets.
-        """
         print(f"[Brain] Receiving instruction: {instruction}")
 
-        # Exact match lookup
-        if instruction in self.scenario_map:
-            config = self.scenario_map[instruction]
-            # Ensure all keys exist by merging with default if necessary
-            # (In this implementation, I tried to ensure all keys are present in the map,
-            # but merging is safer)
-            final_config = self.default_config.copy()
-            final_config.update(config)
+        config = self.default_config.copy()
+        config['constraints'] = self.default_config['constraints'].copy()
 
-            # Print interpretation for debugging/demo
-            print(f"[Brain] Interpreted as: {final_config}")
-            return final_config
-        else:
-            print(f"[Brain] Unknown instruction. Using default configuration.")
-            return self.default_config
+        config = self._extract_numerical_values(instruction, config)
+        config = self._apply_keyword_modifiers(instruction, config)
+
+        print(f"[Brain] Interpreted as: {config}")
+        return config
+
+    def _extract_numerical_values(self, instruction: str, config: dict) -> dict:
+        level_match = re.search(r'(?:level|水位)\s*([+-]?\d+\.?\d*)', instruction, re.IGNORECASE)
+        if level_match:
+            try:
+                val = float(level_match.group(1))
+                config['Z_ref'] = val
+                print(f"[Brain] Extracted numerical value for Z_ref: {val}")
+            except ValueError:
+                pass
+        return config
+
+    def _apply_keyword_modifiers(self, instruction: str, config: dict) -> dict:
+        if "严禁扰动" in instruction:
+            config['W_smooth'] *= 100.0
+            instruction = instruction.replace("严禁扰动", "")
+
+        is_negated = any(neg in instruction for neg in self.negations)
+
+        for keyword, effects in self.keyword_map.items():
+            if keyword in instruction:
+                for effect in effects:
+                    param, action, value = effect['param'], effect['action'], effect['value']
+
+                    if is_negated and action == 'multiply' and value != 0:
+                        value = 1 / value
+                    elif is_negated and action == 'set':
+                        continue
+
+                    if action == 'multiply' and param in config:
+                        config[param] *= value
+                    elif action == 'set':
+                        if param == 'constraints':
+                            config[param].update(value)
+                        else:
+                            config[param] = value
+        return config

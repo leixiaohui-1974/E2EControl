@@ -7195,3 +7195,4 @@
 [2025-11-25T22:35:36.676840] INFO - logger.info - 数据库连接已关闭
 [2025-11-25T22:35:39.007384] INFO - logger.info - 数据库初始化完成: simulation_data.db
 [2025-11-25T22:35:39.008306] INFO - logger.info - 数据库连接已关闭
+[2025-11-25T15:12:10.126524] INFO - logger.info - Starting API Server: http://0.0.0.0:5000
