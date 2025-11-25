@@ -1,0 +1,437 @@
+import threading
+import time
+from datetime import datetime
+from typing import Dict, Optional, List
+import numpy as np
+
+from main_enhanced import SmartPoolSimulation
+from database import SimulationDatabase
+from config_manager import get_config
+from physics.cascaded_system import CascadedCanalSystem
+from control.distributed_mpc import DistributedMPC
+from intelligence import ScenarioRecognitionEngine
+
+class SimulationManager:
+    """
+    Manages the lifecycle of simulations.
+    Handles creation, execution (async), status tracking, and history retrieval.
+    """
+    def __init__(self):
+        self.running_simulations: Dict[int, Dict] = {}
+        self.lock = threading.Lock()
+        self.config = get_config()
+
+    def run_simulation(self, script: Optional[List] = None, is_async: bool = False, system_type: str = 'single') -> Dict:
+        """
+        Runs a simulation.
+        
+        Args:
+            script: The simulation script (list of time/instruction tuples).
+            is_async: Whether to run asynchronously.
+            system_type: 'single' or 'cascaded'.
+            
+        Returns:
+            Dict containing simulation ID and status/results.
+        """
+        
+        if system_type == 'cascaded':
+            return self._run_cascaded_simulation(script, is_async)
+        
+        # Default Single Pool Logic
+        sim = SmartPoolSimulation()
+        
+        if is_async:
+            # Generate a temporary ID for tracking
+            with self.lock:
+                sim_id = int(time.time() * 1000) 
+                
+                self.running_simulations[sim_id] = {
+                    'status': 'running',
+                    'start_time': datetime.now().isoformat(),
+                    'simulation': sim,
+                    'type': 'single'
+                }
+
+            def _run_thread():
+                try:
+                    sim.run(script=script)
+                    with self.lock:
+                        if sim_id in self.running_simulations:
+                            self.running_simulations[sim_id]['status'] = 'completed'
+                            self.running_simulations[sim_id]['end_time'] = datetime.now().isoformat()
+                            if sim.simulation_id:
+                                self.running_simulations[sim_id]['db_id'] = sim.simulation_id
+                except Exception as e:
+                    with self.lock:
+                        if sim_id in self.running_simulations:
+                            self.running_simulations[sim_id]['status'] = 'failed'
+                            self.running_simulations[sim_id]['error'] = str(e)
+                finally:
+                    if sim.db:
+                        sim.db.close()
+
+            thread = threading.Thread(target=_run_thread)
+            thread.start()
+
+            return {
+                'success': True,
+                'simulation_id': sim_id,
+                'status': 'running',
+                'message': 'Single pool simulation started asynchronously'
+            }
+        else:
+            # Synchronous
+            try:
+                sim.run(script=script)
+                sim_id = sim.simulation_id
+                
+                results = {
+                    'total_hours': sim.total_hours,
+                    'final_level': sim.history['level'][-1] if sim.history['level'] else None,
+                    'alerts_count': len(sim.monitor.alerts)
+                }
+                
+                if sim.db:
+                    sim.db.close()
+                    
+                return {
+                    'success': True,
+                    'simulation_id': sim_id,
+                    'status': 'completed',
+                    'results': results
+                }
+            except Exception as e:
+                raise e
+
+    def _run_cascaded_simulation(self, script: Optional[List], is_async: bool) -> Dict:
+        """Helper to run cascaded simulation."""
+        
+        sim_id = int(time.time() * 1000)
+        
+        # Initialize shared state for this simulation
+        with self.lock:
+            self.running_simulations[sim_id] = {
+                'status': 'initializing',
+                'start_time': datetime.now().isoformat(),
+                'type': 'cascaded',
+                'events': [], # Queue for one-time events
+                'overrides': {} # Persistent parameter overrides
+            }
+
+        def _simulation_logic():
+            # Initialize
+            num_pools = 3
+            physics = CascadedCanalSystem(num_pools=num_pools)
+            controller = DistributedMPC(num_pools=num_pools)
+            intelligence = ScenarioRecognitionEngine()
+            
+            # Config
+            total_hours = 50
+            history = {
+                'time': [],
+                'levels': [], # List of lists
+                'flows': [],   # List of lists
+                'scenarios': [], # List of scenario dicts
+                'events': [] # Log of events triggered
+            }
+            
+            # Initial state
+            prev_flows = [5.0] * (num_pools + 1) # Initial flows
+            
+            # Loop
+            for t in range(total_hours):
+                # Slow down slightly for HITL if async (optional, but good for demo)
+                if is_async:
+                    time.sleep(1.0) # 1 second per hour for demo interaction
+
+                # 0. Process External Events & Overrides
+                current_events = []
+                current_overrides = {}
+                
+                with self.lock:
+                    if sim_id in self.running_simulations:
+                        # Pop all pending events
+                        while self.running_simulations[sim_id]['events']:
+                            evt = self.running_simulations[sim_id]['events'].pop(0)
+                            current_events.append(evt)
+                            history['events'].append({'time': t, 'event': evt})
+                        
+                        # Get current overrides
+                        current_overrides = self.running_simulations[sim_id]['overrides'].copy()
+
+                # Apply Events (e.g., Sudden Inflow)
+                extra_inflow = 0.0
+                for evt in current_events:
+                    if evt['type'] == 'flood':
+                        extra_inflow += evt.get('magnitude', 10.0)
+                    elif evt['type'] == 'drought':
+                        extra_inflow -= evt.get('magnitude', 5.0)
+
+                # 1. Forecast Demands
+                demands = []
+                for i in range(num_pools):
+                    base = 5.0
+                    noise = np.random.normal(0, 0.5, 10)
+                    d = base + noise
+                    
+                    # Apply demand overrides if any
+                    # e.g., overrides = {'demand_0': 10.0}
+                    if f'demand_{i}' in current_overrides:
+                        d[:] = current_overrides[f'demand_{i}']
+                        
+                    demands.append(d)
+                
+                current_demands = [d[0] for d in demands]
+                
+                # 2. Intelligence: Recognize Scenario
+                current_levels = physics.get_levels()
+                scenario_result = intelligence.recognize(
+                    current_levels=current_levels,
+                    flows=prev_flows
+                )
+                
+                # Override scenario if forced
+                if 'force_scenario' in current_overrides:
+                    scenario_result['name'] = current_overrides['force_scenario']
+                    scenario_result['description'] = "Manually Forced"
+                    scenario_result['confidence'] = 1.0
+                
+                # 3. Control
+                config = scenario_result['recommended_config']
+                
+                gate_flows = controller.solve(
+                    current_levels=current_levels,
+                    prev_flows=prev_flows,
+                    demand_forecasts=demands,
+                    config=config
+                )
+                
+                # Apply Manual Gate Overrides
+                # e.g., overrides = {'gate_0': 5.0}
+                for i in range(len(gate_flows)):
+                    if f'gate_{i}' in current_overrides:
+                        gate_flows[i] = float(current_overrides[f'gate_{i}'])
+
+                # 4. Physics Step
+                # Apply extra inflow from events to first pool (simplified)
+                # In reality, flood might affect all.
+                # Let's hack it: add extra_inflow to the flow entering pool 0 (gate 0)
+                # But gate_flows[0] is decided by controller.
+                # If it's a flood, maybe it's side inflow?
+                # For now, let's assume flood means upstream inflow increases uncontrollably
+                # OR we just add it to the physics step as a disturbance.
+                # CascadedCanalSystem.step doesn't take disturbance explicitly yet, 
+                # but we can modify gate_flows[0] to simulate upstream flood.
+                
+                if extra_inflow > 0:
+                    gate_flows[0] += extra_inflow
+                
+                new_levels = physics.step(
+                    gate_flows=gate_flows,
+                    demands=current_demands
+                )
+                
+                # 5. Log
+                history['time'].append(t)
+                history['levels'].append(new_levels)
+                history['flows'].append(gate_flows)
+                history['scenarios'].append(scenario_result)
+                
+                prev_flows = gate_flows
+                
+                # Update live history in memory for polling
+                if is_async:
+                    with self.lock:
+                        if sim_id in self.running_simulations:
+                            self.running_simulations[sim_id]['history'] = history
+                
+            return history
+
+        if is_async:
+            with self.lock:
+                # Status already set to initializing, update to running
+                self.running_simulations[sim_id]['status'] = 'running'
+            
+            def _run_thread():
+                try:
+                    hist = _simulation_logic()
+                    with self.lock:
+                        if sim_id in self.running_simulations:
+                            self.running_simulations[sim_id]['status'] = 'completed'
+                            self.running_simulations[sim_id]['end_time'] = datetime.now().isoformat()
+                            self.running_simulations[sim_id]['history'] = hist
+                except Exception as e:
+                    with self.lock:
+                        if sim_id in self.running_simulations:
+                            self.running_simulations[sim_id]['status'] = 'failed'
+                            self.running_simulations[sim_id]['error'] = str(e)
+
+            thread = threading.Thread(target=_run_thread)
+            thread.start()
+            
+            return {
+                'success': True,
+                'simulation_id': sim_id,
+                'status': 'running',
+                'message': 'Cascaded simulation started asynchronously'
+            }
+        else:
+            # Sync
+            try:
+                hist = _simulation_logic()
+                return {
+                    'success': True,
+                    'simulation_id': sim_id,
+                    'status': 'completed',
+                    'results': {
+                        'total_hours': 50,
+                        'final_levels': hist['levels'][-1]
+                    }
+                }
+            except Exception as e:
+                raise e
+
+    def inject_event(self, sim_id: int, event_type: str, event_data: Dict) -> bool:
+        """Injects an event into a running simulation."""
+        with self.lock:
+            if sim_id in self.running_simulations:
+                event = {'type': event_type, **event_data}
+                self.running_simulations[sim_id]['events'].append(event)
+                return True
+        return False
+
+    def update_parameters(self, sim_id: int, params: Dict) -> bool:
+        """Updates parameters (overrides) for a running simulation."""
+        with self.lock:
+            if sim_id in self.running_simulations:
+                self.running_simulations[sim_id]['overrides'].update(params)
+                return True
+        return False
+
+    def get_status(self, sim_id: int) -> Dict:
+        """Gets the status of a simulation."""
+        # 1. Check memory (running or recently finished async)
+        with self.lock:
+            if sim_id in self.running_simulations:
+                info = self.running_simulations[sim_id]
+                return {
+                    'success': True,
+                    'simulation_id': sim_id,
+                    'status': info['status'],
+                    'start_time': info.get('start_time'),
+                    'end_time': info.get('end_time'),
+                    'error': info.get('error'),
+                    'db_id': info.get('db_id')
+                }
+
+        # 2. Check database
+        if self.config.get('database.enabled', False):
+            try:
+                db = SimulationDatabase(self.config.get('database.path'))
+                # We need a method to get a single simulation by ID
+                # The existing API used get_recent_simulations and filtered.
+                # Let's stick to that for now or add a method if needed.
+                sims = db.get_recent_simulations(limit=100) # Potential optimization needed here
+                db.close()
+                
+                for sim in sims:
+                    if sim['id'] == sim_id:
+                        return {
+                            'success': True,
+                            'simulation_id': sim_id,
+                            'status': 'completed',
+                            'start_time': sim['start_time'],
+                            'end_time': sim['end_time'],
+                            'total_hours': sim['total_hours']
+                        }
+            except Exception as e:
+                return {'success': False, 'error': str(e)}
+
+        return {'success': False, 'error': f'Simulation ID {sim_id} not found'}
+
+    def get_history(self, sim_id: int) -> Dict:
+        """Gets history for a simulation."""
+        # Check memory first for live updates? 
+        # Current implementation only supports DB history for simplicity in this refactor,
+        # unless we want to expose live data from the 'sim' object in running_simulations.
+        
+        with self.lock:
+            if sim_id in self.running_simulations:
+                info = self.running_simulations[sim_id]
+                if 'history' in info:
+                    # Cascaded simulation history stored directly
+                    return {
+                        'success': True,
+                        'simulation_id': sim_id,
+                        'count': len(info['history']['time']),
+                        'history': info['history'],
+                        'status': info['status']
+                    }
+                elif 'simulation' in info:
+                    # Single pool simulation object
+                    sim = info['simulation']
+                    return {
+                        'success': True,
+                        'simulation_id': sim_id,
+                        'count': len(sim.history['time']),
+                        'history': sim.history,
+                        'status': info['status']
+                    }
+
+        if not self.config.get('database.enabled', False):
+             return {'success': False, 'error': 'Database not enabled'}
+
+        try:
+            db = SimulationDatabase(self.config.get('database.path'))
+            history = db.get_simulation_history(sim_id)
+            db.close()
+            
+            if not history:
+                return {'success': False, 'error': f'No history for ID {sim_id}'}
+                
+            return {
+                'success': True,
+                'simulation_id': sim_id,
+                'count': len(history),
+                'history': history
+            }
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+    def list_simulations(self) -> List[Dict]:
+        """Lists all simulations (memory + db)."""
+        result = []
+        
+        # Memory
+        with self.lock:
+            for sim_id, info in self.running_simulations.items():
+                result.append({
+                    'id': sim_id,
+                    'status': info['status'],
+                    'start_time': info.get('start_time'),
+                    'end_time': info.get('end_time'),
+                    'source': 'memory'
+                })
+        
+        # Database
+        if self.config.get('database.enabled', False):
+            try:
+                db = SimulationDatabase(self.config.get('database.path'))
+                sims = db.get_recent_simulations(limit=20)
+                db.close()
+                
+                for sim in sims:
+                    # Avoid duplicates if they are in both (unlikely with current ID logic but possible)
+                    if not any(r['id'] == sim['id'] for r in result):
+                        result.append({
+                            'id': sim['id'],
+                            'status': 'completed',
+                            'start_time': sim['start_time'],
+                            'end_time': sim['end_time'],
+                            'total_hours': sim['total_hours'],
+                            'source': 'database'
+                        })
+            except Exception:
+                pass # Ignore DB errors for listing
+                
+        return result

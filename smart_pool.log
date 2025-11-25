@@ -141,3 +141,10 @@
 [2025-11-24T12:36:24.693696] INFO - logger.info - 监控系统初始化完成
 [2025-11-24T12:36:24.693877] INFO - logger.info - 数据库初始化完成: simulation_data.db
 [2025-11-24T12:36:24.693906] INFO - logger.info - 数据库已启用: simulation_data.db
+[2025-11-25T12:54:20.172035] INFO - logger.info - Starting API Server: http://0.0.0.0:5000
+[2025-11-25T12:58:55.623578] INFO - logger.info - Starting API Server: http://0.0.0.0:5000
+[2025-11-25T12:59:07.199991] INFO - logger.info - 数据库初始化完成: simulation_data.db
+[2025-11-25T12:59:07.203129] INFO - logger.info - 数据库连接已关闭
+[2025-11-25T13:00:33.014184] ERROR - Get history failed: 'simulation'
+[2025-11-25T13:05:41.194876] INFO - logger.info - Starting API Server: http://0.0.0.0:5000
+[2025-11-25T13:06:32.357186] ERROR - Get history failed: 'simulation'

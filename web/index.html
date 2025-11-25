@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Pool Agent | Digital Twin</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>🌊 Smart Pool</h2>
+                <p>Digital Twin Control</p>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-view="simulation">
+                    <span class="icon">🎮</span> Simulation
+                </a>
+                <a href="#" class="nav-item" data-view="history">
+                    <span class="icon">📜</span> History
+                </a>
+                <a href="#" class="nav-item" data-view="settings">
+                    <span class="icon">⚙️</span> Settings
+                </a>
+            </nav>
+
+            <div class="system-status">
+                <div class="status-item">
+                    <span class="label">API Status</span>
+                    <span class="value online">Online</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Version</span>
+                    <span class="value">2.1</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <div class="page-title">
+                    <h1 id="page-title">Dashboard</h1>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar">AD</div>
+                    <span>Admin User</span>
+                    <h3>Water Level</h3>
+                    <div class="stat-value" id="current-level">-- m</div>
+                    <p class="stat-desc">Target: <span id="target-level">--</span> m</p>
+                </div>
+                <div class="card status-card">
+                    <h3>Flow Rate</h3>
+                    <div class="stat-value" id="current-flow">-- m³/s</div>
+                    <p class="stat-desc">Inflow Control</p>
+                </div>
+    </div>
+
+    <div class="card chart-card">
+        <div class="card-header">
+            <h3>Real-time Monitoring</h3>
+            <div class="card-actions">
+                <button class="btn-icon">🔄</button>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="mainChart"></canvas>
+        </div>
+    </div>
+    </div>
+
+    <div id="view-simulation" class="view-section">
+        <div class="simulation-controls">
+            <div class="card input-card">
+                <h3>Natural Language Control</h3>
+                <p>Describe how you want to control the water system.</p>
+                <div class="input-group">
+                    <textarea id="instruction-input"
+                        placeholder="e.g., 'Heavy rain warning received, lower water level immediately!'"></textarea>
+                    <button id="interpret-btn" class="btn-primary">Analyze Instruction</button>
+                </div>
+                <div id="interpretation-result" class="result-box hidden">
+                    <h4>Analysis Result</h4>
+                    <div class="result-item">
+                        <span class="label">Confidence:</span>
+                        <span class="value" id="conf-score">--</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">Scenario:</span>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Start Time</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="view-settings" class="view-section">
+                    <div class="card">
+                        <h3>System Configuration</h3>
+                        <div id="config-display" class="code-block">
+                            Loading configuration...
+                        </div>
+                    </div>
+                </div>
+
+                </main>
+            </div>
+
+            <script src="js/app.js"></script>
+</body>
+
+</html>
