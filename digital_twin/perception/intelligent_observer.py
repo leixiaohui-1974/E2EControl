@@ -11,7 +11,7 @@ from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
 
-from physics.single_channel_fidelity import SingleChannelFidelity, PhysicalState, ChannelGeometry
+from digital_twin.physics.single_channel_fidelity import SingleChannelFidelity, PhysicalState, ChannelGeometry
 
 
 class OperationMode(Enum):
