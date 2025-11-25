@@ -59,7 +59,7 @@ class DistributedMPC:
         
         # Assume tail gate (Gate N) flow is 0 or fixed base demand for now
         # In a real scenario, this is a boundary condition.
-        optimal_flows[-1] = 5.0 # Default tail flow
+        optimal_flows[-1] = 0.0 # Default tail flow (Closed/No downstream demand)
         
         # Iterate from last pool (N-1) to first pool (0)
         for i in range(self.num_pools - 1, -1, -1):

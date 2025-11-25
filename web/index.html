@@ -20,16 +20,19 @@
             </div>
 
             <nav class="nav-menu">
-                <a href="#" class="nav-item active" data-view="dashboard">
+                <a href="#" class="nav-link active" data-view="view-dashboard">
                     <span class="icon">📊</span> Dashboard
                 </a>
-                <a href="#" class="nav-item" data-view="simulation">
+                <a href="#" class="nav-link" data-view="view-simulation">
                     <span class="icon">🎮</span> Simulation
                 </a>
-                <a href="#" class="nav-item" data-view="history">
+                <a href="#" class="nav-link" data-view="view-monitoring">
+                    <span class="icon">📈</span> Advanced Monitoring
+                </a>
+                <a href="#" class="nav-link" data-view="view-history">
                     <span class="icon">📜</span> History
                 </a>
-                <a href="#" class="nav-item" data-view="settings">
+                <a href="#" class="nav-link" data-view="view-config">
                     <span class="icon">⚙️</span> Settings
                 </a>
             </nav>
@@ -56,78 +59,213 @@
                 <div class="user-profile">
                     <div class="avatar">AD</div>
                     <span>Admin User</span>
-                    <h3>Water Level</h3>
-                    <div class="stat-value" id="current-level">-- m</div>
-                    <p class="stat-desc">Target: <span id="target-level">--</span> m</p>
                 </div>
-                <div class="card status-card">
-                    <h3>Flow Rate</h3>
-                    <div class="stat-value" id="current-flow">-- m³/s</div>
-                    <p class="stat-desc">Inflow Control</p>
-                </div>
-    </div>
+            </header>
 
-    <div class="card chart-card">
-        <div class="card-header">
-            <h3>Real-time Monitoring</h3>
-            <div class="card-actions">
-                <button class="btn-icon">🔄</button>
-            </div>
-        </div>
-        <div class="chart-container">
-            <canvas id="mainChart"></canvas>
-        </div>
-    </div>
-    </div>
-
-    <div id="view-simulation" class="view-section">
-        <div class="simulation-controls">
-            <div class="card input-card">
-                <h3>Natural Language Control</h3>
-                <p>Describe how you want to control the water system.</p>
-                <div class="input-group">
-                    <textarea id="instruction-input"
-                        placeholder="e.g., 'Heavy rain warning received, lower water level immediately!'"></textarea>
-                    <button id="interpret-btn" class="btn-primary">Analyze Instruction</button>
-                </div>
-                <div id="interpretation-result" class="result-box hidden">
-                    <h4>Analysis Result</h4>
-                    <div class="result-item">
-                        <span class="label">Confidence:</span>
-                        <span class="value" id="conf-score">--</span>
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section active">
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <h3>Water Level</h3>
+                        <div class="stat-value" id="current-level">-- m</div>
+                        <p class="stat-desc">Target: <span id="target-level">--</span> m</p>
                     </div>
-                    <div class="result-item">
-                        <span class="label">Scenario:</span>
-                        <table class="data-table">
+                    <div class="card stat-card">
+                        <h3>Flow Rate</h3>
+                        <div class="stat-value" id="current-flow">-- m³/s</div>
+                        <p class="stat-desc">Inflow: <span id="inflow-rate">--</span></p>
+                    </div>
+                    <div class="card stat-card">
+                        <h3>System Status</h3>
+                        <div class="stat-value" id="sys-status">Normal</div>
+                        <p class="stat-desc">Alerts: <span id="alert-count">0</span></p>
+                    </div>
+                </div>
+
+                <div class="main-chart-container">
+                    <div class="card chart-card">
+                        <h3>Real-time Monitoring</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulation View -->
+            <div id="view-simulation" class="view-section">
+                <div class="simulation-controls">
+                    <div class="card input-card">
+                        <h3>Natural Language Control</h3>
+                        <p>Describe how you want to control the water system.</p>
+                        <div class="input-group">
+                            <textarea id="instruction-input"
+                                placeholder="e.g., 'Heavy rain warning received, lower water level immediately!'"></textarea>
+                            <button id="interpret-btn" class="btn-primary">Analyze Instruction</button>
+                        </div>
+
+                        <div id="interpretation-result" class="result-box hidden">
+                            <h4>Analysis Result</h4>
+                            <div class="result-item">
+                                <span class="label">Confidence:</span>
+                                <span class="value" id="conf-score">--</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="label">Scenario:</span>
+                                <span class="value" id="scenario-name">--</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="label">Config Preview:</span>
+                                <pre id="config-preview" class="code-preview">--</pre>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons" style="margin-top: 20px;">
+                            <button id="run-sim-btn" class="btn-success">Run Simulation</button>
+                            <button id="stop-sim-btn" class="btn-danger" disabled>Stop</button>
+                        </div>
+
+                        <div id="sim-progress" class="progress-bar hidden" style="margin-top: 15px;">
+                            <div class="progress-track">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <span class="progress-text">Running Simulation...</span>
+                        </div>
+                    </div>
+
+                    <!-- Topology Visualization -->
+                    <div class="card topology-card" style="margin-bottom: 20px;">
+                        <div class="card-header">
+                            <h3>System Topology (Real-time)</h3>
+                        </div>
+                        <div class="topology-container" style="position: relative; height: 200px; width: 100%;">
+                            <canvas id="topologyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Manual Control (Interactive) -->
+                    <div class="card control-card" style="margin-bottom: 20px;">
+                        <div class="card-header">
+                            <h3>Manual Control (Interactive)</h3>
+                            <button id="reset-override-btn" class="btn-sm btn-secondary"
+                                onclick="window.resetOverride()">Reset All</button>
+                        </div>
+                        <div class="control-group">
+                            <h4>Inject Events</h4>
+                            <div class="btn-group">
+                                <button class="btn-warning" onclick="window.triggerEvent('flood')">Trigger
+                                    Flood</button>
+                                <button class="btn-warning" onclick="window.triggerEvent('drought')">Trigger
+                                    Drought</button>
+                            </div>
+                        </div>
+                        <div class="control-group" style="margin-top: 15px;">
+                            <h4>Gate Overrides</h4>
+                            <div class="slider-group">
+                                <label>Gate 0: <span id="gate0-val">--</span></label>
+                                <input type="range" min="0" max="20" step="0.5"
+                                    onchange="window.updateGate(0, this.value)">
+                            </div>
+                            <div class="slider-group">
+                                <label>Gate 1: <span id="gate1-val">--</span></label>
+                                <input type="range" min="0" max="20" step="0.5"
+                                    onchange="window.updateGate(1, this.value)">
+                            </div>
+                            <div class="slider-group">
+                                <label>Gate 2: <span id="gate2-val">--</span></label>
+                                <input type="range" min="0" max="20" step="0.5"
+                                    onchange="window.updateGate(2, this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Monitoring View -->
+            <div id="view-monitoring" class="view-section">
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <h3>System Health</h3>
+                        <div class="stat-value" id="health-score">--%</div>
+                        <p class="stat-desc">Overall Status</p>
+                    </div>
+                    <div class="card stat-card">
+                        <h3>Active Anomalies</h3>
+                        <div class="stat-value" id="anomaly-count">0</div>
+                        <p class="stat-desc">Detected Issues</p>
+                    </div>
+                    <div class="card stat-card">
+                        <h3>Self-Healing</h3>
+                        <div class="stat-value" id="healing-status">Active</div>
+                        <p class="stat-desc">Events: <span id="healing-count">0</span></p>
+                    </div>
+                </div>
+
+                <div class="main-chart-container" style="margin-top: 20px;">
+                    <div class="card chart-card">
+                        <h3>Anomaly Detection Score</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="anomalyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Fault & Healing Log</h3>
+                    <div class="table-container">
+                        <table id="fault-log-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Start Time</th>
-                                    <th>Duration</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Component</th>
+                                    <th>Severity</th>
+                                    <th>Action</th>
+                                    <th>Result</th>
                                 </tr>
                             </thead>
-                            <tbody id="history-table-body">
+                            <tbody>
                                 <!-- Populated by JS -->
                             </tbody>
                         </table>
                     </div>
                 </div>
-
-                <div id="view-settings" class="view-section">
-                    <div class="card">
-                        <h3>System Configuration</h3>
-                        <div id="config-display" class="code-block">
-                            Loading configuration...
-                        </div>
-                    </div>
-                </div>
-
-                </main>
             </div>
 
-            <script src="js/app.js"></script>
+            <!-- History View -->
+            <div id="view-history" class="view-section">
+                <div class="card">
+                    <h3>Simulation History</h3>
+                    <div class="table-container">
+                        <table id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-config" class="view-section">
+                <div class="card">
+                    <h3>System Configuration</h3>
+                    <pre id="config-display" class="code-preview">Loading...</pre>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/app.js"></script>
 </body>
 
 </html>

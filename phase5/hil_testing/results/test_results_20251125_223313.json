@@ -1,0 +1,89 @@
+{
+  "summary": {
+    "total_suites": 1,
+    "total_cases": 2,
+    "passed": 2,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pass_rate": 1.0,
+    "suites": [
+      {
+        "name": "基础功能验证",
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "pass_rate": 1.0
+      }
+    ]
+  },
+  "suites": [
+    {
+      "id": "TS_20251125_223110",
+      "name": "基础功能验证",
+      "description": "验证L1-L2级基础自主控制能力",
+      "autonomous_level": null,
+      "category_filter": null,
+      "statistics": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "pass_rate": 1.0
+      },
+      "test_cases": [
+        {
+          "id": "TC_S1_NORMAL_001",
+          "scenario_id": "S1_NORMAL_001",
+          "scenario_name": "稳态正常运行",
+          "status": "passed",
+          "start_time": "2025-11-25T22:31:10.573852",
+          "end_time": "2025-11-25T22:31:51.505242",
+          "error_message": null,
+          "execution_log": [
+            "开始执行: 2025-11-25 22:31:10.573852",
+            "初始化仿真环境完成",
+            "配置工况注入完成",
+            "开始仿真: 300.0秒, 300步",
+            "仿真完成",
+            "评估完成: 通过"
+          ],
+          "result": {
+            "passed": true,
+            "score": 92.5,
+            "safety_score": 100.0,
+            "control_score": 100.0,
+            "issues": [],
+            "recommendations": []
+          }
+        },
+        {
+          "id": "TC_S2_FLOOD_001",
+          "scenario_id": "S2_FLOOD_001",
+          "scenario_name": "单池入流突增",
+          "status": "passed",
+          "start_time": "2025-11-25T22:31:51.505819",
+          "end_time": "2025-11-25T22:33:13.722469",
+          "error_message": null,
+          "execution_log": [
+            "开始执行: 2025-11-25 22:31:51.505819",
+            "初始化仿真环境完成",
+            "配置工况注入完成",
+            "开始仿真: 600.0秒, 600步",
+            "仿真完成",
+            "评估完成: 通过"
+          ],
+          "result": {
+            "passed": true,
+            "score": 92.5,
+            "safety_score": 100.0,
+            "control_score": 100.0,
+            "issues": [],
+            "recommendations": []
+          }
+        }
+      ]
+    }
+  ]
+}

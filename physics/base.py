@@ -11,7 +11,7 @@ class CanalPoolSimulator:
     Assumes a simple linear relationship between Volume (V) and Water Level (Z):
     V = Z * SurfaceArea
     """
-    def __init__(self, area=10000.0, dt=3600.0, delay_steps=1, initial_level=3.0):
+    def __init__(self, area=10000.0, dt=3600.0, delay_steps=1, initial_level=3.0, initial_flow=0.0):
         """
         Initialize the simulator.
 
@@ -20,6 +20,7 @@ class CanalPoolSimulator:
             dt (float): Time step (seconds).
             delay_steps (int): Time delay tau in number of steps.
             initial_level (float): Initial water level (m).
+            initial_flow (float): Initial inflow rate (m^3/s) for history.
         """
         self.area = area
         self.dt = dt
@@ -31,8 +32,8 @@ class CanalPoolSimulator:
 
         # History for delay handling
         # We need to store enough past Q_in to retrieve Q_in(k-tau)
-        # Initialize with 0 or some steady state flow if needed.
-        self.q_in_history = deque([0.0] * (delay_steps + 1), maxlen=delay_steps + 1)
+        # Initialize with initial_flow.
+        self.q_in_history = deque([initial_flow] * (delay_steps + 1), maxlen=delay_steps + 1)
 
     def step(self, q_in_command, q_out, disturbance=0.0):
         """

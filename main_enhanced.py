@@ -141,6 +141,10 @@ class SmartPoolSimulation:
         
         # 仿真循环
         for t in range(self.total_hours):
+            # Interactive Mode: Slow down for visualization
+            if getattr(self, 'interactive', False):
+                time.sleep(1.0) # 1 second per step
+
             # 检查场景切换
             for start_hour, instruction in script:
                 if t == start_hour:

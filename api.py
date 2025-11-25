@@ -14,12 +14,13 @@ from config_manager import get_config
 from logger import get_logger, setup_logging
 from brain_enhanced import EnhancedSemanticInterpreter
 from simulation_manager import SimulationManager
+import simulation_manager
+print(f"LOADING simulation_manager from: {simulation_manager.__file__}")
+import sys
+print(f"SYS.PATH: {sys.path}")
 
-# Initialize Flask App
-# Serve static files from 'web' directory
 app = Flask(__name__, static_folder='web', static_url_path='')
 CORS(app)
-
 # Initialize System
 config = get_config()
 setup_logging(config.get_section('logging'))
@@ -31,7 +32,14 @@ sim_manager = SimulationManager()
 @app.route('/')
 def index():
     """Serve the frontend application."""
-    return send_from_directory('web', 'index.html')
+    try:
+        full_path = os.path.join(os.getcwd(), 'web', 'index.html')
+        if os.path.exists(full_path):
+            return send_file(full_path)
+        else:
+            return "Index file not found", 404
+    except Exception as e:
+        return str(e), 500
 
 @app.route('/api')
 def api_info():
@@ -125,33 +133,97 @@ def run_simulation():
         logger.error(f"Simulation run failed: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/simulation/<int:sim_id>/status')
-def get_simulation_status(sim_id: int):
-    """Get Simulation Status"""
+@app.route('/simulation/<int:sim_id>/event', methods=['POST'])
+def trigger_event(sim_id: int):
+    """Trigger Event in Simulation"""
     try:
-        result = sim_manager.get_status(sim_id)
-        if result['success']:
-            return jsonify(result)
+        data = request.get_json()
+        event_type = data.get('type')
+        event_data = data.get('data', {})
+        
+        if not event_type:
+            return jsonify({'success': False, 'error': 'Missing event type'}), 400
+            
+        success = sim_manager.inject_event(sim_id, event_type, event_data)
+        if success:
+            return jsonify({'success': True})
         else:
-            return jsonify(result), 404
+            return jsonify({'success': False, 'error': 'Simulation not running or found'}), 404
     except Exception as e:
-        logger.error(f"Get status failed: {e}")
+        logger.error(f"Trigger event failed: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/simulation/<int:sim_id>/history')
-def get_simulation_history(sim_id: int):
-    """Get Simulation History"""
-    try:
-        result = sim_manager.get_history(sim_id)
-        if result['success']:
-            return jsonify(result)
-        else:
-            return jsonify(result), 404
-    except Exception as e:
-        logger.error(f"Get history failed: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+@app.route('/simulation/<int:sim_id>/control/reset', methods=['POST'])
+def reset_simulation_overrides(sim_id):
+    success = sim_manager.clear_overrides(sim_id)
+    if success:
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Simulation not found'}), 404
 
-@app.route('/simulations')
+@app.route('/simulation/<int:sim_id>/stop', methods=['POST'])
+def stop_simulation(sim_id):
+    success = sim_manager.stop_simulation(sim_id)
+    if success:
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Simulation not found'}), 404
+
+@app.route('/simulation/<id>/status', methods=['GET'])
+def get_simulation_status(id):
+    """Get the status of a simulation."""
+    try:
+        try:
+            sim_id = int(id)
+        except ValueError:
+            sim_id = id
+        
+        status = sim_manager.get_status(sim_id)
+        if status:
+            return jsonify(status)
+        else:
+            return jsonify({'error': 'Simulation not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/simulation/<id>/history', methods=['GET'])
+def get_simulation_history(id):
+    """Get the history of a simulation."""
+    try:
+        try:
+            sim_id = int(id)
+        except ValueError:
+            sim_id = id
+            
+        history = sim_manager.get_history(sim_id)
+        if history:
+            return jsonify(history)
+        else:
+            return jsonify({'error': 'Simulation not found or history empty'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/simulation/<id>/health', methods=['GET'])
+def get_simulation_health(id):
+    """Get the health status of a simulation (Phase 5)."""
+    try:
+        try:
+            sim_id = int(id)
+        except ValueError:
+            sim_id = id
+            
+        with sim_manager.lock:
+            if sim_id in sim_manager.running_simulations:
+                sim_data = sim_manager.running_simulations[sim_id]
+                if 'system_instance' in sim_data:
+                    status = sim_data['system_instance'].get_system_status()
+                    return jsonify(status)
+                else:
+                    return jsonify({'error': 'System instance not found (not a Phase 5 simulation?)'}), 404
+            else:
+                return jsonify({'error': 'Simulation not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/simulations', methods=['GET'])
 def list_simulations():
     """List All Simulations"""
     try:

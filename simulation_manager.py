@@ -54,6 +54,8 @@ class SimulationManager:
 
             def _run_thread():
                 try:
+                    if is_async:
+                        sim.interactive = True
                     sim.run(script=script)
                     with self.lock:
                         if sim_id in self.running_simulations:
@@ -121,7 +123,26 @@ class SimulationManager:
         def _simulation_logic():
             # Initialize
             num_pools = 3
-            physics = CascadedCanalSystem(num_pools=num_pools)
+            
+            # Initial state
+            # Calculate steady state flows for equilibrium
+            # For 3 pools with base demand 5.0 each:
+            # Pool 2 (last): In=5, Out=0 (gate)+5(demand) -> Net 0
+            # Pool 1: In=10, Out=5(gate)+5(demand) -> Net 0
+            # Pool 0: In=15, Out=10(gate)+5(demand) -> Net 0
+            # So gates should be [15, 10, 5, 0]
+            
+            initial_flows = []
+            cumulative_flow = 0.0
+            base_demand = 5.0
+            # Work backwards from last pool
+            for _ in range(num_pools):
+                cumulative_flow += base_demand
+                initial_flows.insert(0, cumulative_flow)
+            
+            # initial_flows is now [15.0, 10.0, 5.0] for inflow to pools 0, 1, 2
+            
+            physics = CascadedCanalSystem(num_pools=num_pools, initial_flows=initial_flows)
             controller = DistributedMPC(num_pools=num_pools)
             intelligence = ScenarioRecognitionEngine()
             
@@ -135,8 +156,20 @@ class SimulationManager:
                 'events': [] # Log of events triggered
             }
             
-            # Initial state
-            prev_flows = [5.0] * (num_pools + 1) # Initial flows
+            initial_levels = [3.0] * num_pools 
+            physics.current_levels = list(initial_levels) # Ensure levels are set
+            
+            # Controller needs prev_flows (gate flows)
+            # Gate 0 -> Pool 0 (15)
+            # Gate 1 -> Pool 1 (10)
+            # Gate 2 -> Pool 2 (5)
+            # Gate 3 -> Downstream (0)
+            prev_flows = initial_flows + [0.0]
+            # Gate 0 -> Pool 0 (15)
+            # Gate 1 -> Pool 1 (10)
+            # Gate 2 -> Pool 2 (5)
+            # Gate 3 -> Downstream (0)
+            prev_flows = initial_flows + [0.0]
             
             # Loop
             for t in range(total_hours):
@@ -144,7 +177,13 @@ class SimulationManager:
                 if is_async:
                     time.sleep(1.0) # 1 second per hour for demo interaction
 
-                # 0. Process External Events & Overrides
+                # 0. Check for Stop Request
+                with self.lock:
+                    if sim_id in self.running_simulations:
+                        if self.running_simulations[sim_id].get('status') == 'stopping':
+                            break
+
+                # 0.5 Process External Events & Overrides
                 current_events = []
                 current_overrides = {}
                 
@@ -213,16 +252,6 @@ class SimulationManager:
                         gate_flows[i] = float(current_overrides[f'gate_{i}'])
 
                 # 4. Physics Step
-                # Apply extra inflow from events to first pool (simplified)
-                # In reality, flood might affect all.
-                # Let's hack it: add extra_inflow to the flow entering pool 0 (gate 0)
-                # But gate_flows[0] is decided by controller.
-                # If it's a flood, maybe it's side inflow?
-                # For now, let's assume flood means upstream inflow increases uncontrollably
-                # OR we just add it to the physics step as a disturbance.
-                # CascadedCanalSystem.step doesn't take disturbance explicitly yet, 
-                # but we can modify gate_flows[0] to simulate upstream flood.
-                
                 if extra_inflow > 0:
                     gate_flows[0] += extra_inflow
                 
@@ -234,7 +263,7 @@ class SimulationManager:
                 # 5. Log
                 history['time'].append(t)
                 history['levels'].append(new_levels)
-                history['flows'].append(gate_flows)
+                history['flows'].append(gate_flows) # Ensure this is added
                 history['scenarios'].append(scenario_result)
                 
                 prev_flows = gate_flows
@@ -254,17 +283,70 @@ class SimulationManager:
             
             def _run_thread():
                 try:
-                    hist = _simulation_logic()
+                    # Initialize Phase 5 Integrated System
+                    from phase5.integrated_system import IntegratedWaterNetworkSystem
+                    integrated_system = IntegratedWaterNetworkSystem(
+                        num_pools=3,
+                        enable_digital_twin=False,
+                        enable_self_healing=True,
+                        enable_anomaly_detection=True
+                    )
+                    
+                    # Store the system instance for interactive control
+                    with self.lock:
+                         if sim_id in self.running_simulations:
+                             self.running_simulations[sim_id]['system_instance'] = integrated_system
+
+                    # Parse script
+                    scenario_script = []
+                    if script:
+                         for item in script:
+                             scenario_script.append((int(item.get('time', 0)), item.get('instruction', '')))
+                    
+                    scenario_dict = {t: instruction for t, instruction in scenario_script}
+                    
+                    # Run loop
+                    t = 0
+                    while t < 100: # Default max steps
+                        # Check for stop signal
+                        with self.lock:
+                            if sim_id not in self.running_simulations or \
+                               self.running_simulations[sim_id].get('status') == 'stopping':
+                                break
+                        
+                        # Step
+                        instruction = scenario_dict.get(t)
+                        integrated_system.step(t, instruction)
+                        
+                        # Update history in SimulationManager for API access
+                        # Note: integrated_system.history grows, so we can just reference it or copy latest
+                        # For simplicity, we'll rely on integrated_system.history being the source of truth
+                        # But we need to sync it to the dict if get_history reads from dict
+                        
+                        # Actually, get_history reads from self.running_simulations[sim_id]['history']
+                        # So we should update it periodically or at the end.
+                        # For real-time, we update it every step.
+                        with self.lock:
+                             if sim_id in self.running_simulations:
+                                 self.running_simulations[sim_id]['history'] = integrated_system.history
+                        
+                        t += 1
+                        time.sleep(1) # Real-time simulation speed
+                    
                     with self.lock:
                         if sim_id in self.running_simulations:
                             self.running_simulations[sim_id]['status'] = 'completed'
                             self.running_simulations[sim_id]['end_time'] = datetime.now().isoformat()
-                            self.running_simulations[sim_id]['history'] = hist
+                            self.running_simulations[sim_id]['history'] = integrated_system.history
+                            
                 except Exception as e:
                     with self.lock:
                         if sim_id in self.running_simulations:
                             self.running_simulations[sim_id]['status'] = 'failed'
                             self.running_simulations[sim_id]['error'] = str(e)
+                            print(f"Simulation failed: {e}")
+                            import traceback
+                            traceback.print_exc()
 
             thread = threading.Thread(target=_run_thread)
             thread.start()
@@ -273,19 +355,33 @@ class SimulationManager:
                 'success': True,
                 'simulation_id': sim_id,
                 'status': 'running',
-                'message': 'Cascaded simulation started asynchronously'
+                'message': 'Cascaded simulation started asynchronously (Phase 5 Integrated)'
             }
         else:
-            # Sync
+            # Sync mode (simplified, mostly for testing)
             try:
-                hist = _simulation_logic()
+                from phase5.integrated_system import IntegratedWaterNetworkSystem
+                integrated_system = IntegratedWaterNetworkSystem(
+                    num_pools=3,
+                    enable_digital_twin=False,
+                    enable_self_healing=True,
+                    enable_anomaly_detection=True
+                )
+                
+                scenario_script = []
+                if script:
+                        for item in script:
+                            scenario_script.append((int(item.get('time', 0)), item.get('instruction', '')))
+
+                hist = integrated_system.run_simulation(scenario_script, total_steps=50)
+                
                 return {
                     'success': True,
                     'simulation_id': sim_id,
                     'status': 'completed',
                     'results': {
                         'total_hours': 50,
-                        'final_levels': hist['levels'][-1]
+                        'final_levels': hist['levels'][-1] if hist['levels'] else []
                     }
                 }
             except Exception as e:
@@ -295,8 +391,15 @@ class SimulationManager:
         """Injects an event into a running simulation."""
         with self.lock:
             if sim_id in self.running_simulations:
+                sim_data = self.running_simulations[sim_id]
+                
+                # Phase 5 Integration: Call inject_fault on the system instance
+                if 'system_instance' in sim_data:
+                    return sim_data['system_instance'].inject_fault(event_type, event_data)
+                
+                # Legacy / Phase 1-4 Support
                 event = {'type': event_type, **event_data}
-                self.running_simulations[sim_id]['events'].append(event)
+                sim_data['events'].append(event)
                 return True
         return False
 
@@ -305,6 +408,22 @@ class SimulationManager:
         with self.lock:
             if sim_id in self.running_simulations:
                 self.running_simulations[sim_id]['overrides'].update(params)
+                return True
+        return False
+
+    def clear_overrides(self, sim_id: int) -> bool:
+        """Clears all parameter overrides for a running simulation."""
+        with self.lock:
+            if sim_id in self.running_simulations:
+                self.running_simulations[sim_id]['overrides'] = {}
+                return True
+        return False
+
+    def stop_simulation(self, sim_id: int) -> bool:
+        """Stops a running simulation."""
+        with self.lock:
+            if sim_id in self.running_simulations:
+                self.running_simulations[sim_id]['status'] = 'stopping'
                 return True
         return False
 

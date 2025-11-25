@@ -129,11 +129,21 @@ class SimulationEnvironment:
     def _init_physics(self):
         """初始化物理模型"""
         try:
-            from physics import PoolPhysics
-            self.physics = PoolPhysics()
+            from physics import CanalPoolSimulator
+            # 适配接口: PoolPhysics -> CanalPoolSimulator
+            # 这里我们直接使用 CanalPoolSimulator，但需要注意接口差异
+            # HIL Runner 期望的 physics 对象可能需要适配
+            # 暂时直接实例化，后续在 step 中适配
+            self.physics = CanalPoolSimulator(
+                area=1000.0, # 默认值
+                dt=self.dt,
+                delay_steps=1,
+                initial_level=2.0
+            )
             self.physics_available = True
-        except ImportError:
-            self.logger.warning("物理模型不可用，使用简化模型")
+            self.logger.info("物理模型已加载 (CanalPoolSimulator)")
+        except ImportError as e:
+            self.logger.warning(f"物理模型不可用: {e}，使用简化模型")
             self.physics = None
             self.physics_available = False
 
@@ -149,11 +159,17 @@ class SimulationEnvironment:
     def _init_controller(self):
         """初始化控制器"""
         try:
-            from control import PoolMPC
-            self.controller = PoolMPC()
+            from control import UniversalMPCSolver
+            self.controller = UniversalMPCSolver(
+                horizon=10,
+                dt=self.dt,
+                area=1000.0,
+                delay_steps=1
+            )
             self.controller_available = True
-        except ImportError:
-            self.logger.warning("MPC控制器不可用，使用简化控制器")
+            self.logger.info("MPC控制器已加载 (UniversalMPCSolver)")
+        except ImportError as e:
+            self.logger.warning(f"MPC控制器不可用: {e}，使用简化控制器")
             self.controller = None
             self.controller_available = False
 
@@ -231,7 +247,35 @@ class SimulationEnvironment:
                 # 使用MPC控制器
                 setpoint = 2.0  # 目标水位
                 current_level = list(self.water_levels.values())[0]
-                action = self.controller.compute(current_level, setpoint)
+                
+                # Adapt for UniversalMPCSolver
+                q_prev = self.outflows.get('outflow_1', 0.0) # Use previous outflow as proxy for previous control? 
+                # Actually UniversalMPCSolver returns u_in (inflow control) usually?
+                # But here we control gate_1 which affects outflow?
+                # Let's assume we are controlling the gate for the NEXT pool or THIS pool's outflow?
+                # In CanalPoolSimulator, u_in is inflow, u_out is outflow.
+                # If we control gate_1, it usually controls outflow of pool 1 (or inflow of pool 2).
+                # Let's assume we control 'gate_1' which determines 'outflow_1'.
+                
+                # UniversalMPCSolver solves for u_in (inflow to the pool).
+                # If we are controlling a single pool, we might be controlling its inflow gate.
+                # Let's assume gate_1 controls INFLOW to pool_1.
+                
+                q_out_forecast = [10.0] * self.controller.N # Assume steady outflow demand
+                config = {
+                    'Z_ref': setpoint, 
+                    'W_level': 10.0, 
+                    'W_smooth': 5.0, 
+                    'delta_Q_max': 2.0, 
+                    'constraints': {'Q_in_max': 20.0, 'Q_in_min': 0.0}
+                }
+                
+                # Solve
+                u_in_optimal = self.controller.solve(current_level, q_prev, q_out_forecast, config)
+                
+                # Convert flow to gate position (simplified: pos = flow / 20.0)
+                action = u_in_optimal / 20.0
+                
                 return {'gate_1': max(0, min(1, action))}
             except Exception as e:
                 self.logger.warning(f"MPC控制失败: {e}")
@@ -255,26 +299,62 @@ class SimulationEnvironment:
                 new_position = current + max(-max_change, min(max_change, position - current))
                 self.gate_positions[gate] = new_position
 
-        # 更新水位（简化物理模型）
-        for pool, level in self.water_levels.items():
-            pool_id = pool.split('_')[1]
-            inflow = self.inflows.get(f'inflow_{pool_id}', 0)
-            gate_pos = self.gate_positions.get(f'gate_{pool_id}', 0.5)
-
-            # 出流取决于闸门开度和水位
-            outflow = gate_pos * 20 * (level / 2.0) ** 0.5
-            self.outflows[f'outflow_{pool_id}'] = outflow
-
-            # 水位变化
-            area = 1000  # 池面积 m²
-            delta_h = (inflow - outflow) * self.dt / area
-            new_level = max(0, level + delta_h)
-            self.water_levels[pool] = new_level
-
-            # 更新传感器读数（带测量噪声）
+        # 更新水位
+        if self.physics_available:
+            # 使用真实物理模型
+            pool_id = 'pool_1'
+            gate_id = 'gate_1'
+            
+            # Get inputs
+            gate_pos = self.gate_positions.get(gate_id, 0.5)
+            u_in = gate_pos * 20.0 # Map gate to flow
+            
+            # Assume constant outflow demand or based on downstream
+            u_out = 10.0 
+            
+            # Step physics
+            # Note: CanalPoolSimulator maintains its own state (self.H)
+            # We need to sync it or use it as source of truth
+            # Let's sync TO it first (if needed) or just use it.
+            # But CanalPoolSimulator doesn't allow setting H easily except init.
+            # So we should rely on IT.
+            
+            # However, reset() re-inits physics? No, it doesn't.
+            # We might need to reset physics state in reset().
+            
+            self.physics.step(u_in, u_out, disturbance=0.0)
+            new_level = self.physics.get_level()
+            
+            self.water_levels[pool_id] = new_level
+            self.inflows[f'inflow_{pool_id.split("_")[1]}'] = u_in
+            self.outflows[f'outflow_{pool_id.split("_")[1]}'] = u_out
+            
+            # Update sensors
             import random
             noise = random.gauss(0, 0.01)
-            self.sensor_readings[f'level_sensor_{pool_id}'] = new_level + noise
+            self.sensor_readings[f'level_sensor_{pool_id.split("_")[1]}'] = new_level + noise
+            
+        else:
+            # 简化物理模型 (Fallback)
+            for pool, level in self.water_levels.items():
+                pool_id = pool.split('_')[1]
+                inflow = self.inflows.get(f'inflow_{pool_id}', 0)
+                gate_pos = self.gate_positions.get(f'gate_{pool_id}', 0.5)
+
+                # 出流取决于闸门开度和水位
+                outflow = gate_pos * 20 * (level / 2.0) ** 0.5
+                self.outflows[f'outflow_{pool_id}'] = outflow
+
+                # 水位变化
+                area = 1000  # 池面积 m²
+                delta_h = (inflow - outflow) * self.dt / area
+                new_level = max(0, level + delta_h)
+                self.water_levels[pool] = new_level
+
+                # 更新传感器读数（带测量噪声）
+                import random
+                noise = random.gauss(0, 0.01)
+                self.sensor_readings[f'level_sensor_{pool_id}'] = new_level + noise
 
     def _check_alarms(self):
         """检查并生成报警"""

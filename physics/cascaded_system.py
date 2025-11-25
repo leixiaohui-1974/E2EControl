@@ -10,13 +10,15 @@ class CascadedCanalSystem:
     Structure: [Source] -> [Gate 0] -> [Pool 0] -> [Gate 1] -> [Pool 1] -> ... -> [Gate N] -> [Downstream]
     """
     
-    def __init__(self, num_pools: int = 3, config: Dict = None):
+    def __init__(self, num_pools: int = 3, config: Dict = None, initial_flows: List[float] = None):
         """
         Initialize the cascaded system.
         
         Args:
             num_pools: Number of pools in series.
             config: Configuration dictionary containing pool parameters.
+            initial_flows: List of initial inflow rates for each pool [Q_in_0, Q_in_1, ...].
+                           If None, defaults to 0.0.
         """
         self.num_pools = num_pools
         self.pools: List[CanalPoolSimulator] = []
@@ -27,6 +29,13 @@ class CascadedCanalSystem:
         delay = config.get('delay_steps', 1) if config else 1
         init_level = config.get('initial_level', 3.0) if config else 3.0
         
+        if initial_flows is None:
+            initial_flows = [0.0] * num_pools
+            
+        if len(initial_flows) < num_pools:
+            # Pad with last value or 0
+            initial_flows.extend([0.0] * (num_pools - len(initial_flows)))
+        
         # Initialize pools
         for i in range(num_pools):
             # Allow per-pool configuration in future
@@ -34,12 +43,13 @@ class CascadedCanalSystem:
                 area=area,
                 dt=dt,
                 delay_steps=delay,
-                initial_level=init_level
+                initial_level=init_level,
+                initial_flow=initial_flows[i]
             ))
             
         # State tracking
         self.current_levels = [init_level] * num_pools
-        self.gate_openings = [0.0] * (num_pools + 1) # Flows at gates
+        self.gate_openings = list(initial_flows) + [0.0] # Approximate gate flows
         
     def step(self, gate_flows: List[float], demands: List[float], disturbances: List[float] = None):
         """

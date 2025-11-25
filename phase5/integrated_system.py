@@ -123,6 +123,7 @@ class IntegratedWaterNetworkSystem:
             initial_level=3.0
         ) for _ in range(num_pools)]
         self.q_prev = [0.0] * num_pools  # 记录上一步的控制输入
+        self.active_faults = [] # List of active faults
         print("  ✓ MPC控制器已初始化")
         print("  ✓ 物理仿真器已初始化")
         
@@ -196,6 +197,101 @@ class IntegratedWaterNetworkSystem:
         print("✅ 系统初始化完成！")
         print("="*80)
         
+    def step(self, t: int, instruction: Optional[str] = None, enable_faults: bool = True) -> Dict:
+        """
+        执行单步仿真
+        """
+        self.current_time = t
+        
+        # 场景切换
+        if instruction:
+            print(f"\n[T={t}] 场景切换: {instruction}")
+            self.current_config = self.semantic_interpreter.interpret(instruction)
+            print(f"  ✓ 场景配置已更新")
+        
+        # 故障注入 logic
+        current_disturbances = [0.0] * self.num_pools
+        
+        # Apply active faults
+        # Remove expired faults (if we had duration, but for now manual events are one-off or persistent?)
+        # Let's assume 'flood' and 'drought' are persistent until reset, or apply for a duration.
+        # For simplicity in this demo, 'flood' adds disturbance for this step.
+        # But the UI triggers a single event.
+        # Let's make them decay or be persistent?
+        # The UI "Trigger Flood" usually implies a sudden event.
+        # Let's store them with a duration or just apply them if they are in the list.
+        
+        # Better approach: The UI sends an event. We add it to active_faults.
+        # In step, we apply them.
+        # We need a way to clear them.
+        
+        for fault in self.active_faults:
+            if fault['type'] == 'flood':
+                # Apply to all pools or specific? Default all for massive flood
+                magnitude = fault.get('magnitude', 20.0)
+                for i in range(self.num_pools):
+                    current_disturbances[i] += magnitude
+            elif fault['type'] == 'drought':
+                magnitude = fault.get('magnitude', 5.0)
+                for i in range(self.num_pools):
+                    current_disturbances[i] -= magnitude
+        
+        # Clear one-off faults if needed, or keep them?
+        # If it's a "scenario", it persists.
+        # Let's keep them until cleared.
+
+        
+        # 对每个渠池进行控制
+        step_data = {
+            'levels': [],
+            'flows_in': [],
+            'flows_out': [],
+            'anomalies': [],
+            'faults': []
+        }
+        
+        for i in range(self.num_pools):
+            pool = self.pools[i]
+            controller = self.mpc_controllers[i]
+            
+            # 获取当前状态
+            Z = pool.get_level()
+            
+            # 异常检测
+            if self.anomaly_detector and t > 5:
+                is_anomaly, anomaly_score = self.anomaly_detector.detect(Z)
+                if is_anomaly:
+                    step_data['anomalies'].append({'pool': i, 'score': anomaly_score})
+                    self.history['anomalies'].append({'time': t, 'pool': i, 'score': anomaly_score})
+            
+            # MPC控制
+            config = self.current_config.copy() if hasattr(self, 'current_config') and self.current_config else {
+                'Z_ref': 3.0, 'W_level': 10.0, 'W_smooth': 5.0, 'delta_Q_max': 2.0, 'constraints': {}
+            }
+            
+            # 求解MPC
+            try:
+                q_out_forecast = [3.0] * controller.N
+                u_in = controller.solve(Z, self.q_prev[i], q_out_forecast, config)
+                self.q_prev[i] = u_in
+            except:
+                u_in = 0.0
+            
+            u_out = u_in * 0.9
+            pool.step(u_in, u_out, disturbance=current_disturbances[i])
+            
+            # 记录
+            self.history['levels'][i].append(pool.get_level())
+            self.history['flows_in'][i].append(u_in)
+            self.history['flows_out'][i].append(u_out)
+            
+            step_data['levels'].append(pool.get_level())
+            step_data['flows_in'].append(u_in)
+            step_data['flows_out'].append(u_out)
+            
+        self.history['time'].append(t)
+        return step_data
+
     def run_simulation(
         self,
         scenario_script: List[Tuple[int, str]],
@@ -204,177 +300,19 @@ class IntegratedWaterNetworkSystem:
     ) -> Dict:
         """
         运行完整的仿真
-        
-        Args:
-            scenario_script: 场景脚本 [(时间步, 指令), ...]
-            total_steps: 总仿真步数
-            enable_faults: 是否注入故障（用于测试自愈系统）
-            
-        Returns:
-            仿真结果字典
         """
         print("\n" + "="*80)
         print(" "*25 + "开始仿真")
         print("="*80)
-        print(f"  总步数: {total_steps}")
-        print(f"  场景切换点: {len(scenario_script)}个")
-        print(f"  故障注入: {'启用' if enable_faults else '禁用'}")
         
-        # 解析场景脚本
         scenario_dict = {t: instruction for t, instruction in scenario_script}
+        self.current_config = None
         
-        # 故障注入计划（如果启用）
-        fault_schedule = []
-        if enable_faults and self.self_healing:
-            fault_schedule = [
-                (20, "传感器漂移", "sensor_level_0", "低"),
-                (50, "执行器卡死", "gate_actuator_1", "中"),
-                (75, "控制器异常", "mpc_controller_0", "中")
-            ]
-            print(f"  计划故障: {len(fault_schedule)}个")
-        
-        current_config = None
-        
-        # 主仿真循环
         for t in range(total_steps):
-            self.current_time = t
+            instruction = scenario_dict.get(t)
+            self.step(t, instruction, enable_faults)
             
-            # 场景切换
-            if t in scenario_dict:
-                instruction = scenario_dict[t]
-                print(f"\n[T={t}] 场景切换: {instruction}")
-                
-                # 使用语义解释器
-                current_config = self.semantic_interpreter.interpret(instruction)
-                print(f"  ✓ 场景配置已更新")
-            
-            # 故障注入
-            if enable_faults and self.self_healing:
-                for fault_t, fault_type, component, severity in fault_schedule:
-                    if t == fault_t:
-                        print(f"\n[T={t}] 🚨 故障注入: {fault_type} ({component}, 严重度: {severity})")
-                        
-                        # 记录故障
-                        self.history['faults'].append({
-                            'time': t,
-                            'type': fault_type,
-                            'component': component,
-                            'severity': severity
-                        })
-                        
-                        # 触发自愈
-                        healing_result = self.self_healing.detect_and_heal(
-                            fault_type=fault_type,
-                            fault_component=component,
-                            fault_severity=severity,
-                            system_state={}
-                        )
-                        
-                        # 记录自愈事件
-                        self.history['healing_events'].append({
-                            'time': t,
-                            'success': healing_result['success'],
-                            'healing_time': healing_result['healing_time']
-                        })
-                        
-                        if healing_result['success']:
-                            print(f"  ✓ 自愈成功，耗时 {healing_result['healing_time']:.1f}s")
-                        else:
-                            print(f"  ✗ 自愈失败，需要人工干预")
-            
-            # 对每个渠池进行控制
-            for i in range(self.num_pools):
-                pool = self.pools[i]
-                controller = self.mpc_controllers[i]
-                
-                # 获取当前状态
-                Z = pool.get_level()
-                
-                # 异常检测
-                if self.anomaly_detector and t > 5:  # 预热期
-                    is_anomaly, anomaly_score = self.anomaly_detector.detect(Z)
-                    
-                    if is_anomaly:
-                        print(f"[T={t}] ⚠️ 池{i+1}检测到异常 (评分: {anomaly_score:.3f})")
-                        
-                        self.history['anomalies'].append({
-                            'time': t,
-                            'pool': i,
-                            'score': anomaly_score
-                        })
-                        
-                        # 故障诊断
-                        if self.diagnosis_engine:
-                            diagnosis = self.diagnosis_engine.diagnose({
-                                'detector': '3-sigma',
-                                'value': Z,
-                                'threshold': 2.0,
-                                'consecutive': 3
-                            })
-                            
-                            if diagnosis:
-                                print(f"  → 诊断: {diagnosis['fault_type']} (严重度: {diagnosis['severity']})")
-                
-                # MPC控制
-                if current_config:
-                    # 使用当前场景配置
-                    config = current_config.copy()
-                else:
-                    # 默认配置
-                    config = {
-                        'Z_ref': 3.0,
-                        'W_level': 10.0,
-                        'W_smooth': 5.0,
-                        'delta_Q_max': 2.0,
-                        'constraints': {}
-                    }
-                
-                # 预测出流（简化）
-                q_out_forecast = [3.0] * controller.N
-                
-                # 求解MPC
-                try:
-                    u_in = controller.solve(
-                        current_level=Z,
-                        q_prev=self.q_prev[i],
-                        q_out_forecast=q_out_forecast,
-                        config=config
-                    )
-                    self.q_prev[i] = u_in
-                except Exception as e:
-                    # print(f"  MPC求解失败: {e}")
-                    u_in = 0.0
-                
-                # 模拟出流（简化）
-                u_out = u_in * 0.9
-                
-                # 更新物理状态
-                pool.step(u_in, u_out, disturbance=0.0)
-                
-                # 记录历史
-                self.history['levels'][i].append(pool.get_level())
-                self.history['flows_in'][i].append(u_in)
-                self.history['flows_out'][i].append(u_out)
-            
-            # 记录运行模式
-            if self.self_healing:
-                mode = self.self_healing.degraded_manager.current_mode.value
-            else:
-                mode = "正常模式"
-            self.history['mode'].append(mode)
-            self.history['time'].append(t)
-            
-            # 进度显示
-            if (t + 1) % 20 == 0:
-                print(f"[T={t+1}/{total_steps}] 仿真进行中... (模式: {mode})")
-        
-        print("\n" + "="*80)
-        print("✅ 仿真完成！")
-        print("="*80)
-        
-        # 生成统计报告
         self._generate_statistics()
-        
         return self.history
     
     def _generate_statistics(self):
@@ -537,19 +475,6 @@ class IntegratedWaterNetworkSystem:
         
         plt.tight_layout()
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        print(f"✓ 可视化报告已保存: {save_path}")
-        plt.close()
-    
-    def get_system_status(self) -> Dict:
-        """获取系统状态"""
-        status = {
-            'timestamp': datetime.now().isoformat(),
-            'current_time': self.current_time,
-            'num_pools': self.num_pools,
-            'modules': {
-                'mpc_control': True,
-                'digital_twin': self.digital_twin is not None,
-                'anomaly_detection': self.anomaly_detector is not None,
                 'fault_diagnosis': self.diagnosis_engine is not None,
                 'self_healing': self.self_healing is not None
             }
