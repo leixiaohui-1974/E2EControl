@@ -1,0 +1,178 @@
+# S4 - 冰期场景
+# 测试系统应对低温结冰和冰塞的能力
+
+scenarios:
+  - id: S4_ICE_001
+    name: 糙率变化
+    description: 冰盖形成导致水力糙率增加
+    category: S4_ICE
+    difficulty: 2
+    autonomous_level: L2
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C030
+        name: 糙率增加
+        description: 曼宁糙率系数增加30%
+        injection:
+          target: roughness
+          type: ramp
+          start_time: 60.0
+          end_time: 1860.0
+          magnitude: 0.3
+          parameters:
+            base_value: 0.025
+            rate: 0.00017  # 每秒增加
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.3
+      control:
+        settling_time: 600.0
+
+  - id: S4_ICE_002
+    name: 闸门冻结
+    description: 低温导致闸门响应变慢
+    category: S4_ICE
+    difficulty: 3
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C031
+        name: 闸门响应迟滞
+        description: 闸门动作速度降低50%
+        injection:
+          target: gate_1
+          type: stuck
+          start_time: 300.0
+          parameters:
+            speed_reduction: 0.5
+            response_delay: 10.0
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.4
+      control:
+        robustness: 0.7
+
+  - id: S4_ICE_003
+    name: 冰塞形成
+    description: 局部冰塞导致水位异常上涨
+    category: S4_ICE
+    difficulty: 4
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C032
+        name: 冰塞阻塞
+        description: 出流断面减小40%
+        injection:
+          target: outflow_1
+          type: step
+          start_time: 600.0
+          magnitude: -4.0  # 出流减少40%
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        max_level_deviation: 0.5
+      intelligence:
+        anomaly_detection: 0.8
+
+  - id: S4_ICE_004
+    name: 冰塞突发溃决
+    description: 冰塞突然溃决导致流量骤增
+    category: S4_ICE
+    difficulty: 5
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5  # 因冰塞导致水位偏高
+      gate_positions:
+        gate_1: 0.7
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C033
+        name: 冰塞溃决
+        description: 冰塞突然溃决，上游积水涌入
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 600.0
+          end_time: 900.0
+          magnitude: 25.0  # 短时流量激增
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        emergency_response: true
+      intelligence:
+        rapid_adaptation: 0.8
+        autonomous_decision: 0.75
+
+  - id: S4_ICE_005
+    name: 传感器冻结
+    description: 传感器因低温工作异常
+    category: S4_ICE
+    difficulty: 4
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C034
+        name: 传感器冻结
+        description: 水位传感器读数卡死
+        injection:
+          target: sensor_level_1
+          type: stuck
+          start_time: 600.0
+          end_time: 3600.0
+          magnitude: 2.0  # 卡死在2.0m
+          parameters:
+            stuck_value: 2.0
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        no_dry_out: true
+      intelligence:
+        sensor_fault_detection: 0.9
+        state_estimation: 0.8

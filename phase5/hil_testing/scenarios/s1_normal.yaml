@@ -1,0 +1,143 @@
+# S1 - 正常运行场景
+# 测试系统在标准工况下的基本控制能力
+
+scenarios:
+  - id: S1_NORMAL_001
+    name: 稳态水位保持
+    description: 测试在无扰动情况下维持目标水位±5%的能力
+    category: S1_NORMAL
+    difficulty: 1
+    autonomous_level: L1
+    duration: 300.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C001
+        name: 稳态运行
+        description: 无外部扰动的稳态运行工况
+
+    expected_response:
+      max_deviation: 0.1
+      settling_time: 60.0
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.1
+        no_overflow: true
+        no_dry_out: true
+      control:
+        settling_time: 60.0
+        overshoot: 0.05
+
+  - id: S1_NORMAL_002
+    name: 负荷跟踪
+    description: 测试系统跟踪缓慢变化的设定值的能力
+    category: S1_NORMAL
+    difficulty: 2
+    autonomous_level: L1
+    duration: 600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C002
+        name: 设定值变化
+        description: 目标水位从2.0m变化到2.5m
+        injection:
+          target: setpoint
+          type: ramp
+          start_time: 60.0
+          end_time: 300.0
+          magnitude: 0.5
+          parameters:
+            rate: 0.002  # m/s
+
+    expected_response:
+      tracking_error: 0.05
+      max_delay: 30.0
+
+    pass_criteria:
+      control:
+        tracking_error: 0.05
+        settling_time: 120.0
+
+  - id: S1_NORMAL_003
+    name: 日周期负荷变化
+    description: 模拟24小时典型用水需求周期变化
+    category: S1_NORMAL
+    difficulty: 2
+    autonomous_level: L2
+    duration: 86400.0  # 24小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C003
+        name: 日周期负荷
+        description: 模拟早晚高峰用水
+        injection:
+          target: outflow_demand
+          type: sinusoid
+          start_time: 0.0
+          magnitude: 3.0  # 振幅±3 m³/s
+          parameters:
+            period: 86400.0  # 24小时周期
+            phase: -21600.0  # 早6点达到高峰
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.2
+      control:
+        tracking_error: 0.1
+
+  - id: S1_NORMAL_004
+    name: 多池协调控制
+    description: 测试多个渠池之间的协调控制能力
+    category: S1_NORMAL
+    difficulty: 3
+    autonomous_level: L2
+    duration: 600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C004
+        name: 稳态多池运行
+        description: 三级渠池稳态运行
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.15
+      control:
+        settling_time: 180.0
+      reliability:
+        coordination_score: 0.9

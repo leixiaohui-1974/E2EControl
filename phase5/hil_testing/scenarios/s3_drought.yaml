@@ -1,0 +1,180 @@
+# S3 - 干旱场景
+# 测试系统应对水源不足和低水位运行的能力
+
+scenarios:
+  - id: S3_DROUGHT_001
+    name: 入流减少
+    description: 水源供给减少30%
+    category: S3_DROUGHT
+    difficulty: 2
+    autonomous_level: L2
+    duration: 1800.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C020
+        name: 入流阶跃减少
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 60.0
+          magnitude: -3.0  # 减少3 m³/s
+
+    expected_response:
+      min_level: 1.5
+      response_time: 60.0
+
+    pass_criteria:
+      safety:
+        no_dry_out: true
+        min_level: 1.2
+      control:
+        settling_time: 300.0
+
+  - id: S3_DROUGHT_002
+    name: 渐进式干旱
+    description: 入流在数小时内逐渐减少50%
+    category: S3_DROUGHT
+    difficulty: 3
+    autonomous_level: L2
+    duration: 14400.0  # 4小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C021
+        name: 渐进入流减少
+        injection:
+          target: inflow_1
+          type: ramp
+          start_time: 60.0
+          end_time: 7260.0
+          magnitude: -5.0
+          parameters:
+            rate: -0.0007  # m³/s per second
+
+    pass_criteria:
+      safety:
+        no_dry_out: true
+        min_level: 1.0
+      control:
+        tracking_error: 0.15
+      intelligence:
+        predictive_control: 0.7
+
+  - id: S3_DROUGHT_003
+    name: 间歇性供水
+    description: 水源供给出现间歇性中断
+    category: S3_DROUGHT
+    difficulty: 4
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C022
+        name: 间歇性入流
+        injection:
+          target: inflow_1
+          type: intermittent
+          start_time: 300.0
+          end_time: 6000.0
+          magnitude: -8.0  # 减少到2 m³/s
+          parameters:
+            on_duration: 600.0
+            off_duration: 300.0
+
+    pass_criteria:
+      safety:
+        no_dry_out: true
+        min_level: 0.8
+      intelligence:
+        pattern_recognition: 0.75
+
+  - id: S3_DROUGHT_004
+    name: 需求优先级管理
+    description: 水源不足时的用水优先级调度
+    category: S3_DROUGHT
+    difficulty: 4
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C023
+        name: 水源不足
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 300.0
+          magnitude: -8.0  # 入流减少到7 m³/s
+
+    pass_criteria:
+      safety:
+        no_dry_out: true
+      intelligence:
+        priority_management: 0.8
+        decision_making: 0.75
+
+  - id: S3_DROUGHT_005
+    name: 极端干旱应急
+    description: 严重水源短缺下的应急运行
+    category: S3_DROUGHT
+    difficulty: 5
+    autonomous_level: L4
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 1.8
+      gate_positions:
+        gate_1: 0.3
+      inflows:
+        inflow_1: 8.0
+
+    conditions:
+      - id: C024
+        name: 极端缺水
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 60.0
+          magnitude: -5.0  # 入流减少到3 m³/s
+
+    pass_criteria:
+      safety:
+        no_dry_out: true
+        emergency_protocol: true
+      intelligence:
+        autonomous_decision: 0.8

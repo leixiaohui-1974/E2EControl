@@ -1,0 +1,304 @@
+# S6 - 设备故障场景
+# 测试系统应对传感器、执行器和通信故障的能力
+
+scenarios:
+  - id: S6_EQUIPMENT_001
+    name: 传感器偏差
+    description: 水位传感器出现渐变偏差
+    category: S6_EQUIPMENT
+    difficulty: 2
+    autonomous_level: L2
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C050
+        name: 传感器漂移
+        injection:
+          target: sensor_level_1
+          type: drift
+          start_time: 300.0
+          end_time: 3300.0
+          magnitude: 0.3  # 最终漂移0.3m
+          parameters:
+            drift_rate: 0.0001  # m/s
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.2
+      intelligence:
+        drift_detection: 0.8
+        compensation_accuracy: 0.7
+
+  - id: S6_EQUIPMENT_002
+    name: 传感器噪声增大
+    description: 传感器测量噪声异常增大
+    category: S6_EQUIPMENT
+    difficulty: 2
+    autonomous_level: L2
+    duration: 1800.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C051
+        name: 噪声增大
+        injection:
+          target: sensor_level_1
+          type: noise
+          start_time: 60.0
+          magnitude: 0.2  # 标准差0.2m
+          parameters:
+            noise_type: gaussian
+            std_dev: 0.2
+
+    pass_criteria:
+      control:
+        stability: 0.8
+      intelligence:
+        noise_filtering: 0.75
+
+  - id: S6_EQUIPMENT_003
+    name: 传感器完全失效
+    description: 主水位传感器完全失效
+    category: S6_EQUIPMENT
+    difficulty: 3
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C052
+        name: 传感器失效
+        injection:
+          target: sensor_level_1
+          type: stuck
+          start_time: 600.0
+          parameters:
+            failure_mode: constant
+            stuck_value: 2.0
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        no_dry_out: true
+      intelligence:
+        failure_detection: 0.95
+        backup_switching: 0.9
+        state_estimation: 0.8
+
+  - id: S6_EQUIPMENT_004
+    name: 闸门卡死
+    description: 闸门在某一位置卡死不动
+    category: S6_EQUIPMENT
+    difficulty: 4
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C053
+        name: 闸门卡死
+        injection:
+          target: gate_1
+          type: stuck
+          start_time: 600.0
+          parameters:
+            stuck_position: 0.5
+            failure_mode: mechanical
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.4
+      intelligence:
+        failure_detection: 0.9
+        degraded_mode_operation: 0.8
+
+  - id: S6_EQUIPMENT_005
+    name: 闸门响应异常
+    description: 闸门响应与指令不符
+    category: S6_EQUIPMENT
+    difficulty: 4
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C054
+        name: 执行器故障
+        injection:
+          target: gate_1
+          type: bias
+          start_time: 300.0
+          magnitude: -0.1  # 实际开度比指令小10%
+          parameters:
+            bias_type: multiplicative
+            bias_factor: 0.9
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.3
+      intelligence:
+        anomaly_detection: 0.85
+        adaptive_control: 0.8
+
+  - id: S6_EQUIPMENT_006
+    name: 通信中断
+    description: 控制器与远程传感器通信中断
+    category: S6_EQUIPMENT
+    difficulty: 4
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C055
+        name: 通信故障
+        injection:
+          target: communication_pool_2
+          type: intermittent
+          start_time: 600.0
+          end_time: 2400.0
+          parameters:
+            on_duration: 60.0
+            off_duration: 120.0
+
+    pass_criteria:
+      safety:
+        continuity: 0.9
+      reliability:
+        graceful_degradation: 0.85
+
+  - id: S6_EQUIPMENT_007
+    name: 多传感器故障
+    description: 多个传感器同时出现故障
+    category: S6_EQUIPMENT
+    difficulty: 5
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C056_A
+        name: 传感器1漂移
+        injection:
+          target: sensor_level_1
+          type: drift
+          start_time: 300.0
+          magnitude: 0.2
+      - id: C056_B
+        name: 传感器2噪声
+        injection:
+          target: sensor_level_2
+          type: noise
+          start_time: 600.0
+          magnitude: 0.15
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.4
+      intelligence:
+        multi_fault_diagnosis: 0.8
+        robust_control: 0.75
+
+  - id: S6_EQUIPMENT_008
+    name: 级联故障
+    description: 一个故障引发的连锁反应
+    category: S6_EQUIPMENT
+    difficulty: 5
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C057_A
+        name: 闸门1故障
+        injection:
+          target: gate_1
+          type: stuck
+          start_time: 600.0
+          parameters:
+            stuck_position: 0.8
+      - id: C057_B
+        name: 水位上涨触发
+        description: 上游水位上涨对下游的影响
+        injection:
+          target: cascade_effect
+          type: conditional
+          start_time: 600.0
+          parameters:
+            trigger_condition: pool_1_level > 2.5
+            affected_pools: [pool_2, pool_3]
+
+    pass_criteria:
+      safety:
+        cascade_prevention: true
+        no_overflow: true
+      intelligence:
+        predictive_diagnosis: 0.8
+        preventive_action: 0.75

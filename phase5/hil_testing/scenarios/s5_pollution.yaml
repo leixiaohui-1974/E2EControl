@@ -1,0 +1,197 @@
+# S5 - 污染场景
+# 测试系统应对水质污染事件的能力
+
+scenarios:
+  - id: S5_POLLUTION_001
+    name: 点源污染检测
+    description: 检测并响应单点污染源排放
+    category: S5_POLLUTION
+    difficulty: 3
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      water_quality:
+        cod: 20.0  # mg/L
+        ammonia: 0.5  # mg/L
+
+    conditions:
+      - id: C040
+        name: 点源污染
+        description: 上游点源排放导致COD突增
+        injection:
+          target: water_quality_cod
+          type: pulse
+          start_time: 600.0
+          end_time: 1200.0
+          magnitude: 80.0  # COD升至100 mg/L
+          parameters:
+            pollutant: COD
+            threshold: 40.0
+
+    expected_response:
+      detection_time: 60.0
+      isolation_time: 120.0
+
+    pass_criteria:
+      safety:
+        pollution_contained: true
+        downstream_protection: true
+      intelligence:
+        detection_accuracy: 0.9
+        response_time: 120.0
+
+  - id: S5_POLLUTION_002
+    name: 面源污染
+    description: 雨后面源污染冲刷进入渠道
+    category: S5_POLLUTION
+    difficulty: 3
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      water_quality:
+        turbidity: 10.0  # NTU
+        ss: 30.0  # mg/L
+
+    conditions:
+      - id: C041
+        name: 面源冲刷
+        description: 暴雨后农业面源污染
+        injection:
+          target: water_quality_ss
+          type: ramp
+          start_time: 300.0
+          end_time: 1800.0
+          magnitude: 200.0  # SS升至230 mg/L
+          parameters:
+            pollutants: [SS, turbidity]
+
+    pass_criteria:
+      safety:
+        max_ss: 300.0
+      intelligence:
+        source_identification: 0.7
+
+  - id: S5_POLLUTION_003
+    name: 污染物传播
+    description: 污染物在级联渠池中的传播与稀释
+    category: S5_POLLUTION
+    difficulty: 4
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C042
+        name: 上游污染
+        injection:
+          target: water_quality_cod_pool_1
+          type: pulse
+          start_time: 600.0
+          end_time: 1200.0
+          magnitude: 60.0
+
+    pass_criteria:
+      safety:
+        downstream_cod: 30.0  # mg/L
+      intelligence:
+        propagation_prediction: 0.8
+        dilution_control: 0.75
+
+  - id: S5_POLLUTION_004
+    name: 污染源定位
+    description: 利用多传感器数据定位未知污染源
+    category: S5_POLLUTION
+    difficulty: 4
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C043
+        name: 隐蔽污染源
+        description: 未知位置的污染排放
+        injection:
+          target: water_quality_cod_pool_2
+          type: step
+          start_time: 300.0
+          magnitude: 40.0
+          parameters:
+            source_location: unknown
+
+    pass_criteria:
+      intelligence:
+        source_localization: 0.8
+        false_alarm_rate: 0.1
+
+  - id: S5_POLLUTION_005
+    name: 应急隔离与冲洗
+    description: 严重污染事件的应急响应
+    category: S5_POLLUTION
+    difficulty: 5
+    autonomous_level: L4
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C044
+        name: 严重污染
+        injection:
+          target: water_quality_cod_pool_1
+          type: step
+          start_time: 600.0
+          magnitude: 150.0  # 严重超标
+
+    pass_criteria:
+      safety:
+        pollution_contained: true
+        emergency_isolation: true
+      intelligence:
+        autonomous_decision: 0.85
+        recovery_planning: 0.8

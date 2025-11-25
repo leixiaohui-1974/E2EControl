@@ -1,0 +1,327 @@
+# S7 - 安全攻击场景
+# 测试系统应对网络安全攻击的能力
+
+scenarios:
+  - id: S7_SECURITY_001
+    name: 传感器数据篡改
+    description: 检测和应对传感器数据被篡改的攻击
+    category: S7_SECURITY
+    difficulty: 3
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C060
+        name: FDIA攻击
+        description: 虚假数据注入攻击 - 传感器读数被篡改
+        injection:
+          target: sensor_level_1
+          type: fdia
+          start_time: 600.0
+          end_time: 2400.0
+          magnitude: -0.5  # 篡改使读数偏低0.5m
+          parameters:
+            attack_type: bias
+            stealth: true
+            ramp_up: 300.0
+
+    expected_response:
+      detection_time: 300.0
+      mitigation_time: 120.0
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        attack_mitigated: true
+      intelligence:
+        attack_detection: 0.9
+        false_alarm_rate: 0.05
+        resilience: 0.85
+
+  - id: S7_SECURITY_002
+    name: 渐进式数据篡改
+    description: 缓慢渐进的数据篡改攻击，难以被常规方法检测
+    category: S7_SECURITY
+    difficulty: 4
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C061
+        name: 隐蔽FDIA攻击
+        injection:
+          target: sensor_level_1
+          type: fdia
+          start_time: 600.0
+          end_time: 6600.0
+          parameters:
+            attack_type: ramp
+            rate: 0.00008  # 每秒漂移0.08mm，难以察觉
+            stealth: true
+
+    pass_criteria:
+      safety:
+        max_actual_deviation: 0.5
+      intelligence:
+        stealth_attack_detection: 0.8
+        adaptive_threshold: 0.75
+
+  - id: S7_SECURITY_003
+    name: 执行器指令注入
+    description: 攻击者注入恶意闸门控制指令
+    category: S7_SECURITY
+    difficulty: 4
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C062
+        name: 指令注入攻击
+        injection:
+          target: gate_1_command
+          type: fdia
+          start_time: 600.0
+          end_time: 1200.0
+          parameters:
+            attack_type: command_override
+            malicious_command: 1.0  # 强制全开
+            stealth: false
+
+    pass_criteria:
+      safety:
+        command_validation: true
+        emergency_override: true
+      intelligence:
+        anomaly_detection: 0.95
+        automatic_isolation: 0.9
+
+  - id: S7_SECURITY_004
+    name: 拒绝服务攻击
+    description: 通信系统被DoS攻击导致间歇性中断
+    category: S7_SECURITY
+    difficulty: 4
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C063
+        name: DoS攻击
+        injection:
+          target: communication
+          type: intermittent
+          start_time: 300.0
+          end_time: 2700.0
+          parameters:
+            availability: 0.3  # 仅30%时间可用
+            attack_pattern: random
+
+    pass_criteria:
+      safety:
+        continuity: 0.8
+      reliability:
+        graceful_degradation: 0.9
+        local_autonomy: 0.85
+
+  - id: S7_SECURITY_005
+    name: 协调攻击
+    description: 多点同时攻击，综合测试系统韧性
+    category: S7_SECURITY
+    difficulty: 5
+    autonomous_level: L5
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C064_A
+        name: 传感器攻击
+        injection:
+          target: sensor_level_1
+          type: fdia
+          start_time: 600.0
+          magnitude: -0.3
+      - id: C064_B
+        name: 执行器攻击
+        injection:
+          target: gate_2_command
+          type: fdia
+          start_time: 900.0
+          parameters:
+            malicious_command: 0.2  # 强制关小
+      - id: C064_C
+        name: 通信攻击
+        injection:
+          target: communication_pool_3
+          type: intermittent
+          start_time: 1200.0
+          end_time: 3600.0
+          parameters:
+            availability: 0.5
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        no_dry_out: true
+        system_integrity: true
+      intelligence:
+        coordinated_attack_detection: 0.85
+        multi_threat_response: 0.8
+        full_autonomy: 0.75
+
+  - id: S7_SECURITY_006
+    name: 重放攻击
+    description: 攻击者重放历史数据欺骗系统
+    category: S7_SECURITY
+    difficulty: 4
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C065
+        name: 重放攻击
+        description: 重放1小时前的传感器数据
+        injection:
+          target: sensor_level_1
+          type: fdia
+          start_time: 600.0
+          end_time: 2400.0
+          parameters:
+            attack_type: replay
+            replay_offset: -3600  # 重放1小时前的数据
+            data_source: historical
+
+    pass_criteria:
+      safety:
+        attack_mitigated: true
+      intelligence:
+        replay_detection: 0.85
+        timestamp_validation: 0.9
+
+  - id: S7_SECURITY_007
+    name: 模型欺骗攻击
+    description: 针对系统预测模型的对抗性攻击
+    category: S7_SECURITY
+    difficulty: 5
+    autonomous_level: L5
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C066
+        name: 对抗性扰动
+        description: 精心设计的扰动欺骗MPC预测模型
+        injection:
+          target: inflow_1
+          type: noise
+          start_time: 300.0
+          parameters:
+            noise_type: adversarial
+            adversarial_objective: maximize_prediction_error
+            amplitude: 0.5
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.4
+      intelligence:
+        adversarial_robustness: 0.8
+        model_uncertainty_estimation: 0.75
+
+  - id: S7_SECURITY_008
+    name: 供应链攻击模拟
+    description: 模拟被篡改的固件或配置导致的异常行为
+    category: S7_SECURITY
+    difficulty: 5
+    autonomous_level: L5
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C067
+        name: 固件后门
+        description: 闸门控制器固件中的隐藏后门在特定条件下激活
+        injection:
+          target: gate_2
+          type: conditional
+          start_time: 0.0
+          parameters:
+            trigger_condition: pool_2_level > 2.3 AND time > 7200
+            malicious_action: stuck_closed
+            detection_difficulty: high
+
+    pass_criteria:
+      safety:
+        anomaly_contained: true
+        fail_safe: true
+      intelligence:
+        behavioral_anomaly_detection: 0.8
+        zero_day_response: 0.7
