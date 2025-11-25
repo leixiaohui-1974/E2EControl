@@ -195,3 +195,141 @@ scenarios:
       intelligence:
         autonomous_decision: 0.85
         recovery_planning: 0.8
+
+  # S5.06 备用水源切换
+  - id: S5_POLLUTION_006
+    name: 备用水源切换
+    description: 污染发生时快速切换到备用水源
+    category: S5_POLLUTION
+    difficulty: 4
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        backup_gate: 0.0
+      inflows:
+        inflow_1: 10.0
+        backup_inflow: 0.0
+      water_quality:
+        cod: 20.0
+
+    conditions:
+      - id: C045_A
+        name: 主水源污染
+        injection:
+          target: water_quality_cod
+          type: step
+          start_time: 600.0
+          magnitude: 80.0  # COD超标
+      - id: C045_B
+        name: 切换触发
+        description: 检测到污染后切换水源
+        injection:
+          target: source_switch
+          type: conditional
+          start_time: 600.0
+          parameters:
+            trigger: cod > 50
+            action: switch_to_backup
+
+    pass_criteria:
+      safety:
+        downstream_protected: true
+        supply_continuity: 0.9
+      intelligence:
+        detection_time: 120.0
+        switch_time: 300.0
+
+  # S5.07 污染恢复
+  - id: S5_POLLUTION_007
+    name: 污染恢复
+    description: 污染清除后的供水恢复
+    category: S5_POLLUTION
+    difficulty: 3
+    autonomous_level: L2
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 1.5  # 因隔离导致水位下降
+      gate_positions:
+        gate_1: 0.0  # 隔离状态
+        gate_2: 0.3
+        gate_3: 0.5
+      inflows:
+        inflow_1: 10.0
+      water_quality:
+        cod: 35.0  # 正在恢复中
+
+    conditions:
+      - id: C046
+        name: 恢复供水
+        description: COD逐渐降至正常后恢复供水
+        injection:
+          target: water_quality_cod
+          type: ramp
+          start_time: 0.0
+          end_time: 7200.0
+          magnitude: -15.0  # COD从35降到20
+
+    pass_criteria:
+      safety:
+        quality_verified: true
+        gradual_restoration: true
+      control:
+        restoration_time: 10800.0
+        smooth_transition: 0.85
+
+  # S5.08 多源污染
+  - id: S5_POLLUTION_008
+    name: 多源污染
+    description: 多点同时发生污染事件
+    category: S5_POLLUTION
+    difficulty: 5
+    autonomous_level: L4
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C047_A
+        name: 污染源1
+        injection:
+          target: water_quality_cod_pool_1
+          type: pulse
+          start_time: 600.0
+          end_time: 3600.0
+          magnitude: 60.0
+      - id: C047_B
+        name: 污染源2
+        injection:
+          target: water_quality_ammonia_pool_3
+          type: step
+          start_time: 1800.0
+          magnitude: 5.0  # 氨氮超标
+
+    pass_criteria:
+      safety:
+        all_sources_contained: true
+        no_cross_contamination: true
+      intelligence:
+        multi_source_tracking: 0.85
+        coordinated_response: 0.8

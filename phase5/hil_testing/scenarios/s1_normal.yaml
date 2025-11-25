@@ -141,3 +141,334 @@ scenarios:
         settling_time: 180.0
       reliability:
         coordination_score: 0.9
+
+  # S1.05 需求突变
+  - id: S1_NORMAL_005
+    name: 需求突变
+    description: 用水需求在短时间内发生大幅变化
+    category: S1_NORMAL
+    difficulty: 3
+    autonomous_level: L2
+    duration: 1800.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C005
+        name: 需求阶跃
+        description: 下游需求从10m³/s突增到18m³/s
+        injection:
+          target: outflow_demand
+          type: step
+          start_time: 300.0
+          magnitude: 8.0
+
+    expected_response:
+      max_reaction_time: 30.0
+      max_settling_time: 300.0
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.25
+        no_dry_out: true
+      control:
+        settling_time: 300.0
+        overshoot: 0.1
+
+  # S1.06 节假日模式
+  - id: S1_NORMAL_006
+    name: 节假日模式
+    description: 周末/节假日特殊需求模式识别与应对
+    category: S1_NORMAL
+    difficulty: 2
+    autonomous_level: L2
+    duration: 172800.0  # 48小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C006
+        name: 节假日需求模式
+        description: 模拟周末用水需求下降20%后回升
+        injection:
+          target: outflow_demand
+          type: sinusoid
+          start_time: 0.0
+          magnitude: 2.0
+          parameters:
+            period: 86400.0
+            baseline_reduction: 0.8  # 基准降低20%
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.15
+      intelligence:
+        pattern_recognition: 0.8
+        adaptive_scheduling: 0.75
+
+  # S1.07 季节转换
+  - id: S1_NORMAL_007
+    name: 季节转换
+    description: 春夏/秋冬季节过渡期间的需求变化
+    category: S1_NORMAL
+    difficulty: 2
+    autonomous_level: L2
+    duration: 604800.0  # 7天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C007
+        name: 季节需求变化
+        description: 需求从夏季高峰逐渐过渡到秋季低谷
+        injection:
+          target: outflow_demand
+          type: ramp
+          start_time: 0.0
+          end_time: 604800.0
+          magnitude: -3.0  # 需求减少30%
+          parameters:
+            rate: -0.0000049  # m³/s per second
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.2
+      control:
+        tracking_error: 0.1
+      intelligence:
+        trend_prediction: 0.7
+
+  # S1.08 水源切换
+  - id: S1_NORMAL_008
+    name: 水源切换
+    description: 多水源供水系统中的水源切换调度
+    category: S1_NORMAL
+    difficulty: 3
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.3
+      inflows:
+        inflow_1: 10.0
+        inflow_2: 5.0
+
+    conditions:
+      - id: C008_A
+        name: 主水源切断
+        injection:
+          target: inflow_1
+          type: ramp
+          start_time: 300.0
+          end_time: 600.0
+          magnitude: -10.0
+      - id: C008_B
+        name: 备用水源启动
+        injection:
+          target: inflow_2
+          type: ramp
+          start_time: 300.0
+          end_time: 900.0
+          magnitude: 8.0
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.3
+        no_dry_out: true
+      control:
+        transition_smoothness: 0.8
+      reliability:
+        source_switching_time: 300.0
+
+  # S1.09 精确调水
+  - id: S1_NORMAL_009
+    name: 精确调水
+    description: 高精度水位控制要求 (±2cm)
+    category: S1_NORMAL
+    difficulty: 3
+    autonomous_level: L3
+    duration: 1800.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C009
+        name: 精确水位控制
+        description: 维持目标水位2.0m±2cm
+        injection:
+          target: inflow_1
+          type: noise
+          start_time: 0.0
+          magnitude: 0.5
+          parameters:
+            noise_type: gaussian
+            std_dev: 0.5
+
+    expected_response:
+      max_deviation: 0.02
+
+    pass_criteria:
+      control:
+        max_deviation: 0.02
+        settling_time: 60.0
+        precision_score: 0.95
+      intelligence:
+        disturbance_rejection: 0.9
+
+  # S1.10 经济调度
+  - id: S1_NORMAL_010
+    name: 经济调度
+    description: 分时电价下的能耗优化调度
+    category: S1_NORMAL
+    difficulty: 3
+    autonomous_level: L3
+    duration: 86400.0  # 24小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C010_ECON
+        name: 分时电价
+        description: 峰谷电价模式下的优化运行
+        injection:
+          target: electricity_price
+          type: step_sequence
+          start_time: 0.0
+          parameters:
+            schedule:
+              - time: 0
+                price: 0.5      # 夜间谷价
+              - time: 25200     # 7:00
+                price: 0.8      # 平价
+              - time: 32400     # 9:00
+                price: 1.2      # 峰价
+              - time: 43200     # 12:00
+                price: 0.8      # 平价
+              - time: 64800     # 18:00
+                price: 1.2      # 峰价
+              - time: 79200     # 22:00
+                price: 0.5      # 谷价
+
+    pass_criteria:
+      control:
+        demand_satisfaction: 0.98
+      intelligence:
+        cost_optimization: 0.2  # 成本节省20%以上
+        load_shifting: 0.7
+
+  # S1.11 多目标平衡
+  - id: S1_NORMAL_011
+    name: 多目标平衡
+    description: 效率、安全、经济多目标权衡决策
+    category: S1_NORMAL
+    difficulty: 4
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C011_MULTI
+        name: 多目标冲突
+        description: 需求增加与能耗限制的冲突
+        injection:
+          target: outflow_demand
+          type: step
+          start_time: 600.0
+          magnitude: 5.0
+          parameters:
+            energy_limit: 0.9  # 能耗限制在90%
+            safety_priority: high
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.3
+      control:
+        demand_satisfaction: 0.9
+      intelligence:
+        multi_objective_balance: 0.8
+        pareto_optimality: 0.75
+
+  # S1.12 长期优化
+  - id: S1_NORMAL_012
+    name: 长期优化
+    description: 月度/年度运行优化策略
+    category: S1_NORMAL
+    difficulty: 4
+    autonomous_level: L4
+    duration: 2592000.0  # 30天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C012_LONG
+        name: 长期运行优化
+        description: 考虑季节性变化的长期优化
+        injection:
+          target: inflow_1
+          type: sinusoid
+          start_time: 0.0
+          magnitude: 3.0
+          parameters:
+            period: 2592000.0  # 月周期
+            trend: -0.5  # 整体下降趋势
+
+    pass_criteria:
+      control:
+        average_deviation: 0.1
+      intelligence:
+        long_term_planning: 0.8
+        adaptive_strategy: 0.75
+      reliability:
+        system_availability: 0.999

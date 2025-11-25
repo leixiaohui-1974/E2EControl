@@ -178,3 +178,131 @@ scenarios:
         emergency_protocol: true
       intelligence:
         autonomous_decision: 0.8
+
+  # S3.06 蓄水保障
+  - id: S3_DROUGHT_006
+    name: 蓄水保障
+    description: 保障最低蓄水量的运行策略
+    category: S3_DROUGHT
+    difficulty: 3
+    autonomous_level: L3
+    duration: 86400.0  # 24小时
+
+    initial_state:
+      water_levels:
+        pool_1: 1.8  # 接近最低运行水位
+      gate_positions:
+        gate_1: 0.3
+      inflows:
+        inflow_1: 6.0
+
+    conditions:
+      - id: C025
+        name: 最低蓄水
+        description: 维持最低蓄水量同时满足基本需求
+        injection:
+          target: outflow_demand
+          type: step
+          start_time: 0.0
+          magnitude: 0.0  # 基本需求不变
+          parameters:
+            min_storage: 1.5
+            priority_users: [essential_services]
+
+    pass_criteria:
+      safety:
+        min_level: 1.5
+        no_dry_out: true
+      intelligence:
+        storage_management: 0.85
+        demand_balancing: 0.8
+
+  # S3.07 用户限流
+  - id: S3_DROUGHT_007
+    name: 用户限流
+    description: 动态限制用户用水量
+    category: S3_DROUGHT
+    difficulty: 4
+    autonomous_level: L3
+    duration: 43200.0  # 12小时
+
+    initial_state:
+      water_levels:
+        pool_1: 1.6
+        pool_2: 1.6
+        pool_3: 1.6
+      gate_positions:
+        gate_1: 0.25
+        gate_2: 0.25
+        gate_3: 0.25
+      inflows:
+        inflow_1: 8.0
+
+    conditions:
+      - id: C026
+        name: 限流调度
+        description: 根据水位动态调整各用户限流比例
+        injection:
+          target: inflow_1
+          type: ramp
+          start_time: 0.0
+          end_time: 21600.0
+          magnitude: -3.0  # 入流继续减少
+          parameters:
+            user_priorities:
+              residential: 0.9
+              industrial: 0.6
+              agricultural: 0.4
+
+    pass_criteria:
+      safety:
+        no_dry_out: true
+        essential_supply: true
+      intelligence:
+        fair_allocation: 0.8
+        dynamic_adjustment: 0.75
+
+  # S3.08 旱涝急转
+  - id: S3_DROUGHT_008
+    name: 旱涝急转
+    description: 干旱转暴雨过渡期的快速响应
+    category: S3_DROUGHT
+    difficulty: 5
+    autonomous_level: L4
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 1.5  # 干旱期低水位
+      gate_positions:
+        gate_1: 0.2
+      inflows:
+        inflow_1: 5.0
+
+    conditions:
+      - id: C027_A
+        name: 干旱状态
+        description: 维持干旱运行模式
+        injection:
+          target: mode
+          type: step
+          start_time: 0.0
+          parameters:
+            operation_mode: drought
+      - id: C027_B
+        name: 暴雨来袭
+        description: 突发暴雨导致入流急剧增加
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 3600.0
+          end_time: 7200.0
+          magnitude: 25.0  # 入流从5突增到30m³/s
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        mode_switch_safe: true
+      intelligence:
+        rapid_mode_switch: 0.9
+        predictive_response: 0.85

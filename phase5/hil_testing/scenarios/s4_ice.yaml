@@ -176,3 +176,132 @@ scenarios:
       intelligence:
         sensor_fault_detection: 0.9
         state_estimation: 0.8
+
+  # S4.06 冰期流速控制
+  - id: S4_ICE_006
+    name: 冰期流速控制
+    description: 控制流速防止冰盖破坏
+    category: S4_ICE
+    difficulty: 4
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      ice_cover:
+        thickness: 0.3  # 冰盖厚度30cm
+        status: stable
+
+    conditions:
+      - id: C035
+        name: 流速控制
+        description: 下游需求增加但需控制流速
+        injection:
+          target: outflow_demand
+          type: step
+          start_time: 600.0
+          magnitude: 5.0
+          parameters:
+            max_velocity: 0.8  # m/s
+            ice_protection: true
+
+    pass_criteria:
+      safety:
+        max_velocity: 0.8
+        ice_cover_intact: true
+      control:
+        demand_satisfaction: 0.8
+        velocity_control: 0.9
+
+  # S4.07 水温异常
+  - id: S4_ICE_007
+    name: 水温异常
+    description: 异常低温导致的运行调整
+    category: S4_ICE
+    difficulty: 3
+    autonomous_level: L2
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      temperature: 2.0  # 接近冰点
+
+    conditions:
+      - id: C036
+        name: 极端低温
+        description: 水温降至0°C附近
+        injection:
+          target: temperature
+          type: ramp
+          start_time: 0.0
+          end_time: 7200.0
+          magnitude: -2.0  # 温度从2°C降到0°C
+
+    pass_criteria:
+      safety:
+        no_pipe_freeze: true
+        operational_continuity: true
+      intelligence:
+        temperature_monitoring: 0.85
+        preventive_measures: 0.8
+
+  # S4.08 综合冰期管理
+  - id: S4_ICE_008
+    name: 综合冰期管理
+    description: 多因素复合的冰期运行管理
+    category: S4_ICE
+    difficulty: 5
+    autonomous_level: L4
+    duration: 86400.0  # 24小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.2
+        pool_2: 2.0
+        pool_3: 1.8
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 12.0
+      temperature: 1.0
+      ice_cover:
+        pool_1: 0.2
+        pool_2: 0.25
+        pool_3: 0.3
+
+    conditions:
+      - id: C037_A
+        name: 糙率变化
+        injection:
+          target: roughness
+          type: ramp
+          start_time: 0.0
+          end_time: 43200.0
+          magnitude: 0.4
+      - id: C037_B
+        name: 局部冰塞
+        injection:
+          target: outflow_2
+          type: step
+          start_time: 21600.0
+          magnitude: -3.0
+
+    pass_criteria:
+      safety:
+        all_pools_safe: true
+        no_ice_damage: true
+      intelligence:
+        multi_factor_management: 0.8
+        predictive_control: 0.75

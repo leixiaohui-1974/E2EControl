@@ -302,3 +302,83 @@ scenarios:
       intelligence:
         predictive_diagnosis: 0.8
         preventive_action: 0.75
+
+  # S6.09 渐进退化
+  - id: S6_EQUIPMENT_009
+    name: 渐进退化
+    description: 设备性能逐渐退化的检测与应对
+    category: S6_EQUIPMENT
+    difficulty: 3
+    autonomous_level: L3
+    duration: 86400.0  # 24小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C058
+        name: 闸门退化
+        description: 闸门密封性能逐渐下降
+        injection:
+          target: gate_1
+          type: drift
+          start_time: 0.0
+          end_time: 86400.0
+          parameters:
+            leakage_increase: 0.02  # 每小时泄漏增加2%
+            response_degradation: 0.001  # 响应速度逐渐变慢
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.3
+      intelligence:
+        degradation_detection: 0.85
+        maintenance_prediction: 0.8
+        compensatory_control: 0.75
+
+  # S6.10 误报警
+  - id: S6_EQUIPMENT_010
+    name: 误报警
+    description: 区分真实故障与虚假报警
+    category: S6_EQUIPMENT
+    difficulty: 3
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C059_A
+        name: 虚假高水位报警
+        injection:
+          target: alarm_level_high
+          type: pulse
+          start_time: 600.0
+          end_time: 900.0
+          parameters:
+            alarm_type: false_positive
+            sensor_source: level_1
+      - id: C059_B
+        name: 真实故障
+        injection:
+          target: sensor_level_1
+          type: drift
+          start_time: 3600.0
+          magnitude: 0.15
+
+    pass_criteria:
+      intelligence:
+        false_alarm_rejection: 0.9
+        true_fault_detection: 0.95
+        alarm_validation: 0.85
