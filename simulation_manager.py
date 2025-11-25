@@ -60,6 +60,7 @@ class SimulationManager:
                 config=config
             )
 
+
             # D. Physics: Execute Step
             q_out_actual = self.demands[t]
             self.physics.step(q_in_command=q_in_cmd, q_out=q_out_actual)
