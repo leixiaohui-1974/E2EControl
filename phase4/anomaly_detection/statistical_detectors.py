@@ -5,10 +5,17 @@
 
 import numpy as np
 from typing import Optional
-from base_detector import (
-    BaseDetector, AnomalyReport, AnomalyType, 
-    SeverityLevel, calculate_severity
-)
+
+try:
+    from base_detector import (
+        BaseDetector, AnomalyReport, AnomalyType, 
+        SeverityLevel, calculate_severity
+    )
+except ImportError:
+    from .base_detector import (
+        BaseDetector, AnomalyReport, AnomalyType, 
+        SeverityLevel, calculate_severity
+    )
 
 
 class ThreeSigmaDetector(BaseDetector):
