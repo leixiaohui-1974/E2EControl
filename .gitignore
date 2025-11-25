@@ -69,3 +69,9 @@ Thumbs.db
 # Project Specific
 simulation_data.db
 smart_pool.log
+
+# Docker
+.env
+data/
+reports/
+docker/grafana/dashboards/*.json
