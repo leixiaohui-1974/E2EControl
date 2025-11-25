@@ -148,3 +148,27 @@
 [2025-11-25T13:00:33.014184] ERROR - Get history failed: 'simulation'
 [2025-11-25T13:05:41.194876] INFO - logger.info - Starting API Server: http://0.0.0.0:5000
 [2025-11-25T13:06:32.357186] ERROR - Get history failed: 'simulation'
+[2025-11-25T06:54:05.693076] INFO - logger.info - Starting API Server: http://0.0.0.0:5000
+[2025-11-25T06:54:32.420525] INFO - logger.info - Starting API Server: http://0.0.0.0:5000
+[2025-11-25T06:55:15.042856] INFO - logger.info - 语义解释器初始化完成，加载 5 个场景
+[2025-11-25T06:55:15.044463] INFO - logger.info - 模糊匹配场景: 正常供水 (置信度: 0.90)
+[2025-11-25T06:55:15.048457] INFO - logger.info - 数据库初始化完成: simulation_data.db
+[2025-11-25T06:55:15.049495] INFO - logger.info - 数据库连接已关闭
+[2025-11-25T06:55:15.051636] INFO - logger.info - ============================================================
+[2025-11-25T06:55:15.051959] INFO - logger.info - 智能闸门仿真系统启动
+[2025-11-25T06:55:15.052281] INFO - logger.info - ============================================================
+[2025-11-25T06:55:15.052644] INFO - logger.info - 语义解释器初始化完成，加载 5 个场景
+[2025-11-25T06:55:15.053066] INFO - logger.info - 监控系统初始化完成
+[2025-11-25T06:55:15.055015] INFO - logger.info - 数据库初始化完成: simulation_data.db
+[2025-11-25T06:55:15.055326] INFO - logger.info - 数据库已启用: simulation_data.db
+[2025-11-25T06:57:04.824511] INFO - logger.info - 语义解释器初始化完成，加载 5 个场景
+[2025-11-25T06:57:04.826101] INFO - logger.info - 模糊匹配场景: 正常供水 (置信度: 0.90)
+[2025-11-25T06:57:04.831002] INFO - logger.info - 数据库初始化完成: simulation_data.db
+[2025-11-25T06:57:04.831956] INFO - logger.info - 数据库连接已关闭
+[2025-11-25T06:57:04.833816] INFO - logger.info - ============================================================
+[2025-11-25T06:57:04.834110] INFO - logger.info - 智能闸门仿真系统启动
+[2025-11-25T06:57:04.834461] INFO - logger.info - ============================================================
+[2025-11-25T06:57:04.834819] INFO - logger.info - 语义解释器初始化完成，加载 5 个场景
+[2025-11-25T06:57:04.835197] INFO - logger.info - 监控系统初始化完成
+[2025-11-25T06:57:04.837289] INFO - logger.info - 数据库初始化完成: simulation_data.db
+[2025-11-25T06:57:04.837603] INFO - logger.info - 数据库已启用: simulation_data.db
