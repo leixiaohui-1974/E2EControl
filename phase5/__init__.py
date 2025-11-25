@@ -9,6 +9,9 @@ Complete autonomous water network control system with:
 - Phase 5.4: L4 Self-Healing Capabilities
 - Phase 5.5: Performance Monitoring & System Integration
 - Phase 5.6: Web Dashboard for Real-time Monitoring
+- Phase 5.7: Full Scenario Certification Testing (103 scenarios)
+- Phase 5.8: Docker Containerization
+- Phase 5.9: Real-time Data Interface (OPC-UA, Modbus, SCADA)
 """
 
 __version__ = "1.0.0"
@@ -76,6 +79,46 @@ from .web import (
     DashboardConfig
 )
 
+# Phase 5.7: Certification Testing
+from .hil_testing import (
+    CertificationRunner,
+    CertificationReport,
+    CertificationResult,
+    CertLevel,
+    LevelRequirement,
+    ScenarioResult,
+    CategorySummary,
+    run_certification
+)
+
+# Phase 5.9: Real-time Data Interface
+from .data_interface import (
+    # OPC-UA Protocol
+    OPCUAAdapter,
+    OPCUANode,
+    OPCUASubscription,
+    OPCUADataPoint,
+    OPCUAConnectionConfig,
+    # Modbus Protocol
+    ModbusAdapter,
+    ModbusRegister,
+    ModbusDeviceConfig,
+    ModbusDataType,
+    ModbusReadResult,
+    # SCADA Integration
+    SCADAInterface,
+    SCADATag,
+    SCADAAlarm,
+    SCADACommand,
+    SCADAConnectionStatus,
+    # Data Replay
+    DataReplayEngine,
+    ReplaySession,
+    ReplayConfig,
+    TimeScaleMode,
+    DataSource,
+)
+
 __all__ = [
     # Version
     '__version__',
@@ -131,5 +174,37 @@ __all__ = [
 
     # Web Dashboard (5.6)
     'WebDashboard',
-    'DashboardConfig'
+    'DashboardConfig',
+
+    # Certification Testing (5.7)
+    'CertificationRunner',
+    'CertificationReport',
+    'CertificationResult',
+    'CertLevel',
+    'LevelRequirement',
+    'ScenarioResult',
+    'CategorySummary',
+    'run_certification',
+
+    # Real-time Data Interface (5.9)
+    'OPCUAAdapter',
+    'OPCUANode',
+    'OPCUASubscription',
+    'OPCUADataPoint',
+    'OPCUAConnectionConfig',
+    'ModbusAdapter',
+    'ModbusRegister',
+    'ModbusDeviceConfig',
+    'ModbusDataType',
+    'ModbusReadResult',
+    'SCADAInterface',
+    'SCADATag',
+    'SCADAAlarm',
+    'SCADACommand',
+    'SCADAConnectionStatus',
+    'DataReplayEngine',
+    'ReplaySession',
+    'ReplayConfig',
+    'TimeScaleMode',
+    'DataSource',
 ]
