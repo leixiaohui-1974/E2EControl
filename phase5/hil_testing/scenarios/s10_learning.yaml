@@ -1,0 +1,442 @@
+# S10 - 学习适应场景 (Learning and Adaptation)
+# 测试系统的自学习、自适应和持续优化能力
+
+scenarios:
+  # S10.01 模型参数自适应
+  - id: S10_LEARNING_001
+    name: 模型参数自适应
+    description: 系统参数变化时的在线模型更新
+    category: S10_LEARNING
+    difficulty: 4
+    autonomous_level: L4
+    duration: 86400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      model_parameters:
+        friction_coefficient: 0.015
+        discharge_coefficient: 0.6
+
+    conditions:
+      - id: C1001
+        name: 参数漂移
+        description: 系统参数因淤积等原因逐渐变化
+        injection:
+          target: system_dynamics
+          type: drift
+          start_time: 0.0
+          parameters:
+            friction_drift: 0.00001  # 摩擦系数增加
+            discharge_drift: -0.000005  # 流量系数降低
+
+    pass_criteria:
+      control:
+        tracking_maintained: 0.9
+      intelligence:
+        parameter_estimation: 0.85
+        model_adaptation: 0.8
+
+  # S10.02 需求模式学习
+  - id: S10_LEARNING_002
+    name: 需求模式学习
+    description: 学习用户用水需求的周期性模式
+    category: S10_LEARNING
+    difficulty: 3
+    autonomous_level: L3
+    duration: 604800.0  # 7天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C1002
+        name: 周期需求模式
+        injection:
+          target: outflow_demand
+          type: periodic_pattern
+          start_time: 0.0
+          parameters:
+            daily_pattern:
+              - hour: 6
+                demand: 8.0
+              - hour: 9
+                demand: 12.0
+              - hour: 12
+                demand: 10.0
+              - hour: 18
+                demand: 14.0
+              - hour: 22
+                demand: 6.0
+            noise_std: 1.0
+
+    pass_criteria:
+      intelligence:
+        pattern_recognition: 0.85
+        prediction_accuracy: 0.8
+        proactive_scheduling: 0.75
+
+  # S10.03 故障模式学习
+  - id: S10_LEARNING_003
+    name: 故障模式学习
+    description: 从重复故障中学习预测能力
+    category: S10_LEARNING
+    difficulty: 4
+    autonomous_level: L4
+    duration: 172800.0  # 48小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C1003
+        name: 重复故障模式
+        injection:
+          target: sensor_level_1
+          type: recurring_fault
+          parameters:
+            fault_pattern: drift_before_failure
+            occurrences: 3
+            interval: 43200.0  # 每12小时一次
+            precursor_duration: 3600.0
+
+    pass_criteria:
+      intelligence:
+        fault_pattern_learning: 0.85
+        predictive_accuracy: 0.8
+        false_positive_rate: 0.1
+
+  # S10.04 控制策略优化
+  - id: S10_LEARNING_004
+    name: 控制策略优化
+    description: 通过运行经验优化控制参数
+    category: S10_LEARNING
+    difficulty: 4
+    autonomous_level: L4
+    duration: 604800.0  # 7天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      controller_params:
+        Q_weight: 1.0
+        R_weight: 0.1
+        horizon: 10
+
+    conditions:
+      - id: C1004
+        name: 多种工况交替
+        injection:
+          target: inflow_1
+          type: mixed_scenarios
+          parameters:
+            scenarios: [normal, high_load, low_load, disturbance]
+            durations: [86400, 43200, 43200, 21600]
+
+    pass_criteria:
+      control:
+        performance_improvement: 0.1  # 10%性能提升
+      intelligence:
+        parameter_tuning: 0.85
+        strategy_selection: 0.8
+
+  # S10.05 异常基线更新
+  - id: S10_LEARNING_005
+    name: 异常基线更新
+    description: 随运行条件变化更新正常行为基线
+    category: S10_LEARNING
+    difficulty: 3
+    autonomous_level: L3
+    duration: 2592000.0  # 30天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C1005
+        name: 渐进式变化
+        injection:
+          target: system_baseline
+          type: gradual_shift
+          parameters:
+            shift_rate: 0.01  # 每天1%
+            direction: positive
+
+    pass_criteria:
+      intelligence:
+        baseline_adaptation: 0.9
+        false_alarm_prevention: 0.95
+        true_anomaly_detection: 0.85
+
+  # S10.06 新场景泛化
+  - id: S10_LEARNING_006
+    name: 新场景泛化
+    description: 处理未见过的新场景组合
+    category: S10_LEARNING
+    difficulty: 5
+    autonomous_level: L5
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C1006
+        name: 新组合场景
+        description: 系统从未遇到过的场景组合
+        injection:
+          target: multiple
+          type: novel_combination
+          parameters:
+            components:
+              - type: inflow_pattern
+                pattern: chaotic
+              - type: demand_pattern
+                pattern: irregular
+              - type: disturbance
+                pattern: multi_frequency
+
+    pass_criteria:
+      safety:
+        safe_operation: true
+      intelligence:
+        generalization: 0.7
+        conservative_action: 0.9
+
+  # S10.07 效率持续优化
+  - id: S10_LEARNING_007
+    name: 效率持续优化
+    description: 长期运行中持续优化能效
+    category: S10_LEARNING
+    difficulty: 4
+    autonomous_level: L4
+    duration: 2592000.0  # 30天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      energy_baseline: 100.0
+
+    conditions:
+      - id: C1007
+        name: 正常运行优化
+        description: 在满足控制目标前提下优化能耗
+
+    pass_criteria:
+      control:
+        performance_maintained: 0.95
+      intelligence:
+        energy_reduction: 0.15  # 15%能耗降低
+        optimization_convergence: 0.9
+
+  # S10.08 操作员偏好学习
+  - id: S10_LEARNING_008
+    name: 操作员偏好学习
+    description: 学习操作员的决策偏好
+    category: S10_LEARNING
+    difficulty: 3
+    autonomous_level: L3
+    duration: 604800.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C1008
+        name: 操作员干预
+        injection:
+          target: operator_actions
+          type: intervention_sequence
+          parameters:
+            interventions:
+              - time: 86400
+                action: raise_setpoint
+                amount: 0.1
+              - time: 172800
+                action: lower_setpoint
+                amount: 0.05
+            pattern: conservative_preference
+
+    pass_criteria:
+      intelligence:
+        preference_learning: 0.8
+        suggestion_acceptance: 0.75
+
+  # S10.09 故障恢复策略优化
+  - id: S10_LEARNING_009
+    name: 故障恢复策略优化
+    description: 从故障恢复经验中优化恢复策略
+    category: S10_LEARNING
+    difficulty: 4
+    autonomous_level: L4
+    duration: 259200.0  # 3天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C1009
+        name: 多次故障恢复
+        injection:
+          target: system
+          type: repeated_faults
+          parameters:
+            fault_types: [sensor_drift, gate_stuck, communication_loss]
+            occurrences_each: 2
+            random_timing: true
+
+    pass_criteria:
+      intelligence:
+        recovery_time_improvement: 0.2  # 20%恢复时间缩短
+        strategy_optimization: 0.85
+
+  # S10.10 跨系统知识迁移
+  - id: S10_LEARNING_010
+    name: 跨系统知识迁移
+    description: 将其他类似系统的经验应用到当前系统
+    category: S10_LEARNING
+    difficulty: 5
+    autonomous_level: L5
+    duration: 86400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      transfer_knowledge:
+        source_system: similar_canal_network
+        similarity: 0.7
+
+    conditions:
+      - id: C1010
+        name: 应用迁移知识
+        description: 使用类似系统的预训练模型处理当前场景
+        injection:
+          target: controller
+          type: knowledge_transfer
+          parameters:
+            transfer_ratio: 0.5
+            fine_tuning: enabled
+
+    pass_criteria:
+      intelligence:
+        transfer_effectiveness: 0.7
+        adaptation_speed: 0.8
+        performance_preservation: 0.9
+
+  # S10.11 长期趋势预测
+  - id: S10_LEARNING_011
+    name: 长期趋势预测
+    description: 学习并预测系统长期变化趋势
+    category: S10_LEARNING
+    difficulty: 4
+    autonomous_level: L4
+    duration: 7776000.0  # 90天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C1011
+        name: 季节性趋势
+        injection:
+          target: inflow_1
+          type: long_term_trend
+          parameters:
+            seasonal_amplitude: 3.0
+            trend_slope: -0.001  # 长期递减趋势
+
+    pass_criteria:
+      intelligence:
+        trend_prediction: 0.85
+        seasonal_adaptation: 0.9
+        long_term_planning: 0.8
+
+  # S10.12 自主改进循环
+  - id: S10_LEARNING_012
+    name: 自主改进循环
+    description: 完整的监测-学习-改进-验证循环
+    category: S10_LEARNING
+    difficulty: 5
+    autonomous_level: L5
+    duration: 2592000.0  # 30天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      improvement_cycle:
+        phase: monitoring
+        iteration: 0
+
+    conditions:
+      - id: C1012
+        name: 自主改进
+        description: 系统自主发现问题并改进
+        injection:
+          target: performance_metric
+          type: degradation
+          start_time: 0.0
+          parameters:
+            initial_degradation: 0.1
+            degradation_rate: 0.001
+
+    pass_criteria:
+      intelligence:
+        problem_identification: 0.9
+        solution_generation: 0.85
+        improvement_validation: 0.8
+        continuous_learning: 0.9

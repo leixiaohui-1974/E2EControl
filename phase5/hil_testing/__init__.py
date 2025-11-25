@@ -12,6 +12,16 @@ from .condition_injector import ConditionInjector, InjectionType, InjectionEvent
 from .evaluation_engine import EvaluationEngine, TestResult, PassCriteria
 from .test_runner import HILTestRunner
 from .report_generator import ReportGenerator
+from .certification_runner import (
+    CertificationRunner,
+    CertificationReport,
+    CertificationResult,
+    AutonomousLevel as CertLevel,
+    LevelRequirement,
+    ScenarioResult,
+    CategorySummary,
+    run_certification
+)
 
 __all__ = [
     'ScenarioGenerator',
@@ -30,7 +40,16 @@ __all__ = [
     'PassCriteria',
     'ScenarioPassCriteria',
     'HILTestRunner',
-    'ReportGenerator'
+    'ReportGenerator',
+    # Certification
+    'CertificationRunner',
+    'CertificationReport',
+    'CertificationResult',
+    'CertLevel',
+    'LevelRequirement',
+    'ScenarioResult',
+    'CategorySummary',
+    'run_certification'
 ]
 
 __version__ = '1.0.0'
