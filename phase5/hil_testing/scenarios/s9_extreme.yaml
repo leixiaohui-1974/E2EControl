@@ -1,0 +1,431 @@
+# S9 - 边界极端工况 (Extreme Conditions)
+# 测试系统在极端边界条件下的表现
+
+scenarios:
+  # S9.01 极低水位运行
+  - id: S9_EXTREME_001
+    name: 极低水位运行
+    description: 水位接近最低安全限的极限运行
+    category: S9_EXTREME
+    difficulty: 4
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 0.5  # 接近最低限0.3m
+      gate_positions:
+        gate_1: 0.2
+      inflows:
+        inflow_1: 3.0
+
+    conditions:
+      - id: C901
+        name: 低水位维持
+        description: 维持极低水位同时满足最小供水
+        injection:
+          target: outflow_demand
+          type: step
+          start_time: 600.0
+          magnitude: 2.0
+          parameters:
+            minimum_supply_required: true
+
+    pass_criteria:
+      safety:
+        min_level_maintained: 0.3
+        no_pump_cavitation: true
+      control:
+        level_stability: 0.9
+
+  # S9.02 极高水位运行
+  - id: S9_EXTREME_002
+    name: 极高水位运行
+    description: 水位接近溢流限的极限运行
+    category: S9_EXTREME
+    difficulty: 4
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 4.5  # 接近最高限5.0m
+      gate_positions:
+        gate_1: 0.9
+      inflows:
+        inflow_1: 25.0
+
+    conditions:
+      - id: C902
+        name: 高水位控制
+        injection:
+          target: inflow_1
+          type: noise
+          start_time: 0.0
+          magnitude: 3.0
+          parameters:
+            maintain_margin: 0.3
+
+    pass_criteria:
+      safety:
+        max_level_not_exceeded: 5.0
+        no_overflow: true
+      control:
+        overshoot_prevention: 0.95
+
+  # S9.03 闸门全开极限
+  - id: S9_EXTREME_003
+    name: 闸门全开极限
+    description: 所有闸门全开状态下的流量控制
+    category: S9_EXTREME
+    difficulty: 3
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 3.5
+        pool_2: 3.0
+      gate_positions:
+        gate_1: 1.0
+        gate_2: 1.0
+      inflows:
+        inflow_1: 30.0
+
+    conditions:
+      - id: C903
+        name: 最大泄流
+        description: 维持最大安全泄流
+
+    pass_criteria:
+      safety:
+        downstream_safe: true
+        structural_limits: true
+      control:
+        flow_coordination: 0.9
+
+  # S9.04 闸门全关极限
+  - id: S9_EXTREME_004
+    name: 闸门全关极限
+    description: 紧急情况下闸门全关的水位上升控制
+    category: S9_EXTREME
+    difficulty: 4
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.0
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C904
+        name: 闸门锁定
+        description: 下游闸门全关时的上游水位管理
+        injection:
+          target: gate_1
+          type: locked
+          start_time: 0.0
+          parameters:
+            position: 0.0
+            duration: 1800.0
+
+    pass_criteria:
+      safety:
+        overflow_prevention: true
+        emergency_measures: true
+      intelligence:
+        alternative_routing: 0.85
+
+  # S9.05 最大流速限制
+  - id: S9_EXTREME_005
+    name: 最大流速限制
+    description: 接近渠道最大允许流速运行
+    category: S9_EXTREME
+    difficulty: 4
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+      gate_positions:
+        gate_1: 0.8
+      inflows:
+        inflow_1: 28.0
+      flow_velocity: 2.5  # m/s，接近限制3.0m/s
+
+    conditions:
+      - id: C905
+        name: 高流速运行
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 600.0
+          magnitude: 5.0
+
+    pass_criteria:
+      safety:
+        max_velocity_not_exceeded: 3.0
+        no_erosion_risk: true
+      control:
+        velocity_regulation: 0.9
+
+  # S9.06 最小流速维持
+  - id: S9_EXTREME_006
+    name: 最小流速维持
+    description: 维持最小生态流量要求
+    category: S9_EXTREME
+    difficulty: 3
+    autonomous_level: L3
+    duration: 86400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 1.5
+      gate_positions:
+        gate_1: 0.25
+      inflows:
+        inflow_1: 4.0
+
+    conditions:
+      - id: C906
+        name: 生态流量约束
+        description: 维持下游最小生态流量0.5m³/s
+        injection:
+          target: inflow_1
+          type: ramp
+          start_time: 0.0
+          end_time: 43200.0
+          magnitude: -2.0
+
+    pass_criteria:
+      safety:
+        min_ecological_flow: 0.5
+      control:
+        flow_maintenance: 0.95
+
+  # S9.07 快速水位变化
+  - id: S9_EXTREME_007
+    name: 快速水位变化
+    description: 水位快速上升/下降的边界测试
+    category: S9_EXTREME
+    difficulty: 4
+    autonomous_level: L4
+    duration: 1800.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C907_A
+        name: 快速上升
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 60.0
+          magnitude: 25.0
+      - id: C907_B
+        name: 快速下降
+        injection:
+          target: gate_1
+          type: step
+          start_time: 600.0
+          parameters:
+            position: 1.0
+
+    pass_criteria:
+      safety:
+        rate_of_change_safe: true
+        no_structural_damage: true
+      control:
+        rate_limiting: 0.9
+
+  # S9.08 极端温差
+  - id: S9_EXTREME_008
+    name: 极端温差
+    description: 昼夜温差极大情况下的运行
+    category: S9_EXTREME
+    difficulty: 3
+    autonomous_level: L3
+    duration: 172800.0  # 48小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      temperature: 15.0
+
+    conditions:
+      - id: C908
+        name: 极端温差
+        injection:
+          target: temperature
+          type: sinusoid
+          start_time: 0.0
+          magnitude: 20.0  # 温差40度
+          parameters:
+            period: 86400.0
+            min_temp: -5.0
+            max_temp: 35.0
+
+    pass_criteria:
+      safety:
+        thermal_stress_managed: true
+      intelligence:
+        temperature_adaptation: 0.85
+
+  # S9.09 传感器全失效
+  - id: S9_EXTREME_009
+    name: 传感器全失效
+    description: 所有主要传感器同时失效的极端情况
+    category: S9_EXTREME
+    difficulty: 5
+    autonomous_level: L5
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C909
+        name: 传感器全失效
+        injection:
+          target: all_sensors
+          type: failure
+          start_time: 300.0
+          parameters:
+            duration: 1800.0
+
+    pass_criteria:
+      safety:
+        safe_mode_activated: true
+        no_catastrophic_action: true
+      intelligence:
+        blind_operation: 0.7
+        state_estimation: 0.6
+
+  # S9.10 通信全中断
+  - id: S9_EXTREME_010
+    name: 通信全中断
+    description: 所有通信链路中断，完全孤岛运行
+    category: S9_EXTREME
+    difficulty: 5
+    autonomous_level: L5
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C910
+        name: 通信全中断
+        injection:
+          target: communication
+          type: total_outage
+          start_time: 600.0
+          end_time: 5400.0
+
+    pass_criteria:
+      safety:
+        local_safety_maintained: true
+        no_coordination_failure: true
+      intelligence:
+        autonomous_island: 0.85
+        graceful_reconnection: 0.9
+
+  # S9.11 电源故障
+  - id: S9_EXTREME_011
+    name: 电源故障
+    description: 主电源故障，切换至备用电源运行
+    category: S9_EXTREME
+    difficulty: 4
+    autonomous_level: L4
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+      gate_positions:
+        gate_1: 0.6
+      inflows:
+        inflow_1: 12.0
+      power_source: main
+
+    conditions:
+      - id: C911
+        name: 主电源故障
+        injection:
+          target: power_main
+          type: failure
+          start_time: 1800.0
+          parameters:
+            backup_capacity: 0.7  # 备用电源只有70%容量
+
+    pass_criteria:
+      safety:
+        power_continuity: true
+        priority_loads_maintained: true
+      intelligence:
+        load_shedding: 0.9
+        power_optimization: 0.85
+
+  # S9.12 数据完整性破坏
+  - id: S9_EXTREME_012
+    name: 数据完整性破坏
+    description: 历史数据或配置数据损坏
+    category: S9_EXTREME
+    difficulty: 4
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C912
+        name: 数据损坏
+        injection:
+          target: system_data
+          type: corruption
+          start_time: 300.0
+          parameters:
+            affected: [historical_data, model_parameters]
+            corruption_level: 0.3
+
+    pass_criteria:
+      safety:
+        safe_defaults_used: true
+      intelligence:
+        data_validation: 0.95
+        recovery_from_corruption: 0.85

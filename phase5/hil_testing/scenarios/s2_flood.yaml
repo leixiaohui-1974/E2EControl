@@ -1,0 +1,397 @@
+# S2 - 洪水场景
+# 测试系统应对洪水和入流突变的能力
+
+scenarios:
+  - id: S2_FLOOD_001
+    name: 单池入流突增
+    description: 单个渠池入流突然增加50%
+    category: S2_FLOOD
+    difficulty: 2
+    autonomous_level: L2
+    duration: 600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C010
+        name: 入流阶跃增加
+        description: 入流从10m³/s突增到15m³/s
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 60.0
+          magnitude: 5.0
+
+    expected_response:
+      max_level_rise: 0.3
+      response_time: 30.0
+      settling_time: 180.0
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.3
+        no_overflow: true
+      control:
+        settling_time: 180.0
+        overshoot: 0.15
+
+  - id: S2_FLOOD_002
+    name: 入流斜坡增加
+    description: 入流在1小时内逐渐增加100%
+    category: S2_FLOOD
+    difficulty: 2
+    autonomous_level: L2
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C011
+        name: 入流斜坡增加
+        injection:
+          target: inflow_1
+          type: ramp
+          start_time: 60.0
+          end_time: 3660.0
+          magnitude: 10.0
+          parameters:
+            rate: 0.00278  # m³/s per second
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.25
+        no_overflow: true
+      control:
+        tracking_error: 0.1
+
+  - id: S2_FLOOD_003
+    name: 脉冲洪水
+    description: 短时强降雨导致的脉冲式入流
+    category: S2_FLOOD
+    difficulty: 3
+    autonomous_level: L3
+    duration: 1800.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C012
+        name: 脉冲洪水
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 300.0
+          end_time: 600.0
+          magnitude: 20.0  # 入流翻倍
+
+    expected_response:
+      max_level_rise: 0.5
+      recovery_time: 600.0
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.5
+        no_overflow: true
+      control:
+        settling_time: 600.0
+
+  - id: S2_FLOOD_004
+    name: 连续洪峰
+    description: 两次连续的洪峰过程
+    category: S2_FLOOD
+    difficulty: 4
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C013_A
+        name: 第一次洪峰
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 300.0
+          end_time: 600.0
+          magnitude: 15.0
+      - id: C013_B
+        name: 第二次洪峰
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 1500.0
+          end_time: 1800.0
+          magnitude: 20.0
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.6
+        no_overflow: true
+      intelligence:
+        pattern_recognition: 0.8
+
+  - id: S2_FLOOD_005
+    name: 级联洪水传播
+    description: 上游洪水向下游传播的多池协调
+    category: S2_FLOOD
+    difficulty: 4
+    autonomous_level: L3
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+        pool_2: 2.0
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+        gate_3: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C014
+        name: 上游洪水
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 300.0
+          magnitude: 10.0
+
+    pass_criteria:
+      safety:
+        max_level_deviation: 0.4
+        no_overflow: true
+      reliability:
+        coordination_score: 0.85
+
+  # S2.06 超标洪水
+  - id: S2_FLOOD_006
+    name: 超标洪水
+    description: 超设计洪水处理，入流超过系统设计容量
+    category: S2_FLOOD
+    difficulty: 5
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5  # 已处于较高水位
+      gate_positions:
+        gate_1: 0.8  # 闸门已大开
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C015
+        name: 超设计洪水
+        description: 入流达到设计流量的150%
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 300.0
+          end_time: 3600.0
+          magnitude: 30.0  # 入流达到45m³/s
+
+    expected_response:
+      emergency_protocol: true
+      max_level: 4.5
+
+    pass_criteria:
+      safety:
+        max_level: 5.0  # 绝对上限
+        emergency_measures: true
+        no_catastrophic_failure: true
+      intelligence:
+        emergency_decision: 0.9
+        overload_management: 0.85
+
+  # S2.07 洪后恢复
+  - id: S2_FLOOD_007
+    name: 洪后恢复
+    description: 洪水过后的系统恢复运行
+    category: S2_FLOOD
+    difficulty: 3
+    autonomous_level: L2
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 3.5  # 洪后高水位
+      gate_positions:
+        gate_1: 0.9
+      inflows:
+        inflow_1: 25.0  # 退水期
+
+    conditions:
+      - id: C016
+        name: 退水恢复
+        description: 洪水退去后逐步恢复正常运行
+        injection:
+          target: inflow_1
+          type: ramp
+          start_time: 0.0
+          end_time: 5400.0
+          magnitude: -15.0  # 入流逐渐减少到10m³/s
+
+    pass_criteria:
+      safety:
+        controlled_drawdown: true
+        no_rapid_drop: true
+      control:
+        settling_time: 3600.0
+        smooth_transition: 0.8
+
+  # S2.08 分洪决策
+  - id: S2_FLOOD_008
+    name: 分洪决策
+    description: 多渠道分洪调度决策
+    category: S2_FLOOD
+    difficulty: 4
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+        pool_2: 2.0
+        pool_3: 2.0
+        diversion_channel: 1.0
+      gate_positions:
+        gate_1: 0.7
+        gate_2: 0.5
+        gate_3: 0.5
+        diversion_gate: 0.0
+      inflows:
+        inflow_1: 20.0
+
+    conditions:
+      - id: C017
+        name: 分洪触发
+        description: 主渠道接近满负荷，需决策是否分洪
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 300.0
+          magnitude: 15.0  # 入流增加到35m³/s
+
+    pass_criteria:
+      safety:
+        main_channel_safe: true
+        diversion_effective: true
+      intelligence:
+        decision_timing: 0.85
+        optimal_allocation: 0.8
+
+  # S2.09 预报误差
+  - id: S2_FLOOD_009
+    name: 预报误差
+    description: 洪水预报不准确时的调整策略
+    category: S2_FLOOD
+    difficulty: 4
+    autonomous_level: L3
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+
+    conditions:
+      - id: C018_A
+        name: 预报洪水
+        description: 预报12小时后洪峰25m³/s
+        injection:
+          target: forecast
+          type: step
+          start_time: 0.0
+          parameters:
+            forecast_peak: 25.0
+            forecast_time: 43200
+      - id: C018_B
+        name: 实际洪水
+        description: 实际洪峰35m³/s，提前2小时
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 36000.0  # 提前2小时
+          end_time: 43200.0
+          magnitude: 25.0  # 比预报高40%
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        adaptive_response: true
+      intelligence:
+        forecast_correction: 0.8
+        real_time_adaptation: 0.85
+
+  # S2.10 退水调度
+  - id: S2_FLOOD_010
+    name: 退水调度
+    description: 汛后安全退水，避免退水过快造成问题
+    category: S2_FLOOD
+    difficulty: 3
+    autonomous_level: L2
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 4.0  # 汛后高水位
+        pool_2: 3.5
+        pool_3: 3.0
+      gate_positions:
+        gate_1: 0.8
+        gate_2: 0.7
+        gate_3: 0.6
+      inflows:
+        inflow_1: 12.0
+
+    conditions:
+      - id: C019
+        name: 安全退水
+        description: 控制退水速度不超过0.1m/h
+        injection:
+          target: target_level
+          type: ramp
+          start_time: 0.0
+          end_time: 14400.0
+          magnitude: -2.0  # 目标水位降低2m
+          parameters:
+            max_drawdown_rate: 0.1  # m/h
+
+    pass_criteria:
+      safety:
+        max_drawdown_rate: 0.1
+        no_bank_instability: true
+      control:
+        level_tracking: 0.9
+        smooth_drawdown: 0.85

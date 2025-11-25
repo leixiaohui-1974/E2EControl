@@ -1,0 +1,711 @@
+# S8 - 复合场景 (Compound Scenarios)
+# 测试系统在多重故障、极端条件叠加情况下的应对能力
+
+scenarios:
+  # S8.01 洪水+设备故障
+  - id: S8_COMPOUND_001
+    name: 洪水期间传感器故障
+    description: 在洪水入流突增期间，水位传感器出现漂移
+    category: S8_COMPOUND
+    difficulty: 4
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+        pool_2: 2.3
+      gate_positions:
+        gate_1: 0.6
+        gate_2: 0.5
+      inflows:
+        inflow_1: 15.0
+
+    conditions:
+      - id: C801_A
+        name: 洪水入流
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 300.0
+          end_time: 1800.0
+          magnitude: 15.0
+      - id: C801_B
+        name: 传感器漂移
+        injection:
+          target: sensor_level_1
+          type: drift
+          start_time: 600.0
+          magnitude: 0.3
+          parameters:
+            drift_rate: 0.0001  # m/s
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        no_false_alarm: true
+      intelligence:
+        fault_isolation: 0.9
+        control_continuity: 0.85
+
+  # S8.02 干旱+多设备故障
+  - id: S8_COMPOUND_002
+    name: 干旱期间闸门故障
+    description: 干旱缺水期间，主闸门出现卡死故障
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 1.5
+        pool_2: 1.4
+      gate_positions:
+        gate_1: 0.3
+        gate_2: 0.3
+      inflows:
+        inflow_1: 5.0
+
+    conditions:
+      - id: C802_A
+        name: 持续干旱
+        injection:
+          target: inflow_1
+          type: ramp
+          start_time: 0.0
+          end_time: 3600.0
+          magnitude: -2.0
+      - id: C802_B
+        name: 闸门卡死
+        injection:
+          target: gate_1_actuator
+          type: stuck
+          start_time: 1800.0
+          parameters:
+            stuck_position: 0.3
+
+    pass_criteria:
+      safety:
+        no_dry_out: true
+        minimum_supply: 0.7
+      intelligence:
+        fault_detection: 0.95
+        graceful_degradation: 0.85
+
+  # S8.03 洪水+通信故障
+  - id: S8_COMPOUND_003
+    name: 洪水期间通信中断
+    description: 洪水高峰期间，上游与下游通信中断
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L4
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.8
+        pool_2: 2.5
+        pool_3: 2.3
+      gate_positions:
+        gate_1: 0.7
+        gate_2: 0.6
+        gate_3: 0.5
+      inflows:
+        inflow_1: 20.0
+
+    conditions:
+      - id: C803_A
+        name: 洪峰过境
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 300.0
+          end_time: 1200.0
+          magnitude: 20.0
+      - id: C803_B
+        name: 通信中断
+        injection:
+          target: communication
+          type: outage
+          start_time: 600.0
+          end_time: 1800.0
+          parameters:
+            affected_nodes: [pool_2, pool_3]
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        local_autonomy: true
+      intelligence:
+        distributed_control: 0.85
+        recovery_coordination: 0.8
+
+  # S8.04 污染+干旱
+  - id: S8_COMPOUND_004
+    name: 干旱期间污染事件
+    description: 水源短缺期间发生污染事件，需权衡供水与安全
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L5
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 1.8
+        pool_2: 1.6
+      gate_positions:
+        gate_1: 0.4
+        gate_2: 0.35
+      inflows:
+        inflow_1: 6.0
+      water_quality:
+        turbidity: 5.0
+        ph: 7.2
+
+    conditions:
+      - id: C804_A
+        name: 水源紧张
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 0.0
+          magnitude: -2.0
+      - id: C804_B
+        name: 上游污染
+        injection:
+          target: water_quality
+          type: step
+          start_time: 3600.0
+          parameters:
+            turbidity_increase: 50.0
+            contaminant: "ammonia"
+            concentration: 2.5  # mg/L
+
+    pass_criteria:
+      safety:
+        water_quality_protected: true
+        minimum_supply: 0.5
+      intelligence:
+        risk_assessment: 0.9
+        priority_decision: 0.85
+
+  # S8.05 冰期+设备故障
+  - id: S8_COMPOUND_005
+    name: 冰期传感器失效
+    description: 结冰期间，多个传感器因低温失效
+    category: S8_COMPOUND
+    difficulty: 4
+    autonomous_level: L4
+    duration: 86400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.4
+      inflows:
+        inflow_1: 8.0
+      temperature: -5.0
+      ice_thickness: 0.1
+
+    conditions:
+      - id: C805_A
+        name: 低温持续
+        injection:
+          target: temperature
+          type: ramp
+          start_time: 0.0
+          end_time: 43200.0
+          magnitude: -10.0
+      - id: C805_B
+        name: 传感器失效
+        injection:
+          target: sensor_array
+          type: sequential_failure
+          start_time: 21600.0
+          parameters:
+            failure_sequence: [sensor_level_1, sensor_flow_1]
+            interval: 7200.0
+
+    pass_criteria:
+      safety:
+        ice_safe_operation: true
+        no_pipe_burst: true
+      intelligence:
+        sensor_redundancy: 0.9
+        state_estimation: 0.85
+
+  # S8.06 网络攻击+洪水
+  - id: S8_COMPOUND_006
+    name: 洪水期间数据注入攻击
+    description: 洪水调度期间遭受FDIA数据注入攻击
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L5
+    duration: 3600.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+        pool_2: 2.3
+      gate_positions:
+        gate_1: 0.6
+        gate_2: 0.55
+      inflows:
+        inflow_1: 18.0
+
+    conditions:
+      - id: C806_A
+        name: 洪水预警
+        injection:
+          target: inflow_1
+          type: ramp
+          start_time: 0.0
+          end_time: 1800.0
+          magnitude: 12.0
+      - id: C806_B
+        name: FDIA攻击
+        injection:
+          target: sensor_data
+          type: fdia
+          start_time: 900.0
+          parameters:
+            attack_vector: level_underreport
+            magnitude: -0.5
+            duration: 1200.0
+
+    pass_criteria:
+      safety:
+        attack_detection: true
+        no_overflow: true
+      intelligence:
+        anomaly_detection: 0.95
+        attack_mitigation: 0.9
+
+  # S8.07 多池级联故障
+  - id: S8_COMPOUND_007
+    name: 级联故障传播
+    description: 上游故障导致下游连锁反应
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+        pool_2: 2.3
+        pool_3: 2.0
+        pool_4: 1.8
+      gate_positions:
+        gate_1: 0.6
+        gate_2: 0.55
+        gate_3: 0.5
+        gate_4: 0.45
+      inflows:
+        inflow_1: 20.0
+
+    conditions:
+      - id: C807
+        name: 上游闸门失控
+        injection:
+          target: gate_1_actuator
+          type: malfunction
+          start_time: 600.0
+          parameters:
+            malfunction_type: stuck_open
+            position: 1.0
+
+    pass_criteria:
+      safety:
+        cascade_prevented: true
+        downstream_protected: true
+      intelligence:
+        cascade_prediction: 0.85
+        emergency_isolation: 0.9
+
+  # S8.08 极端天气复合
+  - id: S8_COMPOUND_008
+    name: 暴雨转冰冻
+    description: 暴雨后迅速降温结冰的极端气候过渡
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L5
+    duration: 172800.0  # 48小时
+
+    initial_state:
+      water_levels:
+        pool_1: 3.0
+      gate_positions:
+        gate_1: 0.7
+      inflows:
+        inflow_1: 25.0
+      temperature: 5.0
+
+    conditions:
+      - id: C808_A
+        name: 暴雨阶段
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 0.0
+          end_time: 43200.0
+          magnitude: 20.0
+      - id: C808_B
+        name: 急速降温
+        injection:
+          target: temperature
+          type: ramp
+          start_time: 43200.0
+          end_time: 86400.0
+          magnitude: -20.0
+
+    pass_criteria:
+      safety:
+        flood_managed: true
+        ice_transition_safe: true
+      intelligence:
+        weather_adaptation: 0.9
+        mode_switching: 0.85
+
+  # S8.09 供需双重压力
+  - id: S8_COMPOUND_009
+    name: 高需求低来水
+    description: 夏季高峰需求期间上游来水减少
+    category: S8_COMPOUND
+    difficulty: 4
+    autonomous_level: L4
+    duration: 86400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.2
+        pool_2: 2.0
+      gate_positions:
+        gate_1: 0.5
+        gate_2: 0.5
+      inflows:
+        inflow_1: 12.0
+
+    conditions:
+      - id: C809_A
+        name: 需求高峰
+        injection:
+          target: outflow_demand
+          type: sinusoid
+          start_time: 0.0
+          magnitude: 5.0
+          parameters:
+            period: 86400.0
+            peak_time: 43200.0  # 中午12点
+      - id: C809_B
+        name: 来水减少
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 21600.0
+          magnitude: -4.0
+
+    pass_criteria:
+      safety:
+        no_dry_out: true
+        priority_supply: 0.9
+      intelligence:
+        demand_management: 0.85
+        resource_optimization: 0.8
+
+  # S8.10 多源切换+污染
+  - id: S8_COMPOUND_010
+    name: 污染导致水源切换
+    description: 主水源污染后紧急切换备用水源
+    category: S8_COMPOUND
+    difficulty: 4
+    autonomous_level: L4
+    duration: 14400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+        backup_gate: 0.0
+      inflows:
+        inflow_main: 10.0
+        inflow_backup: 0.0
+      water_quality:
+        turbidity: 5.0
+
+    conditions:
+      - id: C810_A
+        name: 主源污染
+        injection:
+          target: water_quality_main
+          type: step
+          start_time: 1800.0
+          parameters:
+            turbidity: 100.0
+            alert_triggered: true
+      - id: C810_B
+        name: 备源启动
+        description: 系统应自动决策切换
+
+    pass_criteria:
+      safety:
+        quality_maintained: true
+        supply_continuity: 0.9
+      intelligence:
+        source_switching: 0.95
+        transition_smoothness: 0.85
+
+  # S8.11 控制器故障+高负荷
+  - id: S8_COMPOUND_011
+    name: 高负荷下控制器故障
+    description: 系统高负荷运行时MPC控制器出现异常
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L4
+    duration: 7200.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.8
+        pool_2: 2.6
+        pool_3: 2.4
+      gate_positions:
+        gate_1: 0.75
+        gate_2: 0.7
+        gate_3: 0.65
+      inflows:
+        inflow_1: 22.0
+
+    conditions:
+      - id: C811_A
+        name: 持续高负荷
+        injection:
+          target: inflow_1
+          type: step
+          start_time: 0.0
+          magnitude: 5.0
+      - id: C811_B
+        name: 控制器异常
+        injection:
+          target: mpc_controller
+          type: malfunction
+          start_time: 1800.0
+          parameters:
+            malfunction_type: solver_divergence
+            duration: 600.0
+
+    pass_criteria:
+      safety:
+        backup_control_active: true
+        no_overflow: true
+      intelligence:
+        fault_detection: 0.95
+        graceful_degradation: 0.9
+        recovery_time: 300.0
+
+  # S8.12 夜间紧急事件
+  - id: S8_COMPOUND_012
+    name: 夜间无人值守紧急
+    description: 夜间低负荷期间发生紧急事件，考验自主能力
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L5
+    duration: 28800.0  # 8小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.4
+      inflows:
+        inflow_1: 6.0
+      time_of_day: 22:00
+      operator_presence: false
+
+    conditions:
+      - id: C812_A
+        name: 入流突增
+        injection:
+          target: inflow_1
+          type: pulse
+          start_time: 7200.0  # 凌晨2点
+          end_time: 14400.0
+          magnitude: 15.0
+      - id: C812_B
+        name: 传感器故障
+        injection:
+          target: sensor_level_1
+          type: failure
+          start_time: 9000.0
+
+    pass_criteria:
+      safety:
+        no_overflow: true
+        autonomous_handling: true
+      intelligence:
+        unattended_operation: 0.95
+        emergency_response: 0.9
+        alert_generation: true
+
+  # S8.13 季节转换+设备老化
+  - id: S8_COMPOUND_013
+    name: 季节转换期设备退化
+    description: 季节过渡期间设备性能退化叠加
+    category: S8_COMPOUND
+    difficulty: 4
+    autonomous_level: L4
+    duration: 604800.0  # 7天
+
+    initial_state:
+      water_levels:
+        pool_1: 2.0
+      gate_positions:
+        gate_1: 0.5
+      inflows:
+        inflow_1: 10.0
+      equipment_health:
+        gate_1: 0.85
+        sensor_1: 0.9
+
+    conditions:
+      - id: C813_A
+        name: 季节变化
+        injection:
+          target: inflow_1
+          type: sinusoid
+          start_time: 0.0
+          magnitude: 3.0
+          parameters:
+            period: 604800.0
+      - id: C813_B
+        name: 设备退化
+        injection:
+          target: equipment_health
+          type: degradation
+          start_time: 0.0
+          parameters:
+            gate_1_rate: -0.00001
+            sensor_1_rate: -0.000005
+
+    pass_criteria:
+      safety:
+        degraded_safe_operation: true
+      intelligence:
+        predictive_maintenance: 0.85
+        adaptive_control: 0.8
+
+  # S8.14 多目标冲突极端
+  - id: S8_COMPOUND_014
+    name: 极端多目标冲突
+    description: 安全、经济、供水多目标严重冲突
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L5
+    duration: 86400.0
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+      gate_positions:
+        gate_1: 0.6
+      inflows:
+        inflow_1: 12.0
+      electricity_price: 1.0
+
+    conditions:
+      - id: C814_A
+        name: 电价高峰
+        injection:
+          target: electricity_price
+          type: step
+          start_time: 32400.0  # 9:00
+          magnitude: 0.5
+      - id: C814_B
+        name: 紧急供水需求
+        injection:
+          target: outflow_demand
+          type: step
+          start_time: 36000.0  # 10:00
+          magnitude: 8.0
+          parameters:
+            priority: critical
+      - id: C814_C
+        name: 安全约束收紧
+        injection:
+          target: safety_margin
+          type: step
+          start_time: 28800.0  # 8:00
+          parameters:
+            level_margin: 0.3
+
+    pass_criteria:
+      safety:
+        all_constraints_met: true
+      intelligence:
+        multi_objective_resolution: 0.85
+        pareto_optimal: 0.8
+        decision_explainability: 0.75
+
+  # S8.15 全系统压力测试
+  - id: S8_COMPOUND_015
+    name: 全系统极限压力
+    description: 系统在多重极限条件下的整体表现
+    category: S8_COMPOUND
+    difficulty: 5
+    autonomous_level: L5
+    duration: 172800.0  # 48小时
+
+    initial_state:
+      water_levels:
+        pool_1: 2.5
+        pool_2: 2.3
+        pool_3: 2.0
+      gate_positions:
+        gate_1: 0.6
+        gate_2: 0.55
+        gate_3: 0.5
+      inflows:
+        inflow_1: 18.0
+      system_load: 0.85
+
+    conditions:
+      - id: C815_A
+        name: 入流变化
+        injection:
+          target: inflow_1
+          type: complex
+          parameters:
+            pattern: [pulse, ramp, sinusoid]
+            magnitudes: [10.0, -5.0, 3.0]
+            durations: [3600, 7200, 86400]
+      - id: C815_B
+        name: 间歇性故障
+        injection:
+          target: random_component
+          type: intermittent_failure
+          parameters:
+            probability: 0.1
+            duration_range: [60, 300]
+      - id: C815_C
+        name: 需求波动
+        injection:
+          target: outflow_demand
+          type: noise
+          parameters:
+            mean: 0.0
+            std: 2.0
+
+    pass_criteria:
+      safety:
+        system_intact: true
+        no_catastrophic_failure: true
+      control:
+        average_deviation: 0.3
+      intelligence:
+        overall_autonomy: 0.9
+        stress_resilience: 0.85
+      reliability:
+        availability: 0.99

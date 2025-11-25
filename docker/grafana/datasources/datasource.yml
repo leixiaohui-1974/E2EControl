@@ -1,0 +1,24 @@
+# Grafana Datasource Configuration
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+
+  - name: PostgreSQL
+    type: postgres
+    url: db:5432
+    database: e2econtrol
+    user: e2econtrol
+    secureJsonData:
+      password: e2econtrol_secure_password
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+    editable: false

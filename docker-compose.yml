@@ -1,0 +1,227 @@
+# E2EControl Docker Compose Configuration
+# 智能水网控制系统 - 多服务编排
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Main Control System
+  # ============================================================================
+  controller:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e2e-controller
+    restart: unless-stopped
+    environment:
+      - E2E_ENV=production
+      - E2E_LOG_LEVEL=INFO
+      - E2E_NUM_POOLS=3
+      - E2E_ENABLE_SELF_HEALING=true
+      - E2E_ENABLE_MONITORING=true
+      - E2E_DB_HOST=db
+      - E2E_DB_PORT=5432
+      - E2E_REDIS_HOST=redis
+      - E2E_REDIS_PORT=6379
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - e2e-network
+    depends_on:
+      - db
+      - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import phase5; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # Web Dashboard
+  # ============================================================================
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e2e-dashboard
+    restart: unless-stopped
+    command: python -c "from phase5.web import WebDashboard; d = WebDashboard(); d.start(); import time; time.sleep(999999)"
+    environment:
+      - E2E_WEB_HOST=0.0.0.0
+      - E2E_WEB_PORT=8080
+      - E2E_CONTROLLER_HOST=controller
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - e2e-network
+    depends_on:
+      - controller
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # API Server
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e2e-api
+    restart: unless-stopped
+    command: python api.py
+    environment:
+      - E2E_API_HOST=0.0.0.0
+      - E2E_API_PORT=8000
+      - E2E_CONTROLLER_HOST=controller
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - e2e-network
+    depends_on:
+      - controller
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # Database (PostgreSQL)
+  # ============================================================================
+  db:
+    image: postgres:15-alpine
+    container_name: e2e-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=e2econtrol
+      - POSTGRES_PASSWORD=e2econtrol_secure_password
+      - POSTGRES_DB=e2econtrol
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - e2e-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U e2econtrol"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # Redis (Caching & Message Queue)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: e2e-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - e2e-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # Certification Runner (On-demand)
+  # ============================================================================
+  certification:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e2e-certification
+    profiles:
+      - certification
+    command: >
+      python -c "
+      from phase5.hil_testing import CertificationRunner;
+      runner = CertificationRunner();
+      report = runner.run_certification();
+      runner.export_report(report, '/app/reports/certification.html', 'html');
+      runner.export_report(report, '/app/reports/certification.json', 'json');
+      print(f'Achieved Level: {report.achieved_level.name}');
+      print(f'Pass Rate: {report.overall_pass_rate:.1%}');
+      "
+    volumes:
+      - ./reports:/app/reports
+    networks:
+      - e2e-network
+
+  # ============================================================================
+  # Prometheus (Metrics)
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: e2e-prometheus
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - e2e-network
+
+  # ============================================================================
+  # Grafana (Visualization)
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: e2e-grafana
+    profiles:
+      - monitoring
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - e2e-network
+    depends_on:
+      - prometheus
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  e2e-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

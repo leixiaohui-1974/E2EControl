@@ -1,0 +1,58 @@
+# Prometheus Configuration for E2EControl
+# 智能水网控制系统监控配置
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'e2econtrol'
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Rule files
+rule_files:
+  # - "rules/*.yml"
+
+# Scrape configuration
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # E2EControl Controller
+  - job_name: 'e2e-controller'
+    static_configs:
+      - targets: ['controller:8080']
+    metrics_path: '/api/metrics'
+    scrape_interval: 10s
+
+  # E2EControl API
+  - job_name: 'e2e-api'
+    static_configs:
+      - targets: ['api:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # E2EControl Dashboard
+  - job_name: 'e2e-dashboard'
+    static_configs:
+      - targets: ['dashboard:8080']
+    metrics_path: '/api/metrics'
+    scrape_interval: 30s
+
+  # PostgreSQL Exporter (if available)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['db:9187']
+    scrape_interval: 30s
+
+  # Redis Exporter (if available)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:9121']
+    scrape_interval: 30s
