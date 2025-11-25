@@ -4,7 +4,10 @@ Self-Healing Control System - Full Integration
 """
 
 import sys
-sys.path.append('..')
+import os
+# 添加项目根目录到路径
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
 
 import numpy as np
 from typing import Dict, List, Optional
@@ -13,9 +16,14 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')  # 使用非交互式后端
 
-from isolation_strategy import FaultIsolationStrategy, IsolationPlan
-from degraded_mode import DegradedModeManager, OperationMode
-from recovery_manager import RecoveryManager, RecoveryPlan
+try:
+    from isolation_strategy import FaultIsolationStrategy, IsolationPlan
+    from degraded_mode import DegradedModeManager, OperationMode
+    from recovery_manager import RecoveryManager, RecoveryPlan
+except ImportError:
+    from phase4.self_healing.isolation_strategy import FaultIsolationStrategy, IsolationPlan
+    from phase4.self_healing.degraded_mode import DegradedModeManager, OperationMode
+    from phase4.self_healing.recovery_manager import RecoveryManager, RecoveryPlan
 
 
 class SelfHealingSystem:

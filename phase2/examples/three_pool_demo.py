@@ -4,12 +4,20 @@
 """
 
 import sys
-sys.path.append('..')
+import os
+# 添加项目根目录到路径
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, project_root)
 
 import numpy as np
 import matplotlib.pyplot as plt
-from models.cascaded_system import CascadedCanalSystem
-from controllers.distributed_mpc import DistributedMPCController
+
+try:
+    from models.cascaded_system import CascadedCanalSystem
+    from controllers.distributed_mpc import DistributedMPCController
+except ImportError:
+    from phase2.models.cascaded_system import CascadedCanalSystem
+    from phase2.controllers.distributed_mpc import DistributedMPCController
 
 
 def run_cascaded_simulation(total_hours: int = 50):
