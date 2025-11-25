@@ -162,7 +162,7 @@ class UniversalMPCSolver:
         prob = cp.Problem(cp.Minimize(cost), constraints)
 
         # Use a robust solver if available, else default
-        prob.solve(verbose=False)
+        prob.solve(solver=cp.OSQP, warm_start=True, verbose=False)
 
         if prob.status in ["infeasible", "unbounded"]:
             # Fallback strategy: keep previous flow or zero?
