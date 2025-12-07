@@ -10,6 +10,9 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 2. 全场景动态角色矩阵 (8大场景 × 6种角色)
 3. 高保真物理建模 (IDZ模型 + 系统辨识)
 4. 在线热重构MPC (支持场景切换)
+5. 场景自适应MPC (自动更新目标函数和约束)
+6. 批量测试框架 (支持成千上万场景)
+7. L1现地全场景 (污染溯源、边坡漂浮、退水等)
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -18,12 +21,20 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - orchestrator: 全局编排器 (L3)
 - regional_coordinator: 区域协调器 (L2)
 - enhanced_mpc: 增强参数化MPC (支持热重构)
+- scenario_generator: 场景生成器 (支持成千上万种组合)
+- adaptive_mpc: 场景自适应MPC (自动配置)
+- batch_testing: 批量测试框架
+- local_pool_scenarios: L1现地渠池全场景 (污染、边坡、退水)
 """
 
 from .core_types import (
     PoolRole,
     ScenarioType,
+    ScenarioSeverity,
+    ScenarioPhase,
     ControlDirective,
+    ControlPlan,
+    ScenarioEvent,
     PoolTopology,
     CanalPoolConfig,
     SpecialStructure,
@@ -34,13 +45,15 @@ from .core_types import (
 from .physics_model import (
     SNWDMiddleRouteModel,
     IDZModel,
+    IDZParameters,
     CanalPool,
     SpecialNode,
 )
 
 from .system_identification import (
     SystemIdentifier,
-    IDZParameters,
+    CrossCorrelationAnalyzer,
+    RecursiveLeastSquares,
 )
 
 from .orchestrator import (
@@ -51,18 +64,73 @@ from .orchestrator import (
 from .regional_coordinator import (
     RegionalCoordinator,
     FeedforwardDecoupler,
+    GlobalRegionalManager,
 )
 
 from .enhanced_mpc import (
     EnhancedParameterizedMPC,
     HotReconfigurableMPC,
+    MPCWeights,
+    MPCConstraints,
+    MPCPhysics,
+    RoleParameterMapper,
+)
+
+from .scenario_generator import (
+    ScenarioGenerator,
+    ScenarioValidator,
+    ExtendedScenarioEvent,
+    CompositeScenario,
+    SeasonType,
+    WeatherType,
+    TimeOfDay,
+    EvolutionPattern,
+    RegionZone,
+)
+
+from .adaptive_mpc import (
+    AdaptiveMPCSystem,
+    AdaptiveMPCConfigurator,
+    ScenarioIdentifier,
+    ScenarioFeatures,
+    ScenarioDetectionResult,
+    AdaptiveMPCConfig,
+)
+
+from .batch_testing import (
+    BatchTestExecutor,
+    TestSuite,
+    TestCase,
+    TestResult,
+    BatchTestResult,
+    TestStatus,
+    ReportGenerator,
+    run_quick_test,
+    run_comprehensive_test,
+    run_exhaustive_test,
+)
+
+from .local_pool_scenarios import (
+    L1ScenarioType,
+    L1ActionType,
+    L1ScenarioEvent,
+    L1ActionCommand,
+    PollutionTracker,
+    SlopePanelMonitor,
+    DischargeManager,
+    DischargeType,
+    L1ScenarioGenerator,
 )
 
 __all__ = [
     # Core Types
     'PoolRole',
     'ScenarioType',
+    'ScenarioSeverity',
+    'ScenarioPhase',
     'ControlDirective',
+    'ControlPlan',
+    'ScenarioEvent',
     'PoolTopology',
     'CanalPoolConfig',
     'SpecialStructure',
@@ -71,18 +139,63 @@ __all__ = [
     # Physics Model
     'SNWDMiddleRouteModel',
     'IDZModel',
+    'IDZParameters',
     'CanalPool',
     'SpecialNode',
     # System Identification
     'SystemIdentifier',
-    'IDZParameters',
+    'CrossCorrelationAnalyzer',
+    'RecursiveLeastSquares',
     # Orchestrator
     'GlobalOrchestrator',
     'ScenarioRoleMatrix',
     # Regional Coordinator
     'RegionalCoordinator',
     'FeedforwardDecoupler',
+    'GlobalRegionalManager',
     # Enhanced MPC
     'EnhancedParameterizedMPC',
     'HotReconfigurableMPC',
+    'MPCWeights',
+    'MPCConstraints',
+    'MPCPhysics',
+    'RoleParameterMapper',
+    # Scenario Generator
+    'ScenarioGenerator',
+    'ScenarioValidator',
+    'ExtendedScenarioEvent',
+    'CompositeScenario',
+    'SeasonType',
+    'WeatherType',
+    'TimeOfDay',
+    'EvolutionPattern',
+    'RegionZone',
+    # Adaptive MPC
+    'AdaptiveMPCSystem',
+    'AdaptiveMPCConfigurator',
+    'ScenarioIdentifier',
+    'ScenarioFeatures',
+    'ScenarioDetectionResult',
+    'AdaptiveMPCConfig',
+    # Batch Testing
+    'BatchTestExecutor',
+    'TestSuite',
+    'TestCase',
+    'TestResult',
+    'BatchTestResult',
+    'TestStatus',
+    'ReportGenerator',
+    'run_quick_test',
+    'run_comprehensive_test',
+    'run_exhaustive_test',
+    # L1 Local Pool Scenarios
+    'L1ScenarioType',
+    'L1ActionType',
+    'L1ScenarioEvent',
+    'L1ActionCommand',
+    'PollutionTracker',
+    'SlopePanelMonitor',
+    'DischargeManager',
+    'DischargeType',
+    'L1ScenarioGenerator',
 ]
