@@ -18,6 +18,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 10. 智能决策引擎与场景组合
 11. 级联控制与事件驱动上报系统
 12. 高保真水力学仿真器
+13. 控制器-仿真器集成与闭环测试
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -35,6 +36,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - multi_layer_coordinator: 多层协同控制器 (L1-L2-L3联动)
 - cascade_control: 级联控制与事件驱动上报 (失控检测与干预)
 - hydraulic_simulator: 高保真水力学仿真器 (IDZ动态模型、闸门响应、性能分析)
+- integrated_simulation: 控制器-仿真器集成 (闭环仿真、场景测试、批量评估)
 """
 
 from .core_types import (
@@ -189,6 +191,20 @@ from .hydraulic_simulator import (
     PerformanceAnalyzer,
 )
 
+from .integrated_simulation import (
+    SimulationConfig,
+    ScenarioInjectionPlan,
+    ControlInterface,
+    StateSynchronizer,
+    ScenarioInjector,
+    RealTimeMetrics,
+    RealTimeMonitor,
+    ClosedLoopSimulation,
+    ScenarioTestCase,
+    ScenarioTestRunner,
+    BatchScenarioEvaluator,
+)
+
 __all__ = [
     # Core Types
     'PoolRole',
@@ -312,4 +328,16 @@ __all__ = [
     'SimulationReplayer',
     'PerformanceMetrics',
     'PerformanceAnalyzer',
+    # Integrated Simulation
+    'SimulationConfig',
+    'ScenarioInjectionPlan',
+    'ControlInterface',
+    'StateSynchronizer',
+    'ScenarioInjector',
+    'RealTimeMetrics',
+    'RealTimeMonitor',
+    'ClosedLoopSimulation',
+    'ScenarioTestCase',
+    'ScenarioTestRunner',
+    'BatchScenarioEvaluator',
 ]
