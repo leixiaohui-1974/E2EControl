@@ -16,6 +16,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 8. L1控制器与L2-L1层级协调
 9. 多层协同控制器 (L1-L2-L3联动)
 10. 智能决策引擎与场景组合
+11. 级联控制与事件驱动上报系统
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -31,6 +32,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - l1_controller: L1层现地控制器 (分钟级自主响应)
 - l2_l1_coordinator: L2-L1层级协调器 (区域-现地协调)
 - multi_layer_coordinator: 多层协同控制器 (L1-L2-L3联动)
+- cascade_control: 级联控制与事件驱动上报 (失控检测与干预)
 """
 
 from .core_types import (
@@ -156,6 +158,19 @@ from .multi_layer_coordinator import (
     IntelligentDecisionEngine,
 )
 
+from .cascade_control import (
+    CascadeControlSystem,
+    ControlEffectiveness,
+    ControlEffectEvaluator,
+    ControlMetrics,
+    EscalationEvent,
+    EscalationReason,
+    InterventionDecision,
+    InterventionType,
+    UpperLayerInterventionDecider,
+    ExtendedL1Scenarios,
+)
+
 __all__ = [
     # Core Types
     'PoolRole',
@@ -254,4 +269,15 @@ __all__ = [
     'L3GlobalScheduler',
     'ScenarioCombinationGenerator',
     'IntelligentDecisionEngine',
+    # Cascade Control
+    'CascadeControlSystem',
+    'ControlEffectiveness',
+    'ControlEffectEvaluator',
+    'ControlMetrics',
+    'EscalationEvent',
+    'EscalationReason',
+    'InterventionDecision',
+    'InterventionType',
+    'UpperLayerInterventionDecider',
+    'ExtendedL1Scenarios',
 ]
