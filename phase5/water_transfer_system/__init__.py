@@ -19,6 +19,11 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 11. 级联控制与事件驱动上报系统
 12. 高保真水力学仿真器
 13. 控制器-仿真器集成与闭环测试
+14. 传感器与执行器仿真
+15. 数据治理与数据同化
+16. IDZ参数动态估计
+17. 实时状态评价与预测
+18. 可视化与报告生成
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -37,6 +42,8 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - cascade_control: 级联控制与事件驱动上报 (失控检测与干预)
 - hydraulic_simulator: 高保真水力学仿真器 (IDZ动态模型、闸门响应、性能分析)
 - integrated_simulation: 控制器-仿真器集成 (闭环仿真、场景测试、批量评估)
+- advanced_simulation: 高级仿真层 (传感器、执行器、数据同化、参数估计、预测)
+- visualization: 可视化与报告生成 (文本图表、性能报告、仪表板)
 """
 
 from .core_types import (
@@ -205,6 +212,41 @@ from .integrated_simulation import (
     BatchScenarioEvaluator,
 )
 
+from .advanced_simulation import (
+    SensorType,
+    SensorStatus,
+    SensorConfig,
+    SensorReading,
+    SensorModel,
+    ActuatorType,
+    ActuatorStatus,
+    ActuatorConfig,
+    ActuatorCommand,
+    ActuatorState,
+    ActuatorModel,
+    DataQualityMetrics,
+    DataGovernance,
+    AssimilationState,
+    DataAssimilator,
+    IDZParameterEstimator,
+    PoolEvaluation,
+    StateEvaluator,
+    PredictionResult,
+    StatePredictor,
+    AdvancedSimulationLayer,
+)
+
+from .visualization import (
+    ReportType,
+    TextVisualizer,
+    SimulationReport,
+    ReportGenerator,
+    ComprehensiveReportGenerator,
+    print_simulation_summary,
+    print_dashboard,
+    print_full_report,
+)
+
 __all__ = [
     # Core Types
     'PoolRole',
@@ -340,4 +382,35 @@ __all__ = [
     'ScenarioTestCase',
     'ScenarioTestRunner',
     'BatchScenarioEvaluator',
+    # Advanced Simulation
+    'SensorType',
+    'SensorStatus',
+    'SensorConfig',
+    'SensorReading',
+    'SensorModel',
+    'ActuatorType',
+    'ActuatorStatus',
+    'ActuatorConfig',
+    'ActuatorCommand',
+    'ActuatorState',
+    'ActuatorModel',
+    'DataQualityMetrics',
+    'DataGovernance',
+    'AssimilationState',
+    'DataAssimilator',
+    'IDZParameterEstimator',
+    'PoolEvaluation',
+    'StateEvaluator',
+    'PredictionResult',
+    'StatePredictor',
+    'AdvancedSimulationLayer',
+    # Visualization
+    'ReportType',
+    'TextVisualizer',
+    'SimulationReport',
+    'ReportGenerator',
+    'ComprehensiveReportGenerator',
+    'print_simulation_summary',
+    'print_dashboard',
+    'print_full_report',
 ]
