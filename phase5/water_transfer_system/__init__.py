@@ -17,6 +17,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 9. 多层协同控制器 (L1-L2-L3联动)
 10. 智能决策引擎与场景组合
 11. 级联控制与事件驱动上报系统
+12. 高保真水力学仿真器
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -33,6 +34,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - l2_l1_coordinator: L2-L1层级协调器 (区域-现地协调)
 - multi_layer_coordinator: 多层协同控制器 (L1-L2-L3联动)
 - cascade_control: 级联控制与事件驱动上报 (失控检测与干预)
+- hydraulic_simulator: 高保真水力学仿真器 (IDZ动态模型、闸门响应、性能分析)
 """
 
 from .core_types import (
@@ -171,6 +173,22 @@ from .cascade_control import (
     ExtendedL1Scenarios,
 )
 
+from .hydraulic_simulator import (
+    PhysicalConstants,
+    PoolPhysicalParams,
+    GateParams,
+    PoolState,
+    SimulationState,
+    IDZDynamicModel,
+    GateDynamicModel,
+    FullLineHydraulicSimulator,
+    SimulationRecord,
+    SimulationRecorder,
+    SimulationReplayer,
+    PerformanceMetrics,
+    PerformanceAnalyzer,
+)
+
 __all__ = [
     # Core Types
     'PoolRole',
@@ -280,4 +298,18 @@ __all__ = [
     'InterventionType',
     'UpperLayerInterventionDecider',
     'ExtendedL1Scenarios',
+    # Hydraulic Simulator
+    'PhysicalConstants',
+    'PoolPhysicalParams',
+    'GateParams',
+    'PoolState',
+    'SimulationState',
+    'IDZDynamicModel',
+    'GateDynamicModel',
+    'FullLineHydraulicSimulator',
+    'SimulationRecord',
+    'SimulationRecorder',
+    'SimulationReplayer',
+    'PerformanceMetrics',
+    'PerformanceAnalyzer',
 ]
