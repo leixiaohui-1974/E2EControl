@@ -13,6 +13,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 5. 场景自适应MPC (自动更新目标函数和约束)
 6. 批量测试框架 (支持成千上万场景)
 7. L1现地全场景 (污染溯源、边坡漂浮、退水等)
+8. L1控制器与L2-L1层级协调
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -25,6 +26,8 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - adaptive_mpc: 场景自适应MPC (自动配置)
 - batch_testing: 批量测试框架
 - local_pool_scenarios: L1现地渠池全场景 (污染、边坡、退水)
+- l1_controller: L1层现地控制器 (分钟级自主响应)
+- l2_l1_coordinator: L2-L1层级协调器 (区域-现地协调)
 """
 
 from .core_types import (
@@ -122,6 +125,23 @@ from .local_pool_scenarios import (
     L1ScenarioGenerator,
 )
 
+from .l1_controller import (
+    L1Controller,
+    L1ControllerManager,
+    L1ControllerState,
+    L1PoolState,
+    L1ControlResult,
+    L1ResponseStrategy,
+)
+
+from .l2_l1_coordinator import (
+    L2L1Coordinator,
+    FullLineCoordinatorManager,
+    CoordinationType,
+    CoordinationRequest,
+    CoordinationResponse,
+)
+
 __all__ = [
     # Core Types
     'PoolRole',
@@ -198,4 +218,17 @@ __all__ = [
     'DischargeManager',
     'DischargeType',
     'L1ScenarioGenerator',
+    # L1 Controller
+    'L1Controller',
+    'L1ControllerManager',
+    'L1ControllerState',
+    'L1PoolState',
+    'L1ControlResult',
+    'L1ResponseStrategy',
+    # L2-L1 Coordinator
+    'L2L1Coordinator',
+    'FullLineCoordinatorManager',
+    'CoordinationType',
+    'CoordinationRequest',
+    'CoordinationResponse',
 ]
