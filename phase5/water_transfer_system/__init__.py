@@ -27,6 +27,8 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 19. 故障诊断与容错控制
 20. 应急响应与调度系统
 21. 运行规则引擎
+22. 历史数据记录与回放
+23. 数据分析与统计工具
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -48,6 +50,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - advanced_simulation: 高级仿真层 (传感器、执行器、数据同化、参数估计、预测)
 - visualization: 可视化与报告生成 (文本图表、性能报告、仪表板)
 - fault_tolerant_control: 故障诊断与容错控制 (故障检测、诊断、容错、应急、规则引擎)
+- data_recorder: 历史数据记录与回放 (时序存储、仿真回放、数据分析、导入导出)
 """
 
 from .core_types import (
@@ -276,6 +279,25 @@ from .fault_tolerant_control import (
     FaultTolerantSystem,
 )
 
+from .data_recorder import (
+    DataChannel,
+    RecordingMode,
+    PlaybackState,
+    DataPoint,
+    TimeSeriesSegment,
+    EventRecord,
+    SimulationSnapshot,
+    RecordingSession,
+    PlaybackFrame,
+    TimeSeriesStorage,
+    SimulationRecorderV2,
+    SimulationReplayer,
+    DataAnalyzer,
+    DataExporter,
+    DataImporter,
+    DataRecordingSystem,
+)
+
 __all__ = [
     # Core Types
     'PoolRole',
@@ -465,4 +487,21 @@ __all__ = [
     'RuleAction',
     'OperatingRuleEngine',
     'FaultTolerantSystem',
+    # Data Recorder
+    'DataChannel',
+    'RecordingMode',
+    'PlaybackState',
+    'DataPoint',
+    'TimeSeriesSegment',
+    'EventRecord',
+    'SimulationSnapshot',
+    'RecordingSession',
+    'PlaybackFrame',
+    'TimeSeriesStorage',
+    'SimulationRecorderV2',
+    'SimulationReplayer',
+    'DataAnalyzer',
+    'DataExporter',
+    'DataImporter',
+    'DataRecordingSystem',
 ]
