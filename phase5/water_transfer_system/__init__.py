@@ -24,6 +24,9 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 16. IDZ参数动态估计
 17. 实时状态评价与预测
 18. 可视化与报告生成
+19. 故障诊断与容错控制
+20. 应急响应与调度系统
+21. 运行规则引擎
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -44,6 +47,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - integrated_simulation: 控制器-仿真器集成 (闭环仿真、场景测试、批量评估)
 - advanced_simulation: 高级仿真层 (传感器、执行器、数据同化、参数估计、预测)
 - visualization: 可视化与报告生成 (文本图表、性能报告、仪表板)
+- fault_tolerant_control: 故障诊断与容错控制 (故障检测、诊断、容错、应急、规则引擎)
 """
 
 from .core_types import (
@@ -247,6 +251,31 @@ from .visualization import (
     print_full_report,
 )
 
+from .fault_tolerant_control import (
+    FaultType,
+    FaultSeverity,
+    FaultStatus,
+    ControlMode,
+    EmergencyType,
+    FaultEvent,
+    DiagnosisResult,
+    ControlReconfiguration,
+    EmergencyEvent,
+    EmergencyResponse,
+    OperatingRule,
+    ResidualGenerator,
+    SensorFaultDetector,
+    ActuatorFaultDetector,
+    FaultDetectionEngine,
+    FaultDiagnosisEngine,
+    FaultTolerantController,
+    EmergencyResponseSystem,
+    RuleCondition,
+    RuleAction,
+    OperatingRuleEngine,
+    FaultTolerantSystem,
+)
+
 __all__ = [
     # Core Types
     'PoolRole',
@@ -413,4 +442,27 @@ __all__ = [
     'print_simulation_summary',
     'print_dashboard',
     'print_full_report',
+    # Fault Tolerant Control
+    'FaultType',
+    'FaultSeverity',
+    'FaultStatus',
+    'ControlMode',
+    'EmergencyType',
+    'FaultEvent',
+    'DiagnosisResult',
+    'ControlReconfiguration',
+    'EmergencyEvent',
+    'EmergencyResponse',
+    'OperatingRule',
+    'ResidualGenerator',
+    'SensorFaultDetector',
+    'ActuatorFaultDetector',
+    'FaultDetectionEngine',
+    'FaultDiagnosisEngine',
+    'FaultTolerantController',
+    'EmergencyResponseSystem',
+    'RuleCondition',
+    'RuleAction',
+    'OperatingRuleEngine',
+    'FaultTolerantSystem',
 ]
