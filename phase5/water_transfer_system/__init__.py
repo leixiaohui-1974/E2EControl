@@ -29,6 +29,8 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 21. 运行规则引擎
 22. 历史数据记录与回放
 23. 数据分析与统计工具
+24. 多目标优化与约束处理
+25. 水量分配与调度策略
 
 模块结构:
 - core_types: 核心数据结构和类型定义
@@ -51,6 +53,7 @@ Hierarchical Distributed MPC Architecture with Dynamic Role Coordination
 - visualization: 可视化与报告生成 (文本图表、性能报告、仪表板)
 - fault_tolerant_control: 故障诊断与容错控制 (故障检测、诊断、容错、应急、规则引擎)
 - data_recorder: 历史数据记录与回放 (时序存储、仿真回放、数据分析、导入导出)
+- optimization_scheduler: 优化调度与水量分配 (多目标优化、约束处理、水量分配、调度策略)
 """
 
 from .core_types import (
@@ -298,6 +301,24 @@ from .data_recorder import (
     DataRecordingSystem,
 )
 
+from .optimization_scheduler import (
+    OptimizationObjective,
+    AllocationStrategy,
+    ScheduleType,
+    ConstraintType,
+    WaterDemand,
+    WaterSupply,
+    OptimizationConstraint,
+    ScheduleSlot,
+    OptimizationResult,
+    ObjectiveFunction,
+    ConstraintHandler,
+    MultiObjectiveOptimizer,
+    WaterAllocator,
+    ScheduleGenerator,
+    OptimizationSchedulingSystem,
+)
+
 __all__ = [
     # Core Types
     'PoolRole',
@@ -504,4 +525,20 @@ __all__ = [
     'DataExporter',
     'DataImporter',
     'DataRecordingSystem',
+    # Optimization Scheduler
+    'OptimizationObjective',
+    'AllocationStrategy',
+    'ScheduleType',
+    'ConstraintType',
+    'WaterDemand',
+    'WaterSupply',
+    'OptimizationConstraint',
+    'ScheduleSlot',
+    'OptimizationResult',
+    'ObjectiveFunction',
+    'ConstraintHandler',
+    'MultiObjectiveOptimizer',
+    'WaterAllocator',
+    'ScheduleGenerator',
+    'OptimizationSchedulingSystem',
 ]
