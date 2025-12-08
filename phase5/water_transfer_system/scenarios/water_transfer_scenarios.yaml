@@ -1,0 +1,520 @@
+# 南水北调中线全线全场景测试用例
+# Water Transfer Autonomous System - All Scenarios Test Cases
+#
+# 场景分类:
+#   S1: 常规计划 (Normal Operation)
+#   S2: 突发增供 (Surge Demand)
+#   S3: 突发污染 (Pollution Emergency)
+#   S4: 暴雨防洪 (Flood Control)
+#   S5: 冰期输水 (Ice Period)
+#   S6: 泵站掉电 (Pump Failure)
+#   S7: 计划检修 (Planned Maintenance)
+#   S8: 临时抢修 (Emergency Repair)
+
+metadata:
+  version: "1.0.0"
+  description: "南水北调中线全线全场景自主运行系统测试用例"
+  author: "E2EControl Team"
+  created: "2025-01-01"
+  num_pools: 60
+  total_length_km: 1432
+
+# ============================================================================
+# 测试配置
+# ============================================================================
+test_config:
+  simulation_dt: 900.0        # 仿真步长 [s] (15分钟)
+  default_duration: 86400     # 默认持续时间 [s] (24小时)
+  initial_level: 4.0          # 初始水位 [m]
+  initial_flow: 300.0         # 初始流量 [m³/s]
+
+  # 评估指标权重
+  metric_weights:
+    safety: 0.4
+    control: 0.3
+    reliability: 0.2
+    intelligence: 0.1
+
+# ============================================================================
+# S1: 常规计划场景
+# ============================================================================
+s1_normal_operation:
+  - id: "S1-001"
+    name: "稳态水位维持"
+    description: "全线维持设计水位运行"
+    difficulty: 1
+    autonomy_level: "L3"
+    duration: 86400
+
+    initial_state:
+      source_inflow: 300
+      levels: [4.0, 4.0, 4.0, 4.0, 4.0]  # 各区域初始水位
+
+    conditions: []  # 无扰动
+
+    pass_criteria:
+      max_level_deviation: 0.2
+      max_flow_deviation: 20
+      settling_time: 3600
+
+  - id: "S1-002"
+    name: "日周期需求跟踪"
+    description: "跟踪日变化的用水需求"
+    difficulty: 2
+    autonomy_level: "L3"
+    duration: 172800  # 48小时
+
+    initial_state:
+      source_inflow: 300
+      levels: [4.0, 4.0, 4.0, 4.0, 4.0]
+
+    conditions:
+      - type: "sinusoid"
+        target: "demand"
+        start_time: 0
+        amplitude: 50
+        period: 86400  # 24小时周期
+
+    pass_criteria:
+      max_level_deviation: 0.3
+      tracking_error: 0.15
+
+  - id: "S1-003"
+    name: "季节性流量调整"
+    description: "从夏季高峰过渡到秋季平稳"
+    difficulty: 2
+    autonomy_level: "L4"
+    duration: 604800  # 7天
+
+    initial_state:
+      source_inflow: 350
+      levels: [4.2, 4.1, 4.0, 3.9, 3.8]
+
+    conditions:
+      - type: "ramp"
+        target: "source_inflow"
+        start_time: 0
+        end_time: 604800
+        start_value: 350
+        end_value: 250
+
+# ============================================================================
+# S2: 突发增供场景
+# ============================================================================
+s2_surge_demand:
+  - id: "S2-001"
+    name: "下游紧急增供"
+    description: "北京段突然增加50%需求"
+    difficulty: 3
+    autonomy_level: "L4"
+    duration: 28800  # 8小时
+
+    initial_state:
+      source_inflow: 300
+      levels: [4.0, 4.0, 4.0, 4.0, 4.0]
+
+    event:
+      type: "S2_SURGE_DEMAND"
+      location: 55  # 北京段
+      severity: "HIGH"
+      timestamp: 3600
+      details:
+        demand_increase: 0.5  # 50%增加
+
+    conditions:
+      - type: "step"
+        target: "demand"
+        pool_id: 55
+        start_time: 3600
+        value: 150  # 增加到150
+
+    expected_response:
+      strategy: "反向传播"
+      upstream_roles: ["FEED"]
+      downstream_roles: ["WAIT"]
+
+    pass_criteria:
+      response_time: 1800
+      demand_satisfaction: 0.9
+      max_level_drop: 0.5
+
+  - id: "S2-002"
+    name: "阶梯增供"
+    description: "分三阶段逐步增加供水"
+    difficulty: 2
+    autonomy_level: "L3"
+    duration: 43200
+
+    conditions:
+      - type: "step"
+        target: "demand"
+        pool_id: 50
+        start_time: 7200
+        value: 20
+      - type: "step"
+        target: "demand"
+        pool_id: 50
+        start_time: 14400
+        value: 40
+      - type: "step"
+        target: "demand"
+        pool_id: 50
+        start_time: 21600
+        value: 60
+
+# ============================================================================
+# S3: 突发污染场景
+# ============================================================================
+s3_pollution:
+  - id: "S3-001"
+    name: "K245危化品泄漏"
+    description: "中部渠池危化品翻车泄漏"
+    difficulty: 5
+    autonomy_level: "L5"
+    duration: 86400
+
+    initial_state:
+      source_inflow: 300
+      levels: [4.0, 4.0, 4.0, 4.0, 4.0]
+
+    event:
+      type: "S3_POLLUTION"
+      location: 30
+      severity: "CRITICAL"
+      timestamp: 1800
+      details:
+        pollutant_type: "chemical"
+        concentration: 100
+        drain_capacity: 80
+
+    expected_response:
+      strategy: "截-蓄-排"
+      center_role: "ISOLATE"
+      upstream_roles: ["BUFFER"]
+      downstream_roles: ["DRAIN"]
+
+    pass_criteria:
+      isolation_time: 900  # 15分钟内隔离
+      no_downstream_spread: true
+      upstream_no_overflow: true
+
+  - id: "S3-002"
+    name: "渠首段污染"
+    description: "丹江口渠首段污染事故"
+    difficulty: 5
+    autonomy_level: "L5"
+    duration: 86400
+
+    event:
+      type: "S3_POLLUTION"
+      location: 5
+      severity: "CRITICAL"
+      timestamp: 1800
+      details:
+        pollutant_type: "organic"
+
+    expected_response:
+      strategy: "截-蓄-排"
+      additional_action: "source_reduction"
+
+  - id: "S3-003"
+    name: "穿黄段污染"
+    description: "穿黄倒虹吸下游污染"
+    difficulty: 5
+    autonomy_level: "L5"
+    duration: 86400
+
+    event:
+      type: "S3_POLLUTION"
+      location: 32  # 穿黄后
+      severity: "HIGH"
+      timestamp: 3600
+      details:
+        pollutant_type: "biological"
+
+# ============================================================================
+# S4: 暴雨防洪场景
+# ============================================================================
+s4_flood_control:
+  - id: "S4-001"
+    name: "局部暴雨"
+    description: "河南段遭遇暴雨"
+    difficulty: 4
+    autonomy_level: "L4"
+    duration: 43200
+
+    initial_state:
+      source_inflow: 300
+      levels: [4.0, 4.0, 4.0, 4.0, 4.0]
+
+    event:
+      type: "S4_FLOOD_CONTROL"
+      location: 20
+      severity: "HIGH"
+      timestamp: 0
+      details:
+        rainfall_rate: 30  # mm/h
+        duration: 7200
+
+    conditions:
+      - type: "pulse"
+        target: "lateral_inflow"
+        pool_id: 20
+        start_time: 0
+        end_time: 7200
+        value: 50  # 增加50m³/s
+
+    expected_response:
+      strategy: "全线预泄"
+      level_target_bias: -0.5
+
+    pass_criteria:
+      no_overflow: true
+      max_level: 7.5
+      drainage_completed: true
+
+  - id: "S4-002"
+    name: "全线暴雨预警"
+    description: "预报未来6小时全线暴雨"
+    difficulty: 4
+    autonomy_level: "L4"
+    duration: 86400
+
+    conditions:
+      - type: "forecast"
+        content: "rainfall"
+        lead_time: 21600
+        regions: [0, 1, 2, 3, 4]
+
+    expected_response:
+      strategy: "提前预泄"
+      pre_drainage_time: 14400
+
+# ============================================================================
+# S5: 冰期输水场景
+# ============================================================================
+s5_ice_period:
+  - id: "S5-001"
+    name: "冰盖形成期"
+    description: "初冬冰盖形成，流速效率下降"
+    difficulty: 4
+    autonomy_level: "L4"
+    duration: 604800  # 7天
+
+    initial_state:
+      source_inflow: 250
+      levels: [4.0, 4.0, 4.0, 4.0, 4.0]
+      seasonal: "ice_formation"
+
+    event:
+      type: "S5_ICE_PERIOD"
+      location: 0  # 全线
+      severity: "MEDIUM"
+      timestamp: 0
+      details:
+        flow_efficiency: 0.75
+
+    conditions:
+      - type: "parameter_change"
+        target: "flow_efficiency"
+        regions: [2, 3, 4]  # 北部更早结冰
+        start_time: 0
+        value: 0.75
+
+    expected_response:
+      strategy: "稳流运行"
+      max_flow_change_rate: 0.1
+
+    pass_criteria:
+      flow_stability: 0.9  # 变化率<10%
+      no_ice_damage: true
+
+  - id: "S5-002"
+    name: "冰盖稳定期"
+    description: "深冬稳定冰盖下输水"
+    difficulty: 3
+    autonomy_level: "L3"
+    duration: 2592000  # 30天
+
+    conditions:
+      - type: "parameter_change"
+        target: "flow_efficiency"
+        value: 0.8
+      - type: "constraint"
+        target: "delta_Q_max"
+        value: 10  # 限制流量变化
+
+  - id: "S5-003"
+    name: "冰盖融化期"
+    description: "初春冰盖融化，防止冰塞"
+    difficulty: 4
+    autonomy_level: "L4"
+    duration: 604800
+
+    conditions:
+      - type: "ramp"
+        target: "flow_efficiency"
+        start_value: 0.7
+        end_value: 1.0
+
+# ============================================================================
+# S6: 泵站掉电场景
+# ============================================================================
+s6_pump_failure:
+  - id: "S6-001"
+    name: "沿线泵站掉电"
+    description: "中部泵站突然断电"
+    difficulty: 4
+    autonomy_level: "L4"
+    duration: 14400
+
+    event:
+      type: "S6_PUMP_FAILURE"
+      location: 25
+      severity: "HIGH"
+      timestamp: 1800
+      details:
+        expected_recovery: 7200
+
+    conditions:
+      - type: "step"
+        target: "pump_power"
+        pool_id: 25
+        start_time: 1800
+        value: 0
+
+    expected_response:
+      strategy: "平滑过渡"
+      upstream_action: "减流"
+      downstream_action: "补偿"
+
+    pass_criteria:
+      response_time: 600
+      no_water_hammer: true
+      continuity_maintained: true
+
+# ============================================================================
+# S7: 计划检修场景
+# ============================================================================
+s7_planned_maintenance:
+  - id: "S7-001"
+    name: "节制闸检修"
+    description: "计划对K500节制闸进行检修"
+    difficulty: 3
+    autonomy_level: "L3"
+    duration: 172800  # 48小时
+
+    event:
+      type: "S7_PLANNED_MAINT"
+      location: 28
+      severity: "LOW"
+      timestamp: 86400  # 24小时后开始
+      details:
+        start_time: 86400
+        end_time: 115200  # 持续8小时
+        advance_notice: 86400
+
+    expected_response:
+      strategy: "蓄能-隔离"
+      pre_storage_time: 86400
+
+    pass_criteria:
+      storage_sufficient: true
+      downstream_supply_maintained: true
+
+  - id: "S7-002"
+    name: "渡槽检修"
+    description: "湍河渡槽年度检修"
+    difficulty: 3
+    autonomy_level: "L3"
+    duration: 259200  # 72小时
+
+    event:
+      type: "S7_PLANNED_MAINT"
+      location: 18
+      details:
+        structure: "TH_AQUEDUCT"
+        maintenance_duration: 28800
+
+# ============================================================================
+# S8: 临时抢修场景
+# ============================================================================
+s8_emergency_repair:
+  - id: "S8-001"
+    name: "闸门故障抢修"
+    description: "某节制闸突然故障需紧急修复"
+    difficulty: 5
+    autonomy_level: "L5"
+    duration: 28800
+
+    event:
+      type: "S8_EMERGENCY_REPAIR"
+      location: 35
+      severity: "CRITICAL"
+      timestamp: 0
+      details:
+        fault_type: "gate_stuck"
+        estimated_repair: 14400
+
+    conditions:
+      - type: "stuck"
+        target: "gate"
+        pool_id: 35
+        start_time: 0
+        position: 0.5
+
+    expected_response:
+      strategy: "降级运行"
+      bypass_if_available: true
+      island_mode: true
+
+    pass_criteria:
+      response_time: 300
+      downstream_supply: 0.7  # 保持70%供水
+
+  - id: "S8-002"
+    name: "渗漏抢修"
+    description: "发现渠道渗漏需紧急处理"
+    difficulty: 4
+    autonomy_level: "L4"
+    duration: 43200
+
+    conditions:
+      - type: "leak"
+        target: "seepage"
+        pool_id: 40
+        start_time: 0
+        rate: 20  # 20m³/s渗漏
+
+# ============================================================================
+# 复合场景
+# ============================================================================
+compound_scenarios:
+  - id: "C-001"
+    name: "暴雨+污染"
+    description: "暴雨冲刷导致污染物入渠"
+    difficulty: 5
+    autonomy_level: "L5"
+    duration: 86400
+
+    events:
+      - type: "S4_FLOOD_CONTROL"
+        location: 22
+        timestamp: 0
+      - type: "S3_POLLUTION"
+        location: 24
+        timestamp: 7200
+
+  - id: "C-002"
+    name: "冰期+设备故障"
+    description: "冰期运行期间泵站故障"
+    difficulty: 5
+    autonomy_level: "L5"
+    duration: 86400
+
+    events:
+      - type: "S5_ICE_PERIOD"
+        timestamp: 0
+      - type: "S6_PUMP_FAILURE"
+        location: 30
+        timestamp: 14400
