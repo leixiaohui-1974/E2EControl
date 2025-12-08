@@ -376,8 +376,7 @@ class DigitalTwinSyncTester:
                     for _ in range(horizon):
                         actual_level = pool.step(
                             scenario.initial_inflow,
-                            scenario.initial_outflow,
-                            0.0
+                            scenario.initial_outflow
                         )
 
                     # 预测误差
