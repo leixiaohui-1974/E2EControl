@@ -1,10 +1,10 @@
 {
-  "test_id": "HIL_20251208_012151",
-  "test_start_time": "2025-12-08T01:21:51.211192",
-  "test_end_time": "2025-12-08T01:21:53.261381",
-  "total_execution_time": 2.050187826156616,
+  "test_id": "HIL_20251208_015147",
+  "test_start_time": "2025-12-08T01:51:47.963296",
+  "test_end_time": "2025-12-08T01:51:48.300278",
+  "total_execution_time": 0.33698153495788574,
   "scenarios": {
-    "total": 521,
+    "total": 100,
     "by_category": {
       "S1_NORMAL": 12,
       "S2_FLOOD": 12,
@@ -14,122 +14,91 @@
       "S6_MAINTENANCE": 12,
       "S7_DEGRADED": 12,
       "S8_EMERGENCY": 12,
-      "BOUNDARY": 27,
-      "ORTHOGONAL": 63,
-      "FAULT": 45,
-      "WEATHER": 96,
-      "WEATHER_TRANSITION": 1,
-      "COMPOUND": 27,
-      "COMPOUND_EXTREME": 4,
-      "TOPOLOGY": 72,
-      "MONTE_CARLO": 90
+      "BOUNDARY": 4
     },
     "by_difficulty": {
       "1": 96,
-      "3": 84,
-      "2": 115,
-      "4": 166,
-      "5": 60
+      "3": 4
     }
   },
   "results": {
-    "total_tests": 9164,
-    "passed": 6565,
-    "failed": 2599,
-    "pass_rate": 0.7163902226102139,
-    "score": NaN
+    "total_tests": 1464,
+    "passed": 1272,
+    "failed": 192,
+    "pass_rate": 0.8688524590163934,
+    "score": 0.7566366666437074
   },
   "modules": {
     "本体仿真": {
-      "total": 1686,
-      "passed": 1554,
-      "failed": 132,
-      "pass_rate": 0.9217081850533808,
-      "score": 0.942322216657977,
-      "time": 0.1022953987121582,
+      "total": 304,
+      "passed": 304,
+      "failed": 0,
+      "pass_rate": 1.0,
+      "score": 0.9999999999999998,
+      "time": 0.016190767288208008,
       "metrics": {}
     },
     "同步孪生": {
-      "total": 1204,
-      "passed": 1042,
-      "failed": 162,
-      "pass_rate": 0.8654485049833887,
-      "score": 0.8654482935017525,
-      "time": 0.10225701332092285,
+      "total": 200,
+      "passed": 200,
+      "failed": 0,
+      "pass_rate": 1.0,
+      "score": 0.9999997627615929,
+      "time": 0.0188906192779541,
       "metrics": {
         "sync_accuracy": 1.0,
-        "latency": 9.774429555589086e-07
+        "latency": 9.489536285400393e-07
       }
     },
     "预测功能": {
-      "total": 1384,
-      "passed": 1012,
-      "failed": 372,
-      "pass_rate": 0.7312138728323699,
-      "score": 0.41143357531953856,
-      "time": 1.3540902137756348,
+      "total": 200,
+      "passed": 153,
+      "failed": 47,
+      "pass_rate": 0.765,
+      "score": 0.5062474125017263,
+      "time": 0.21383213996887207,
       "metrics": {
-        "mae": 0.8354304439457066,
-        "rmse": 0.8826121212821422
+        "mae": 0.46620247128260545,
+        "rmse": 0.5840498211016673
       }
     },
     "调度优化": {
-      "total": 2231,
-      "passed": 1484,
-      "failed": 747,
-      "pass_rate": 0.6651725683549977,
-      "score": NaN,
-      "time": 0.2773401737213135,
+      "total": 400,
+      "passed": 379,
+      "failed": 21,
+      "pass_rate": 0.9475,
+      "score": 0.7322711479057881,
+      "time": 0.06021428108215332,
       "metrics": {
-        "constraint_violations": 23617,
-        "computation_time": 1.5872842471517293e-08
+        "constraint_violations": 4143,
+        "computation_time": 1.7946958541870116e-08
       }
     },
     "控制功能": {
-      "total": 2118,
-      "passed": 1269,
-      "failed": 849,
-      "pass_rate": 0.5991501416430595,
-      "score": 0.5179662479350272,
-      "time": 0.18298029899597168,
+      "total": 360,
+      "passed": 236,
+      "failed": 124,
+      "pass_rate": 0.6555555555555556,
+      "score": 0.5446650100494299,
+      "time": 0.026334047317504883,
       "metrics": {
         "tracking_error": 0.0,
         "settling_time": Infinity
       }
-    },
-    "异常自愈": {
-      "total": 541,
-      "passed": 204,
-      "failed": 337,
-      "pass_rate": 0.37707948243992606,
-      "score": 0.6083918669131239,
-      "time": 0.027108430862426758,
-      "metrics": {
-        "detection_accuracy": 0.6172222222222222,
-        "recovery_rate": 0.635,
-        "detection_latency": Infinity
-      }
     }
   },
   "certification": {
-    "level": "L0",
+    "level": "L2",
     "valid": false
   },
   "issues": [
-    "调度优化 通过率过低 (66.5%)",
-    "控制功能 通过率过低 (59.9%)",
-    "异常自愈 通过率过低 (37.7%)"
+    "控制功能 通过率过低 (65.6%)"
   ],
   "warnings": [
-    "同步孪生 通过率需要提升 (86.5%)",
-    "预测功能 通过率需要提升 (73.1%)"
+    "预测功能 通过率需要提升 (76.5%)"
   ],
   "recommendations": [
-    "优先改进 调度优化 模块，当前通过率仅 66.5%",
-    "优先改进 控制功能 模块，当前通过率仅 59.9%",
-    "优先改进 异常自愈 模块，当前通过率仅 37.7%",
-    "提升异常检测准确率到90%以上",
-    "提升自愈恢复成功率到80%以上",
-    "总体通过率 71.6%，距离L4认证 (95%) 还需提升"
+    "优先改进 控制功能 模块，当前通过率仅 65.6%",
+    "总体通过率 86.9%，距离L4认证 (95%) 还需提升"
   ]
 }
