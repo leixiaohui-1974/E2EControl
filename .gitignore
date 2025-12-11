@@ -75,3 +75,4 @@ smart_pool.log
 data/
 reports/
 docker/grafana/dashboards/*.json
+_external/

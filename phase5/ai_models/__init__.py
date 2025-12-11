@@ -24,6 +24,11 @@ AI Models for Generative Water Network World Model
    - 向量数据库检索
    - 未知场景检测
 
+5. hydrographnet/ - HydroGraphNet 集成模块
+   - KAN层 (Kolmogorov-Arnold Network)
+   - 物理守恒损失函数
+   - 微观世界模型适配器
+
 架构理念:
 - 不推翻现有代码，采用"组件替换与增强"策略
 - 保持与 Phase 5 工程架构的兼容性
@@ -51,6 +56,22 @@ from .deep_scenario_encoder import (
     DeepScenarioEncoder,
     ContrastiveLoss,
     ScenarioVectorDB,
+)
+
+# HydroGraphNet 集成模块
+from .hydrographnet import (
+    # KAN Layers
+    KANLinear,
+    KolmogorovArnoldNetwork,
+    FourierKAN,
+    ChebyshevKAN,
+    # Physics Loss
+    GlobalMassConservationLoss,
+    WaterBalanceLoss,
+    HydroPhysicsLoss,
+    # Micro World Adapter
+    MicroWorldAdapter,
+    GraphBuilder,
 )
 
 __version__ = "1.0.0"
