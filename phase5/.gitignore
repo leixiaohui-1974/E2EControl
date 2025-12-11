@@ -1,0 +1,7 @@
+
+# Model files
+*.pt
+*.pth
+*.zip
+models/
+best_model.pt
