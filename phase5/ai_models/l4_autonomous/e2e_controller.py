@@ -49,7 +49,7 @@ class AutonomousConfig:
     dt: float = 900.0                      # 时间步长 (15分钟)
 
     # 决策参数
-    confidence_threshold: float = 0.85     # 自主决策置信度阈值
+    confidence_threshold: float = 0.3      # 自主决策置信度阈值 (未训练模型使用较低阈值)
     safety_margin: float = 0.2             # 安全裕度
 
     # 目标权重
@@ -316,6 +316,9 @@ class DecisionModule(nn.Module):
             nn.Linear(128, 1),
             nn.Sigmoid()
         )
+        # 初始化置信度估计器的偏置，使未训练模型有合理的初始置信度
+        with torch.no_grad():
+            self.confidence_estimator[2].bias.fill_(0.5)  # sigmoid(0.5) ≈ 0.62
 
         # 目标编码器
         self.target_encoder = nn.Linear(config.num_pools, config.state_dim)

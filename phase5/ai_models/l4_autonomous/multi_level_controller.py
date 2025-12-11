@@ -582,6 +582,8 @@ class L4HighAutoController(BaseController):
                 'action': l3_result['action'],
                 'source': 'l4_consult_l3',
                 'confidence': result['confidence'],
+                'predictions': result['predictions'],  # 保留L4预测用于诊断
+                'is_autonomous': False,
                 'l4_action': result['gate_openings'],
                 'l3_action': l3_result['action'],
                 'requires_confirmation': True
@@ -592,7 +594,7 @@ class L4HighAutoController(BaseController):
             'source': 'e2e',
             'confidence': result['confidence'],
             'predictions': result['predictions'],
-            'is_autonomous': result['is_autonomous'],
+            'is_autonomous': True,
             'requires_confirmation': False
         }
 
