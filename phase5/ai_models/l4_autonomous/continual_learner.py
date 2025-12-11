@@ -496,7 +496,7 @@ class ContinualLearner:
 
     def load(self, path: str):
         """加载学习器状态"""
-        state = torch.load(path, map_location='cpu')
+        state = torch.load(path, map_location='cpu', weights_only=False)
 
         self.model.load_state_dict(state['model_state'])
         self.optimizer.load_state_dict(state['optimizer_state'])

@@ -533,7 +533,7 @@ class MicroWorldAdapter:
     def load_model(self, path: str):
         """加载预训练模型"""
         try:
-            checkpoint = torch.load(path, map_location=self.device)
+            checkpoint = torch.load(path, map_location=self.device, weights_only=False)
             self.model.load_state_dict(checkpoint['model_state_dict'])
             logger.info(f"模型加载成功: {path}")
         except Exception as e:

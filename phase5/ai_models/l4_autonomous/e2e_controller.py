@@ -607,7 +607,7 @@ class E2EAutonomousController(nn.Module):
 
     def load(self, path: str):
         """加载模型"""
-        checkpoint = torch.load(path, map_location='cpu')
+        checkpoint = torch.load(path, map_location='cpu', weights_only=False)
         self.load_state_dict(checkpoint['model_state_dict'])
         self.stats = checkpoint.get('stats', self.stats)
         self.autonomy_level = AutonomyLevel(checkpoint.get('autonomy_level', 4))

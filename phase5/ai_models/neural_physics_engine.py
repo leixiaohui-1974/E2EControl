@@ -514,7 +514,7 @@ class NeuralPhysicsEngine:
         """加载预训练模型"""
         path = path or self.config.model_path
         if os.path.exists(path):
-            checkpoint = torch.load(path, map_location=self.device)
+            checkpoint = torch.load(path, map_location=self.device, weights_only=False)
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self._input_mean = checkpoint.get('input_mean', self._input_mean)
             self._input_std = checkpoint.get('input_std', self._input_std)

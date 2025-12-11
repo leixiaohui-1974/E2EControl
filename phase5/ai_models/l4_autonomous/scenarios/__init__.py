@@ -13,6 +13,7 @@
 
 from .scenario_definitions import (
     ScenarioCategory,
+    ScenarioSeverity,
     Scenario,
     ScenarioLibrary,
     COMPLETE_SCENARIO_MATRIX,
@@ -30,6 +31,7 @@ from .scenario_validator import (
 
 __all__ = [
     'ScenarioCategory',
+    'ScenarioSeverity',
     'Scenario',
     'ScenarioLibrary',
     'COMPLETE_SCENARIO_MATRIX',
