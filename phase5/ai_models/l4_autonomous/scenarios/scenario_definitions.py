@@ -766,7 +766,7 @@ COMPLETE_SCENARIO_MATRIX["EMERGENCY_001"] = Scenario(
         duration_hours=0.5
     ),
     is_predictable=False,
-    max_response_time_s=30.0,
+    max_response_time_s=30.0,  # 30秒紧急响应
     success_criteria={
         'emergency_closure': 30,
         'upstream_protection': True,
