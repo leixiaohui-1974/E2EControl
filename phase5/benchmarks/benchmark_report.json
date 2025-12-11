@@ -1,0 +1,661 @@
+{
+  "timestamp": "2025-12-11T23:23:17.755512",
+  "device": "cpu",
+  "cuda_available": false,
+  "cuda_device_name": null,
+  "config": {
+    "warmup_iterations": 3,
+    "benchmark_iterations": 20
+  },
+  "results": [
+    {
+      "name": "NeuralPhysics_LSTM_b1",
+      "timing": {
+        "mean_ms": 3.454,
+        "std_ms": 0.211,
+        "min_ms": 3.204,
+        "max_ms": 4.047,
+        "median_ms": 3.419,
+        "p95_ms": 4.047,
+        "p99_ms": 4.047
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 289.51,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "model_type": "LSTM",
+        "hidden_dim": 128,
+        "num_layers": 2,
+        "sequence_length": 16,
+        "params": 726532
+      }
+    },
+    {
+      "name": "NeuralPhysics_LSTM_b8",
+      "timing": {
+        "mean_ms": 9.118,
+        "std_ms": 1.249,
+        "min_ms": 6.968,
+        "max_ms": 11.576,
+        "median_ms": 9.143,
+        "p95_ms": 11.576,
+        "p99_ms": 11.576
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 877.4,
+        "batch_size": 8,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "model_type": "LSTM",
+        "hidden_dim": 128,
+        "num_layers": 2,
+        "sequence_length": 16,
+        "params": 726532
+      }
+    },
+    {
+      "name": "NeuralPhysics_GRU_b1",
+      "timing": {
+        "mean_ms": 2.03,
+        "std_ms": 0.157,
+        "min_ms": 1.869,
+        "max_ms": 2.579,
+        "median_ms": 2.009,
+        "p95_ms": 2.579,
+        "p99_ms": 2.579
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 492.59,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "model_type": "GRU",
+        "hidden_dim": 128,
+        "num_layers": 2,
+        "sequence_length": 16,
+        "params": 207489
+      }
+    },
+    {
+      "name": "NeuralPhysics_GRU_b8",
+      "timing": {
+        "mean_ms": 2.725,
+        "std_ms": 0.147,
+        "min_ms": 2.581,
+        "max_ms": 3.308,
+        "median_ms": 2.692,
+        "p95_ms": 3.308,
+        "p99_ms": 3.308
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 2936.1,
+        "batch_size": 8,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "model_type": "GRU",
+        "hidden_dim": 128,
+        "num_layers": 2,
+        "sequence_length": 16,
+        "params": 207489
+      }
+    },
+    {
+      "name": "ScenarioEncoder_CNN_b1",
+      "timing": {
+        "mean_ms": 3.943,
+        "std_ms": 0.89,
+        "min_ms": 3.284,
+        "max_ms": 7.627,
+        "median_ms": 3.718,
+        "p95_ms": 7.627,
+        "p99_ms": 7.627
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 253.63,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "encoder_type": "CNN",
+        "hidden_dim": 128,
+        "embedding_dim": 64,
+        "sequence_length": 96,
+        "params": 100416
+      }
+    },
+    {
+      "name": "ScenarioEncoder_CNN_b8",
+      "timing": {
+        "mean_ms": 1.284,
+        "std_ms": 0.329,
+        "min_ms": 1.167,
+        "max_ms": 2.676,
+        "median_ms": 1.21,
+        "p95_ms": 2.676,
+        "p99_ms": 2.676
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 6229.68,
+        "batch_size": 8,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "encoder_type": "CNN",
+        "hidden_dim": 128,
+        "embedding_dim": 64,
+        "sequence_length": 96,
+        "params": 100416
+      }
+    },
+    {
+      "name": "ScenarioEncoder_Transformer_b1",
+      "timing": {
+        "mean_ms": 5.756,
+        "std_ms": 0.712,
+        "min_ms": 5.047,
+        "max_ms": 7.849,
+        "median_ms": 5.56,
+        "p95_ms": 7.849,
+        "p99_ms": 7.849
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 173.73,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "encoder_type": "Transformer",
+        "hidden_dim": 128,
+        "embedding_dim": 64,
+        "num_layers": 3,
+        "sequence_length": 96,
+        "params": 620480
+      }
+    },
+    {
+      "name": "ScenarioEncoder_Transformer_b8",
+      "timing": {
+        "mean_ms": 4.327,
+        "std_ms": 0.446,
+        "min_ms": 3.733,
+        "max_ms": 5.881,
+        "median_ms": 4.309,
+        "p95_ms": 5.881,
+        "p99_ms": 5.881
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 1849.02,
+        "batch_size": 8,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "encoder_type": "Transformer",
+        "hidden_dim": 128,
+        "embedding_dim": 64,
+        "num_layers": 3,
+        "sequence_length": 96,
+        "params": 620480
+      }
+    },
+    {
+      "name": "ScenarioVAE_Forward_b1",
+      "timing": {
+        "mean_ms": 9.797,
+        "std_ms": 1.501,
+        "min_ms": 8.856,
+        "max_ms": 15.54,
+        "median_ms": 9.29,
+        "p95_ms": 15.54,
+        "p99_ms": 15.54
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 102.07,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "operation": "forward",
+        "latent_dim": 32,
+        "sequence_length": 96,
+        "params": 946248
+      }
+    },
+    {
+      "name": "ScenarioVAE_Forward_b8",
+      "timing": {
+        "mean_ms": 21.188,
+        "std_ms": 4.508,
+        "min_ms": 16.542,
+        "max_ms": 32.112,
+        "median_ms": 19.616,
+        "p95_ms": 32.112,
+        "p99_ms": 32.112
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 377.58,
+        "batch_size": 8,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "operation": "forward",
+        "latent_dim": 32,
+        "sequence_length": 96,
+        "params": 946248
+      }
+    },
+    {
+      "name": "ScenarioVAE_Encode_b1",
+      "timing": {
+        "mean_ms": 7.307,
+        "std_ms": 1.743,
+        "min_ms": 5.972,
+        "max_ms": 13.007,
+        "median_ms": 6.845,
+        "p95_ms": 13.007,
+        "p99_ms": 13.007
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 136.85,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "operation": "encode"
+      }
+    },
+    {
+      "name": "ScenarioVAE_Encode_b8",
+      "timing": {
+        "mean_ms": 14.094,
+        "std_ms": 2.898,
+        "min_ms": 11.816,
+        "max_ms": 23.421,
+        "median_ms": 12.892,
+        "p95_ms": 23.421,
+        "p99_ms": 23.421
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 567.62,
+        "batch_size": 8,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "operation": "encode"
+      }
+    },
+    {
+      "name": "ScenarioVAE_Sample_b1",
+      "timing": {
+        "mean_ms": 3.931,
+        "std_ms": 0.46,
+        "min_ms": 3.208,
+        "max_ms": 4.732,
+        "median_ms": 4.061,
+        "p95_ms": 4.732,
+        "p99_ms": 4.732
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 254.4,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "operation": "sample"
+      }
+    },
+    {
+      "name": "ScenarioVAE_Sample_b8",
+      "timing": {
+        "mean_ms": 6.703,
+        "std_ms": 1.428,
+        "min_ms": 5.518,
+        "max_ms": 12.366,
+        "median_ms": 6.45,
+        "p95_ms": 12.366,
+        "p99_ms": 12.366
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 1193.48,
+        "batch_size": 8,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "operation": "sample"
+      }
+    },
+    {
+      "name": "E2E_SpatioTemporalAttention_b1",
+      "timing": {
+        "mean_ms": 8.931,
+        "std_ms": 0.502,
+        "min_ms": 8.521,
+        "max_ms": 10.884,
+        "median_ms": 8.808,
+        "p95_ms": 10.884,
+        "p99_ms": 10.884
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 111.96,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "component": "attention",
+        "num_pools": 5,
+        "state_dim": 64,
+        "num_heads": 8,
+        "history_length": 48,
+        "params": 45056
+      }
+    },
+    {
+      "name": "E2E_SpatioTemporalAttention_b4",
+      "timing": {
+        "mean_ms": 10.933,
+        "std_ms": 0.328,
+        "min_ms": 10.475,
+        "max_ms": 11.973,
+        "median_ms": 10.909,
+        "p95_ms": 11.973,
+        "p99_ms": 11.973
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 365.85,
+        "batch_size": 4,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "component": "attention",
+        "num_pools": 5,
+        "state_dim": 64,
+        "num_heads": 8,
+        "history_length": 48,
+        "params": 45056
+      }
+    },
+    {
+      "name": "E2E_Controller_b1",
+      "timing": {
+        "mean_ms": 25.794,
+        "std_ms": 0.929,
+        "min_ms": 23.942,
+        "max_ms": 27.853,
+        "median_ms": 25.591,
+        "p95_ms": 27.853,
+        "p99_ms": 27.853
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 38.77,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "component": "full_controller",
+        "num_pools": 5,
+        "history_length": 48,
+        "params": 372050
+      }
+    },
+    {
+      "name": "E2E_Controller_b4",
+      "timing": {
+        "mean_ms": 18.645,
+        "std_ms": 0.999,
+        "min_ms": 17.304,
+        "max_ms": 22.126,
+        "median_ms": 18.356,
+        "p95_ms": 22.126,
+        "p99_ms": 22.126
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 214.53,
+        "batch_size": 4,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "component": "full_controller",
+        "num_pools": 5,
+        "history_length": 48,
+        "params": 372050
+      }
+    },
+    {
+      "name": "WorldModel_Predictor_b1",
+      "timing": {
+        "mean_ms": 3.042,
+        "std_ms": 0.322,
+        "min_ms": 2.597,
+        "max_ms": 3.884,
+        "median_ms": 2.976,
+        "p95_ms": 3.884,
+        "p99_ms": 3.884
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 328.76,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "num_pools": 5,
+        "component": "simplified_predictor",
+        "params": 24852
+      }
+    },
+    {
+      "name": "WorldModel_Predictor_b4",
+      "timing": {
+        "mean_ms": 0.283,
+        "std_ms": 0.166,
+        "min_ms": 0.219,
+        "max_ms": 0.972,
+        "median_ms": 0.239,
+        "p95_ms": 0.972,
+        "p99_ms": 0.972
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 14158.23,
+        "batch_size": 4,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "num_pools": 5,
+        "component": "simplified_predictor",
+        "params": 24852
+      }
+    },
+    {
+      "name": "Environment_Reset",
+      "timing": {
+        "mean_ms": 0.052,
+        "std_ms": 0.028,
+        "min_ms": 0.042,
+        "max_ms": 0.17,
+        "median_ms": 0.044,
+        "p95_ms": 0.17,
+        "p99_ms": 0.17
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 19106.72,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "operation": "reset"
+      }
+    },
+    {
+      "name": "Environment_Step",
+      "timing": {
+        "mean_ms": 0.044,
+        "std_ms": 0.016,
+        "min_ms": 0.036,
+        "max_ms": 0.112,
+        "median_ms": 0.041,
+        "p95_ms": 0.112,
+        "p99_ms": 0.112
+      },
+      "memory": {
+        "peak_mb": 0.0,
+        "allocated_mb": 0.0
+      },
+      "throughput": {
+        "samples_per_sec": 22565.19,
+        "batch_size": 1,
+        "iterations": 20
+      },
+      "device": "cpu",
+      "dtype": "float32",
+      "metadata": {
+        "operation": "step"
+      }
+    }
+  ],
+  "summary": {
+    "total_tests": 22,
+    "fastest": {
+      "name": "Environment_Step",
+      "time_ms": 0.04
+    },
+    "slowest": {
+      "name": "E2E_Controller_b1",
+      "time_ms": 25.79
+    },
+    "highest_memory": {
+      "name": "NeuralPhysics_LSTM_b1",
+      "memory_mb": 0.0
+    },
+    "bottlenecks": [],
+    "total_time_ms": 163.38
+  }
+}
