@@ -1,0 +1,125 @@
+# =============================================================================
+# E2EControl 生产环境配置
+# =============================================================================
+# 说明: 生产环境配置，用于实际部署
+# =============================================================================
+
+system:
+  environment: "production"
+  log_level: "INFO"
+  device: "cuda"              # GPU加速
+
+# 完整南水北调中线系统
+water_system:
+  total_length: 1432.0
+  num_pools: 63
+  num_gates: 64
+  avg_velocity: 1.5
+
+# 完整时间参数
+timing:
+  dt: 900.0                   # 15分钟标准步长
+  episode_duration: 604800.0  # 7天episode
+  history_length: 192         # 48小时历史
+  prediction_horizon: 96      # 24小时预测
+
+# 完整神经物理引擎
+neural_physics:
+  architecture:
+    hidden_dim: 256
+    num_layers: 3
+  physics_loss:
+    enabled: true
+    weight: 0.2               # 增强物理约束
+  training:
+    batch_size: 128
+    num_epochs: 200
+
+# 完整场景编码器
+scenario_encoder:
+  architecture:
+    type: "transformer"       # 使用Transformer
+    hidden_dim: 256
+    embedding_dim: 128
+    num_layers: 4
+  transformer:
+    num_heads: 8
+    ff_dim: 512
+
+# 完整VAE
+scenario_vae:
+  architecture:
+    encoder_hidden_dim: 256
+    latent_dim: 64
+    decoder_hidden_dim: 256
+  training:
+    num_epochs: 500
+
+# 完整E2E控制器
+autonomous_controller:
+  architecture:
+    state_dim: 256
+    action_dim: 128
+    hidden_dim: 512
+    num_attention_heads: 16
+  autonomy:
+    level: "L4_HIGH"
+    confidence_threshold: 0.2 # 较低阈值，更自主
+    human_override: true
+
+# 完整世界模型
+world_model:
+  architecture:
+    node_dim: 128
+    hidden_dim: 512
+    num_gnn_layers: 6
+  prediction_horizons: [4, 12, 48, 96]  # 多时间尺度
+  uncertainty:
+    enabled: true
+    num_samples: 20
+
+# 完整持续学习
+continual_learning:
+  replay_buffer:
+    capacity: 1000000         # 100万经验
+    prioritized: true
+  learning:
+    learning_rate: 0.00005    # 更小学习率
+  ewc:
+    enabled: true
+    lambda: 5000.0            # 更强正则化
+
+# 完整数据
+data_generator:
+  num_samples: 1000000        # 100万样本
+
+# 生产日志
+logging:
+  console:
+    level: "INFO"
+  file:
+    enabled: true
+    level: "INFO"
+    max_bytes: 104857600      # 100MB
+    backup_count: 10
+  tensorboard:
+    enabled: true
+    flush_secs: 60
+
+# 安全仪表盘
+dashboard:
+  port: 8443
+  refresh_interval: 10
+  enable_control: true
+  authentication:
+    enabled: true
+
+# 启用数据接口
+data_interface:
+  opcua:
+    enabled: true
+    security_mode: "SignAndEncrypt"
+    timeout: 10000
+  modbus:
+    enabled: true
+    timeout: 5000

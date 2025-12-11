@@ -1,0 +1,86 @@
+# =============================================================================
+# E2EControl 开发环境配置
+# =============================================================================
+# 说明: 开发环境特定配置，覆盖主配置文件中的默认值
+# =============================================================================
+
+system:
+  environment: "development"
+  log_level: "DEBUG"
+  device: "cpu"               # 开发时使用CPU
+
+# 简化的水利系统 (用于快速迭代)
+water_system:
+  num_pools: 5                # 简化为5个渠池
+  num_gates: 6
+
+# 较短的时间参数
+timing:
+  episode_duration: 14400.0   # 4小时episode (快速测试)
+  history_length: 24          # 6小时历史
+  prediction_horizon: 12      # 3小时预测
+
+# 简化的神经网络
+neural_physics:
+  architecture:
+    hidden_dim: 64            # 较小的隐藏层
+    num_layers: 1             # 单层
+  training:
+    batch_size: 32
+    num_epochs: 10            # 少量epochs
+
+# 简化的编码器
+scenario_encoder:
+  architecture:
+    hidden_dim: 64
+    embedding_dim: 32
+    num_layers: 2
+
+# 简化的VAE
+scenario_vae:
+  architecture:
+    encoder_hidden_dim: 64
+    latent_dim: 16
+    decoder_hidden_dim: 64
+  training:
+    num_epochs: 50
+
+# 简化的控制器
+autonomous_controller:
+  architecture:
+    state_dim: 64
+    action_dim: 32
+    hidden_dim: 128
+  autonomy:
+    confidence_threshold: 0.5   # 较高阈值，更保守
+
+# 简化的世界模型
+world_model:
+  architecture:
+    node_dim: 32
+    hidden_dim: 128
+    num_gnn_layers: 2
+  prediction_horizons: [4, 12]  # 只预测短期
+
+# 小规模数据生成
+data_generator:
+  num_samples: 10000          # 1万样本
+  sequence_length: 16
+
+# 详细日志
+logging:
+  console:
+    level: "DEBUG"
+  file:
+    level: "DEBUG"
+  tensorboard:
+    enabled: true
+    flush_secs: 10            # 更频繁刷新
+
+# 本地仪表盘
+dashboard:
+  port: 8080
+  refresh_interval: 2         # 更快刷新
+  enable_control: true
+  authentication:
+    enabled: false

@@ -1,0 +1,88 @@
+# =============================================================================
+# E2EControl 测试环境配置
+# =============================================================================
+# 说明: 测试环境配置，用于自动化测试和CI/CD
+# =============================================================================
+
+system:
+  environment: "testing"
+  log_level: "WARNING"        # 测试时减少日志
+  random_seed: 42             # 固定种子，确保可重复
+  device: "cpu"
+
+# 最小化系统 (单元测试)
+water_system:
+  num_pools: 3
+  num_gates: 4
+
+# 最短时间参数
+timing:
+  dt: 300.0                   # 5分钟步长 (加速测试)
+  episode_duration: 3600.0    # 1小时episode
+  history_length: 12
+  prediction_horizon: 6
+
+# 最小神经网络
+neural_physics:
+  architecture:
+    hidden_dim: 32
+    num_layers: 1
+  training:
+    batch_size: 16
+    num_epochs: 2
+
+# 最小编码器
+scenario_encoder:
+  architecture:
+    hidden_dim: 32
+    embedding_dim: 16
+    num_layers: 1
+
+# 最小VAE
+scenario_vae:
+  architecture:
+    encoder_hidden_dim: 32
+    latent_dim: 8
+    decoder_hidden_dim: 32
+  training:
+    num_epochs: 2
+
+# 最小控制器
+autonomous_controller:
+  architecture:
+    state_dim: 32
+    action_dim: 16
+    hidden_dim: 64
+
+# 最小世界模型
+world_model:
+  architecture:
+    node_dim: 16
+    hidden_dim: 64
+    num_gnn_layers: 1
+  prediction_horizons: [4]
+
+# 最小数据
+data_generator:
+  num_samples: 1000
+  sequence_length: 8
+
+# 简化日志
+logging:
+  console:
+    level: "WARNING"
+  file:
+    enabled: false
+  tensorboard:
+    enabled: false
+
+# 禁用仪表盘
+dashboard:
+  enable_control: false
+
+# 禁用外部接口
+data_interface:
+  opcua:
+    enabled: false
+  modbus:
+    enabled: false
