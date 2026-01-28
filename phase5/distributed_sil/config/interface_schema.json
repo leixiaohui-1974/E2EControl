@@ -1,0 +1,546 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "分布式SIL接口数据字典",
+  "description": "南水北调中线工程分层分布式控制SIL系统的接口规范",
+  "version": "1.0.0",
+
+  "definitions": {
+
+    "IdReference": {
+      "type": "object",
+      "description": "IDZ模型 -> 高保真模型的软边界参考值",
+      "properties": {
+        "gate_id": {
+          "type": "string",
+          "description": "闸门ID",
+          "pattern": "^GATE_\\d{3}$",
+          "example": "GATE_001"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix时间戳(秒)"
+        },
+        "q_up_ref": {
+          "type": "number",
+          "description": "上游参考流量 (m³/s)",
+          "minimum": 0,
+          "maximum": 600
+        },
+        "h_dn_ref": {
+          "type": "number",
+          "description": "下游参考水位 (m)",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "confidence": {
+          "type": "object",
+          "description": "置信度",
+          "properties": {
+            "q_up": {
+              "type": "number",
+              "description": "上游流量置信度 [0,1]",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "h_dn": {
+              "type": "number",
+              "description": "下游水位置信度 [0,1]",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      },
+      "required": ["gate_id", "timestamp", "q_up_ref", "h_dn_ref"]
+    },
+
+    "FineFeedback": {
+      "type": "object",
+      "description": "高保真模型 -> IDZ模型的局部真实反馈",
+      "properties": {
+        "gate_id": {
+          "type": "string",
+          "description": "闸门ID"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Unix时间戳(秒)"
+        },
+        "q_gate_fine": {
+          "type": "number",
+          "description": "高保真过闸流量 (m³/s)"
+        },
+        "h_up_fine": {
+          "type": "number",
+          "description": "高保真上游水位 (m)"
+        },
+        "h_dn_fine": {
+          "type": "number",
+          "description": "高保真下游水位 (m)"
+        },
+        "volume_error": {
+          "type": "number",
+          "description": "体积误差 (m³)"
+        }
+      },
+      "required": ["gate_id", "timestamp", "q_gate_fine", "h_up_fine", "h_dn_fine"]
+    },
+
+    "FusedState": {
+      "type": "object",
+      "description": "软融合后的状态",
+      "properties": {
+        "boundary_id": {
+          "type": "string",
+          "description": "边界ID",
+          "pattern": "^BND_\\d{3}_\\d{3}$"
+        },
+        "timestamp": {
+          "type": "integer"
+        },
+        "level_fused": {
+          "type": "number",
+          "description": "融合后水位 (m)"
+        },
+        "flow_fused": {
+          "type": "number",
+          "description": "融合后流量 (m³/s)"
+        },
+        "alpha": {
+          "type": "number",
+          "description": "流量融合系数(高保真权重) [0,1]"
+        },
+        "beta": {
+          "type": "number",
+          "description": "水位融合系数(高保真权重) [0,1]"
+        },
+        "level_bias": {
+          "type": "number",
+          "description": "水位偏置估计 (m)"
+        },
+        "flow_bias": {
+          "type": "number",
+          "description": "流量偏置估计 (m³/s)"
+        }
+      },
+      "required": ["boundary_id", "timestamp", "level_fused", "flow_fused"]
+    },
+
+    "SegmentState": {
+      "type": "object",
+      "description": "渠段完整状态",
+      "properties": {
+        "segment_id": {
+          "type": "string",
+          "pattern": "^SEG_\\d{3}$"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "water_levels": {
+          "type": "array",
+          "description": "沿程水位分布 (m)",
+          "items": {"type": "number"}
+        },
+        "flow_rates": {
+          "type": "array",
+          "description": "沿程流量分布 (m³/s)",
+          "items": {"type": "number"}
+        },
+        "velocities": {
+          "type": "array",
+          "description": "沿程流速分布 (m/s)",
+          "items": {"type": "number"}
+        },
+        "upstream_level": {
+          "type": "number",
+          "description": "上游边界水位 (m)"
+        },
+        "downstream_level": {
+          "type": "number",
+          "description": "下游边界水位 (m)"
+        },
+        "upstream_flow": {
+          "type": "number",
+          "description": "上游入流 (m³/s)"
+        },
+        "downstream_flow": {
+          "type": "number",
+          "description": "下游出流 (m³/s)"
+        },
+        "confidence": {
+          "type": "number",
+          "description": "状态置信度 [0,1]"
+        }
+      },
+      "required": ["segment_id", "timestamp", "upstream_level", "downstream_level"]
+    },
+
+    "ControlCommand": {
+      "type": "object",
+      "description": "控制指令",
+      "properties": {
+        "command_id": {
+          "type": "string"
+        },
+        "gate_id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "target_opening": {
+          "type": "number",
+          "description": "目标开度 [0,1]",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "target_flow": {
+          "type": "number",
+          "description": "目标流量 (m³/s)"
+        },
+        "target_level": {
+          "type": "number",
+          "description": "目标水位 (m)"
+        },
+        "control_mode": {
+          "type": "string",
+          "enum": ["opening", "flow", "level"]
+        },
+        "source_level": {
+          "type": "string",
+          "enum": ["L1", "L2", "L3", "L4"]
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      },
+      "required": ["command_id", "gate_id", "timestamp"]
+    },
+
+    "KPIMetrics": {
+      "type": "object",
+      "description": "全线一致性KPI指标",
+      "properties": {
+        "metric_id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "time_window": {
+          "type": "number",
+          "description": "统计时间窗口 (s)"
+        },
+
+        "mass_balance": {
+          "type": "object",
+          "description": "水量平衡KPI",
+          "properties": {
+            "error": {
+              "type": "number",
+              "description": "水量平衡误差 (m³)"
+            },
+            "error_rate": {
+              "type": "number",
+              "description": "误差率 (m³/s)"
+            },
+            "conservation_ratio": {
+              "type": "number",
+              "description": "质量守恒比 [0,1]"
+            }
+          }
+        },
+
+        "interface_residuals": {
+          "type": "object",
+          "description": "接口残差KPI",
+          "properties": {
+            "max_level_residual": {
+              "type": "number",
+              "description": "最大水位残差 (m)"
+            },
+            "mean_level_residual": {
+              "type": "number",
+              "description": "平均水位残差 (m)"
+            },
+            "max_flow_residual": {
+              "type": "number",
+              "description": "最大流量残差 (m³/s)"
+            },
+            "residuals_by_interface": {
+              "type": "object",
+              "description": "各接口残差",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "level": {"type": "number"},
+                  "flow": {"type": "number"}
+                }
+              }
+            }
+          }
+        },
+
+        "drift": {
+          "type": "object",
+          "description": "漂移率KPI",
+          "properties": {
+            "level_drift_rate": {
+              "type": "number",
+              "description": "水位漂移率 (m/h)"
+            },
+            "flow_drift_rate": {
+              "type": "number",
+              "description": "流量漂移率 (m³/s/h)"
+            },
+            "cumulative_drift_24h": {
+              "type": "number",
+              "description": "24小时累计漂移 (m)"
+            }
+          }
+        },
+
+        "control_performance": {
+          "type": "object",
+          "description": "控制性能KPI",
+          "properties": {
+            "target_deviation": {
+              "type": "number",
+              "description": "目标偏差 (m)"
+            },
+            "overshoot": {
+              "type": "number",
+              "description": "超调量"
+            },
+            "settling_time": {
+              "type": "number",
+              "description": "调节时间 (s)"
+            },
+            "constraint_violation_rate": {
+              "type": "number",
+              "description": "约束违背率 [0,1]"
+            }
+          }
+        },
+
+        "overall_score": {
+          "type": "number",
+          "description": "综合评分 [0,1]"
+        },
+        "is_valid": {
+          "type": "boolean",
+          "description": "是否有效(通过门槛)"
+        },
+        "violations": {
+          "type": "array",
+          "description": "违规项列表",
+          "items": {"type": "string"}
+        }
+      },
+      "required": ["metric_id", "timestamp", "overall_score", "is_valid"]
+    },
+
+    "ScenarioConfig": {
+      "type": "object",
+      "description": "场景配置",
+      "properties": {
+        "scenario_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "scenario_type": {
+          "type": "string",
+          "enum": [
+            "steady_state", "step_change", "ramp_change",
+            "periodic", "flood", "drought", "ice_period",
+            "demand_surge", "gate_failure", "sensor_fault", "compound"
+          ]
+        },
+        "duration": {
+          "type": "number",
+          "description": "持续时间 (s)"
+        },
+        "upstream_boundary_profile": {
+          "type": "array",
+          "description": "上游边界时间序列",
+          "items": {"type": "number"}
+        },
+        "disturbance_config": {
+          "type": "object",
+          "description": "扰动配置"
+        },
+        "pass_criteria": {
+          "type": "object",
+          "description": "通过标准",
+          "properties": {
+            "max_level_deviation": {"type": "number"},
+            "max_flow_deviation": {"type": "number"},
+            "settling_time": {"type": "number"},
+            "overshoot": {"type": "number"},
+            "mass_balance_error": {"type": "number"}
+          }
+        }
+      },
+      "required": ["scenario_id", "name", "duration"]
+    },
+
+    "FusionConfig": {
+      "type": "object",
+      "description": "软融合配置",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["fixed_weight", "adaptive", "kalman", "ensemble"],
+          "default": "adaptive"
+        },
+        "alpha_flow": {
+          "type": "number",
+          "description": "流量融合系数(固定模式)",
+          "default": 0.5
+        },
+        "beta_level": {
+          "type": "number",
+          "description": "水位融合系数(固定模式)",
+          "default": 0.5
+        },
+        "alpha_min": {
+          "type": "number",
+          "description": "自适应模式最小系数",
+          "default": 0.2
+        },
+        "alpha_max": {
+          "type": "number",
+          "description": "自适应模式最大系数",
+          "default": 0.8
+        },
+        "gate_action_threshold": {
+          "type": "number",
+          "description": "闸门动作阈值",
+          "default": 0.02
+        },
+        "conservation_correction_gain": {
+          "type": "number",
+          "description": "守恒纠偏增益",
+          "default": 0.5
+        }
+      }
+    },
+
+    "ThresholdConfig": {
+      "type": "object",
+      "description": "门槛配置",
+      "properties": {
+        "mass_balance_error": {
+          "type": "number",
+          "description": "水量平衡误差门槛 (m³)",
+          "default": 100.0
+        },
+        "max_level_residual": {
+          "type": "number",
+          "description": "最大水位残差门槛 (m)",
+          "default": 0.1
+        },
+        "level_drift_rate": {
+          "type": "number",
+          "description": "水位漂移率门槛 (m/h)",
+          "default": 0.01
+        },
+        "constraint_violation_rate": {
+          "type": "number",
+          "description": "约束违背率门槛",
+          "default": 0.05
+        }
+      }
+    },
+
+    "ErrorBudget": {
+      "type": "object",
+      "description": "误差预算表条目",
+      "properties": {
+        "error_type": {
+          "type": "string",
+          "enum": [
+            "measurement_noise", "model_structural",
+            "parameter_drift", "boundary_mismatch",
+            "numerical_dispersion", "lateral_disturbance"
+          ]
+        },
+        "max_amplitude": {
+          "type": "number",
+          "description": "最大幅度"
+        },
+        "spectral_type": {
+          "type": "string",
+          "enum": ["white", "pink", "brownian", "ou"],
+          "description": "频谱类型"
+        },
+        "correlation_time": {
+          "type": "number",
+          "description": "时间相关长度 (s)"
+        },
+        "correlation_length": {
+          "type": "number",
+          "description": "空间相关长度 (m)"
+        },
+        "probability": {
+          "type": "number",
+          "description": "出现概率 [0,1]",
+          "default": 1.0
+        }
+      },
+      "required": ["error_type", "max_amplitude", "spectral_type"]
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "idz_to_fine": {
+      "$ref": "#/definitions/IdReference",
+      "description": "IDZ模型向高保真模型传递的软边界参考"
+    },
+    "fine_to_idz": {
+      "$ref": "#/definitions/FineFeedback",
+      "description": "高保真模型向IDZ模型反馈的局部状态"
+    },
+    "fused_state": {
+      "$ref": "#/definitions/FusedState",
+      "description": "软融合后的状态"
+    },
+    "segment_state": {
+      "$ref": "#/definitions/SegmentState",
+      "description": "渠段完整状态"
+    },
+    "control_command": {
+      "$ref": "#/definitions/ControlCommand",
+      "description": "控制指令"
+    },
+    "kpi_metrics": {
+      "$ref": "#/definitions/KPIMetrics",
+      "description": "KPI指标"
+    },
+    "scenario_config": {
+      "$ref": "#/definitions/ScenarioConfig",
+      "description": "场景配置"
+    },
+    "fusion_config": {
+      "$ref": "#/definitions/FusionConfig",
+      "description": "融合配置"
+    },
+    "threshold_config": {
+      "$ref": "#/definitions/ThresholdConfig",
+      "description": "门槛配置"
+    },
+    "error_budget": {
+      "$ref": "#/definitions/ErrorBudget",
+      "description": "误差预算"
+    }
+  }
+}
