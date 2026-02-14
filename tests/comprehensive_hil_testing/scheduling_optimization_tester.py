@@ -559,7 +559,7 @@ class SchedulingOptimizationTester:
                             q_out_forecast=[scenario.initial_outflow] * 5,
                             config=config
                         )
-                    except:
+                    except Exception:
                         pass
 
                 comp_time = time.time() - start

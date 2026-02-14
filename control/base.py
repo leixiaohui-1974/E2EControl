@@ -7,10 +7,13 @@ single-pool and multi-pool canal systems using CVXPY.
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Dict, Sequence, Union
 
 import cvxpy as cp
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 # Controller defaults
 DEFAULT_HORIZON: int = 10             # prediction horizon (steps)
@@ -141,9 +144,9 @@ class UniversalMPCSolver:
         prob.solve(solver=cp.OSQP, warm_start=True, verbose=False)
 
         if prob.status in ("infeasible", "unbounded"):
-            print(
-                f"[Solver] Warning: Optimization status {prob.status}. "
-                "Maintaining previous flow."
+            logger.warning(
+                "Optimization status %s. Maintaining previous flow.",
+                prob.status,
             )
             return q_prev
 

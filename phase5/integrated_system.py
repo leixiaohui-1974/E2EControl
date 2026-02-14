@@ -15,12 +15,16 @@ sys.path.append('..')
 sys.path.append('../digital_twin')
 sys.path.append('../phase4')
 
+import logging
+import threading
 import numpy as np
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
+
+logger = logging.getLogger(__name__)
 
 # Phase 1: 基础控制
 from brain import SemanticInterpreter
@@ -123,7 +127,8 @@ class IntegratedWaterNetworkSystem:
             initial_level=3.0
         ) for _ in range(num_pools)]
         self.q_prev = [0.0] * num_pools  # 记录上一步的控制输入
-        self.active_faults = [] # List of active faults
+        self._faults_lock = threading.Lock()
+        self.active_faults = []  # List of active faults
         print("  ✓ MPC控制器已初始化")
         print("  ✓ 物理仿真器已初始化")
         
@@ -225,9 +230,10 @@ class IntegratedWaterNetworkSystem:
         # In step, we apply them.
         # We need a way to clear them.
         
-        for fault in self.active_faults:
+        with self._faults_lock:
+            faults_snapshot = list(self.active_faults)
+        for fault in faults_snapshot:
             if fault['type'] == 'flood':
-                # Apply to all pools or specific? Default all for massive flood
                 magnitude = fault.get('magnitude', 20.0)
                 for i in range(self.num_pools):
                     current_disturbances[i] += magnitude
@@ -475,6 +481,18 @@ class IntegratedWaterNetworkSystem:
         
         plt.tight_layout()
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        plt.close()
+
+        print(f"✓ 可视化报告已保存: {save_path}")
+
+    def get_system_status(self) -> Dict:
+        """获取系统状态"""
+        status = {
+            'timestamp': datetime.now().isoformat(),
+            'current_time': self.current_time,
+            'modules': {
+                'digital_twin': self.digital_twin is not None,
+                'anomaly_detection': self.anomaly_detector is not None,
                 'fault_diagnosis': self.diagnosis_engine is not None,
                 'self_healing': self.self_healing is not None
             }

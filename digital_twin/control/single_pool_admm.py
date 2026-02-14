@@ -198,7 +198,7 @@ class SinglePoolADMM:
                     prob.solve(solver=solver, verbose=False)
                     if prob.status == cp.OPTIMAL:
                         return float(u_in.value), float(u_out.value), float(prob.value)
-                except:
+                except Exception:
                     continue
             
             # 所有求解器都失败，返回保守值

@@ -334,7 +334,7 @@ class SmartPoolSimulation:
         plt.tight_layout()
         plt.savefig('simulation_result_enhanced.png', dpi=150)
         plt.close()
-        
+
         self.logger.info("图表已保存: simulation_result_enhanced.png")
     
     def _create_animation(self, script: List[tuple]):

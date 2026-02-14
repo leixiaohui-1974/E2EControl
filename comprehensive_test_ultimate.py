@@ -112,7 +112,7 @@ def test_mpc_solver():
             if 0 <= u_in <= 20:
                 success_count += 1
                 print(f"    ✓ {desc} (Z={level}m) -> u_in={u_in:.2f} m³/s")
-        except:
+        except Exception:
             pass
     
     success_rate = success_count / len(test_cases)
@@ -197,7 +197,7 @@ def test_intelligent_observer():
         try:
             observer = IntelligentObserver(physical_model=physics)
             init_ok = True
-        except:
+        except Exception:
             init_ok = False
         
         # 验证基本功能
@@ -401,7 +401,7 @@ def test_stress_conditions():
             config = {'Z_ref': 3.0, 'W_level': 10.0, 'W_smooth': 5.0, 'delta_Q_max': 2.0, 'constraints': {}}
             solver.solve(current_level=3.0, q_prev=0.0, q_out_forecast=[3.0]*5, config=config)
             success_count += 1
-        except:
+        except Exception:
             pass
     
     elapsed = time.time() - start

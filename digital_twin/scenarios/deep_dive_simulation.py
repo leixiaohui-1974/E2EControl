@@ -278,8 +278,9 @@ class DeepDiveSimulation:
         self._plot_mode_flags(ax9)
         
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        plt.close()
         print(f"✅ 可视化大屏已保存: {save_path}")
-        
+
         return fig
     
     def _plot_spatial_profile(self, ax):

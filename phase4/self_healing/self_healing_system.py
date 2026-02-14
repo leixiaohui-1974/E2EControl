@@ -434,8 +434,8 @@ class SelfHealingSystem:
         
         plt.tight_layout()
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        print(f"✓ 可视化报告已保存: {save_path}")
         plt.close()
+        print(f"✓ 可视化报告已保存: {save_path}")
 
 
 # 完整演示

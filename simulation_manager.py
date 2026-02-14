@@ -7,9 +7,12 @@ MPC optimization, physics stepping, and data logging.
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Dict, List, Sequence, Tuple
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 from brain import SemanticInterpreter
 from physics import CanalPoolSimulator
@@ -75,7 +78,7 @@ class SimulationManager:
         Returns:
             Dictionary of recorded time-series data.
         """
-        print("Starting Simulation...")
+        logger.info("Starting simulation (%d hours)", self.total_hours)
         current_instruction = self.script[0][1]
         last_control_action = DEFAULT_INITIAL_FLOW
 
@@ -84,7 +87,7 @@ class SimulationManager:
             for start_time, instruction in self.script:
                 if t == start_time:
                     current_instruction = instruction
-                    print(f"[Time {t}h] New Instruction: {current_instruction}")
+                    logger.info("[T=%dh] New instruction: %s", t, current_instruction)
                     break
 
             # B. Brain: interpret instruction
@@ -113,7 +116,7 @@ class SimulationManager:
 
             last_control_action = q_in_cmd
 
-        print("Simulation Complete.")
+        logger.info("Simulation complete")
         return self.history
 
     def _log_data(

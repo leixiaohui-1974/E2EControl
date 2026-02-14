@@ -99,7 +99,14 @@ class SimulationDatabase:
             
         except sqlite3.Error as e:
             raise DatabaseError(f"数据库初始化失败: {e}")
-    
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
     def create_simulation(self, total_hours: int, dt: float, area: float,
                          config: Dict, notes: str = "") -> int:
         """

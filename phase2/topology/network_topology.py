@@ -296,7 +296,7 @@ class WaterNetworkTopology:
             cycles = list(nx.simple_cycles(self.graph))
             if cycles:
                 errors.append(f"存在环路: {cycles}")
-        except:
+        except Exception:
             pass
         
         # 检查渠池是否有上下游连接
@@ -375,11 +375,11 @@ class WaterNetworkTopology:
         
         if save_path:
             plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            plt.close()
             print(f"拓扑图已保存: {save_path}")
         else:
             plt.show()
-        
-        plt.close()
+            plt.close()
     
     def export_to_dict(self) -> Dict:
         """导出为字典格式"""

@@ -685,7 +685,7 @@ class PredictionTester:
                         q_out_forecast=[scenario.initial_outflow] * scenario.mpc_horizon,
                         config=config
                     )
-                except:
+                except Exception:
                     u_optimal = scenario.initial_inflow
 
                 # 执行控制

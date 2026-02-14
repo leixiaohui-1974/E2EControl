@@ -8,8 +8,11 @@ keyword-based approach with numerical extraction and modifier logic.
 
 from __future__ import annotations
 
+import logging
 import re
 from typing import Any, Dict, List
+
+logger = logging.getLogger(__name__)
 
 
 # Default MPC configuration values
@@ -80,7 +83,7 @@ class SemanticInterpreter:
             Dictionary of MPC parameters (W_level, W_smooth, Z_ref,
             delta_Q_max, constraints).
         """
-        print(f"[Brain] Receiving instruction: {instruction}")
+        logger.info("Receiving instruction: %s", instruction)
 
         config: Dict[str, Any] = self.default_config.copy()
         config['constraints'] = self.default_config['constraints'].copy()
@@ -88,7 +91,7 @@ class SemanticInterpreter:
         config = self._extract_numerical_values(instruction, config)
         config = self._apply_keyword_modifiers(instruction, config)
 
-        print(f"[Brain] Interpreted as: {config}")
+        logger.debug("Interpreted as: %s", config)
         return config
 
     def _extract_numerical_values(
@@ -102,7 +105,7 @@ class SemanticInterpreter:
             try:
                 val = float(level_match.group(1))
                 config['Z_ref'] = val
-                print(f"[Brain] Extracted numerical value for Z_ref: {val}")
+                logger.debug("Extracted numerical Z_ref: %s", val)
             except ValueError:
                 pass
         return config
