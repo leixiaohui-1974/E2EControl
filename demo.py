@@ -12,7 +12,7 @@ import os
 try:
     init(autoreset=True)
     COLOR_SUPPORT = True
-except:
+except Exception:
     COLOR_SUPPORT = False
 
 from config_manager import get_config

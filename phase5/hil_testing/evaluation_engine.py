@@ -261,7 +261,7 @@ class PassCriteria:
         # 安全评估
         try:
             return eval(condition, {"__builtins__": {}}, eval_context)
-        except:
+        except Exception:
             # 如果eval失败，尝试简单的字符串匹配
             return self._simple_check(condition, eval_context)
 

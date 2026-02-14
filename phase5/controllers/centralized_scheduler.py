@@ -483,7 +483,7 @@ class CentralizedScheduler:
 
         try:
             problem.solve(solver=cp.ECOS, verbose=False)
-        except:
+        except Exception:
             problem.solve(solver=cp.SCS, verbose=False)
 
         # 提取结果

@@ -67,13 +67,14 @@ filterwarnings = [
     "ignore::pytest.PytestCollectionWarning",
 ]
 # Exclude non-test files that happen to match test_*.py patterns
-collect_ignore_glob = [
+collect_ignore = [
     "test_results.txt",
     "run_comprehensive_hil_test.py",
-    "phase5/ai_models/tests/*",
-    "phase5/ai_models/l4_autonomous/tests/*",
+]
+norecursedirs = [
+    "phase5/ai_models",
 ]
 
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"

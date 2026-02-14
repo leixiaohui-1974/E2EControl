@@ -86,7 +86,7 @@ class SmartPoolAPIClient:
         try:
             result = self.health_check()
             return result.get('status') == 'healthy'
-        except:
+        except Exception:
             return False
     
     def get_config(self) -> Dict:
