@@ -190,14 +190,14 @@ class RecursiveLeastSquares:
         Returns:
             (更新后的参数, 预测误差)
         """
-        phi = np.atleast_1d(phi).reshape(-1, 1)
+        phi = np.atleast_1d(phi).flatten().reshape(-1, 1)
 
         # 预测
-        y_hat = float(phi.T @ self.theta)
+        y_hat = (phi.T @ self.theta).item()
         error = y - y_hat
 
         # 增益计算
-        denom = self.lambda_ + float(phi.T @ self.P @ phi)
+        denom = self.lambda_ + (phi.T @ self.P @ phi).item()
         K = self.P @ phi / denom
 
         # 参数更新

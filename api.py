@@ -71,7 +71,7 @@ def run_simulation_endpoint():
     simulations[sim_id]['thread'] = thread
     thread.start()
 
-    return jsonify({'success': True, 'simulation_id': sim_id}), 202
+    return jsonify({'success': True, 'simulation_id': sim_id, 'status': 'running'}), 202
 
 @app.route('/simulation/<sim_id>/history')
 def get_simulation_history_endpoint(sim_id):
@@ -97,6 +97,29 @@ def list_simulations_endpoint():
         ]
     return jsonify({'success': True, 'simulations': sim_list})
 
+@app.route('/health')
+def health_check():
+    """Health check endpoint."""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'version': '3.0'
+    })
+
+
+@app.route('/scenarios')
+def list_scenarios():
+    """List available predefined scenarios."""
+    scenarios = [
+        {'id': 'normal', 'name': '正常供水', 'instruction': '保持水位平稳，正常供水。'},
+        {'id': 'flood', 'name': '暴雨预警', 'instruction': '收到暴雨预警，立刻降低水位腾出库容！安全第一！'},
+        {'id': 'pollution', 'name': '污染应急', 'instruction': '下游检测到污染，紧急切断出流！'},
+        {'id': 'drought', 'name': '干旱调度', 'instruction': '上游来水减少，提升水位储备水源。'},
+        {'id': 'maintenance', 'name': '检修维护', 'instruction': '下游渠道需要检修，缓慢降低流量。'},
+    ]
+    return jsonify({'success': True, 'scenarios': scenarios, 'count': len(scenarios)})
+
+
 @app.route('/simulation/<sim_id>/event', methods=['POST'])
 def trigger_event_endpoint(sim_id):
     # This is a placeholder for re-implementing event injection
@@ -106,6 +129,18 @@ def trigger_event_endpoint(sim_id):
 def set_control_override_endpoint(sim_id):
     # This is a placeholder for re-implementing control overrides
     return jsonify({'success': True, 'message': 'Control override placeholder'})
+
+
+@app.errorhandler(404)
+def not_found(error):
+    """Custom 404 handler returning JSON."""
+    return jsonify({'success': False, 'error': 'Not found'}), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Custom 500 handler returning JSON."""
+    return jsonify({'success': False, 'error': 'Internal server error'}), 500
 
 
 # --- Simulation Worker ---

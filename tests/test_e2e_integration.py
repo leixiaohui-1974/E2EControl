@@ -383,7 +383,7 @@ class TestConfigAndInfrastructure(unittest.TestCase):
         self.assertIsNotNone(config.config)
 
         # 测试获取值
-        dt = config.get('simulation.dt')
+        dt = config.get('simulation.time_step')
         self.assertIsNotNone(dt)
         self.assertGreater(dt, 0)
 

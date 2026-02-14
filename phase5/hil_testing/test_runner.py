@@ -322,7 +322,7 @@ class SimulationEnvironment:
             # However, reset() re-inits physics? No, it doesn't.
             # We might need to reset physics state in reset().
             
-            self.physics.step(u_in, u_out, disturbance=0.0)
+            self.physics.step(u_in, u_out)
             new_level = self.physics.get_level()
             
             self.water_levels[pool_id] = new_level

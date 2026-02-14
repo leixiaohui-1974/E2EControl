@@ -30,3 +30,70 @@ scenario_script:
 demand_profile:
   base_demand: 5.0 # m^3/s
   noise_std_dev: 0.5 # Standard deviation for random fluctuations
+
+# 5. MPC Controller Parameters
+mpc:
+  horizon: 10
+  dt: 3600.0
+  area: 10000.0
+  delay_steps: 1
+
+# 6. Default Control Configuration
+default_control:
+  W_level: 10.0
+  W_smooth: 5.0
+  Z_ref: 3.0
+  delta_Q_max: 2.0
+  constraints: {}
+
+# 7. Monitoring Configuration
+monitoring:
+  level_warning_high: 8.0
+  level_warning_low: 1.0
+  level_critical_high: 9.5
+  level_critical_low: 0.5
+  flow_rate_max: 25.0
+
+# 8. Predefined Scenarios
+scenarios:
+  - name: "正常供水"
+    keywords: ["保持水位平稳，正常供水。", "正常", "供水", "平稳"]
+    config:
+      Z_ref: 3.0
+      W_level: 10.0
+      W_smooth: 5.0
+      delta_Q_max: 2.0
+
+  - name: "暴雨预警"
+    keywords: ["暴雨预警", "暴雨", "降低水位", "腾出库容"]
+    config:
+      Z_ref: 2.0
+      W_level: 100.0
+      W_smooth: 5.0
+      delta_Q_max: 5.0
+
+  - name: "冰期输水"
+    keywords: ["冰期", "冰盖", "严禁扰动"]
+    config:
+      Z_ref: 3.0
+      W_level: 10.0
+      W_smooth: 500.0
+      delta_Q_max: 0.5
+
+  - name: "污染应急"
+    keywords: ["污染", "切断", "紧急"]
+    config:
+      Z_ref: 3.0
+      W_level: 100.0
+      W_smooth: 5.0
+      delta_Q_max: 10.0
+      constraints:
+        Q_in_max: 0.0
+
+  - name: "干旱调度"
+    keywords: ["干旱", "缺水", "节水", "储备"]
+    config:
+      Z_ref: 4.0
+      W_level: 20.0
+      W_smooth: 5.0
+      delta_Q_max: 1.0

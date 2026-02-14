@@ -240,7 +240,7 @@ class TestIDZDynamicModel:
         flow_history = deque([10.0, 20.0, 30.0, 40.0, 50.0], maxlen=100)
 
         delayed = model.get_delayed_flow(flow_history, 3)
-        assert delayed == 20.0  # 倒数第三个
+        assert delayed == 30.0  # flow_history[-3] = 30.0
 
     def test_delayed_flow_empty(self):
         """测试空历史的延迟流量"""

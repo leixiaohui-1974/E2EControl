@@ -89,7 +89,7 @@ n_steps = 1000
 start = time.time()
 
 for _ in range(n_steps):
-    pool.step(q_in_command=5.0, q_out=4.5, disturbance=np.random.randn()*0.1)
+    pool.step(q_in_command=5.0 + np.random.randn()*0.1, q_out=4.5)
 
 elapsed = time.time() - start
 step_time = elapsed / n_steps * 1000
@@ -184,7 +184,7 @@ for i in range(n_iterations):
         u_in = 0.0
     
     # 3. 物理更新
-    pool.step(u_in, u_in*0.9, 0.0)
+    pool.step(u_in, u_in*0.9)
     
     # 4. 异常检测（如果可用）
     try:

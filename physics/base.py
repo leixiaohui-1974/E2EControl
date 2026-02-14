@@ -25,6 +25,10 @@ class CanalPoolSimulator:
     def get_level(self):
         return self.current_level
 
+    def get_volume(self):
+        """Return the current water volume (level * area)."""
+        return self.current_level * self.area
+
 class CascadedCanalSystem:
     """Simulates a series of cascaded canal pools."""
     def __init__(self, num_pools=3, area=10000.0, dt=3600.0, initial_level=3.0, initial_flow=5.0):
