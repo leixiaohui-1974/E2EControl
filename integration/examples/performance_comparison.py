@@ -7,6 +7,9 @@
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('../..')
 
 import numpy as np
@@ -27,9 +30,9 @@ def run_comparison_test(scenario_plan: List[Dict], test_name: str):
         scenario_plan: 场景计划
         test_name: 测试名称
     """
-    print(f"\n{'='*80}")
-    print(f"测试: {test_name}")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info(f"测试: {test_name}")
+    logger.info('='*80)
     
     num_pools = 3
     dt = 3600.0
@@ -38,29 +41,29 @@ def run_comparison_test(scenario_plan: List[Dict], test_name: str):
     results = {}
     
     # 测试1: 传统固定MPC
-    print(f"\n[1/3] 运行传统固定MPC...")
+    logger.info(f"\n[1/3] 运行传统固定MPC...")
     results['traditional'] = run_traditional_mpc(
         num_pools, dt, scenario_plan
     )
     
     # 测试2: 自适应MPC（无场景识别）
-    print(f"\n[2/3] 运行自适应MPC（无场景识别）...")
+    logger.info(f"\n[2/3] 运行自适应MPC（无场景识别）...")
     results['adaptive_no_scene'] = run_adaptive_mpc(
         num_pools, dt, scenario_plan, 
         enable_scenario=False
     )
     
     # 测试3: 完整智能MPC（有场景识别）
-    print(f"\n[3/3] 运行完整智能MPC（有场景识别）...")
+    logger.info(f"\n[3/3] 运行完整智能MPC（有场景识别）...")
     results['intelligent'] = run_adaptive_mpc(
         num_pools, dt, scenario_plan,
         enable_scenario=True
     )
     
     # 分析和对比
-    print(f"\n{'='*80}")
-    print("性能对比分析")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("性能对比分析")
+    logger.info('='*80)
     
     comparison = compare_results(results, num_pools)
     
@@ -115,8 +118,8 @@ def run_traditional_mpc(num_pools, dt, scenario_plan):
     
     elapsed = time.time() - start_time
     
-    print(f"  完成! 耗时: {elapsed:.2f}秒")
-    print(f"  平均步时: {elapsed/len(scenario_plan)*1000:.1f}ms")
+    logger.info(f"  完成! 耗时: {elapsed:.2f}秒")
+    logger.info(f"  平均步时: {elapsed/len(scenario_plan)*1000:.1f}ms")
     
     return history
 
@@ -187,13 +190,13 @@ def run_adaptive_mpc(num_pools, dt, scenario_plan, enable_scenario=True):
     
     elapsed = time.time() - start_time
     
-    print(f"  完成! 耗时: {elapsed:.2f}秒")
-    print(f"  平均步时: {elapsed/len(scenario_plan)*1000:.1f}ms")
+    logger.info(f"  完成! 耗时: {elapsed:.2f}秒")
+    logger.info(f"  平均步时: {elapsed/len(scenario_plan)*1000:.1f}ms")
     
     if enable_scenario:
         stats = controller.get_statistics()
-        print(f"  场景切换: {stats['scenario_switches']}次")
-        print(f"  策略切换: {stats['strategy_switches']}次")
+        logger.info(f"  场景切换: {stats['scenario_switches']}次")
+        logger.info(f"  策略切换: {stats['strategy_switches']}次")
     
     return history
 
@@ -250,20 +253,20 @@ def compare_results(results: Dict, num_pools: int) -> Dict:
         }
     
     # 打印对比表格
-    print(f"\n{'指标':<25} | {'传统MPC':>12} | {'自适应(无识别)':>15} | {'智能MPC':>12} | {'改进':>10}")
-    print('─' * 90)
+    logger.info(f"\n{'指标':<25} | {'传统MPC':>12} | {'自适应(无识别)':>15} | {'智能MPC':>12} | {'改进':>10}")
+    logger.info('─' * 90)
     
     trad = comparison['traditional']
     adap = comparison['adaptive_no_scene']
     intl = comparison['intelligent']
     
-    print(f"{'水位RMSE (m)':<25} | {trad['rmse']:>12.4f} | {adap['rmse']:>15.4f} | {intl['rmse']:>12.4f} | {(1-intl['rmse']/trad['rmse'])*100:>9.1f}%")
-    print(f"{'最大偏差 (m)':<25} | {trad['max_deviation']:>12.4f} | {adap['max_deviation']:>15.4f} | {intl['max_deviation']:>12.4f} | {(1-intl['max_deviation']/trad['max_deviation'])*100:>9.1f}%")
-    print(f"{'约束违反次数':<25} | {trad['violations']:>12d} | {adap['violations']:>15d} | {intl['violations']:>12d} | {(1-intl['violations']/max(1,trad['violations']))*100:>9.1f}%")
-    print(f"{'平均流量变化 (m³/s)':<25} | {trad['avg_flow_change']:>12.4f} | {adap['avg_flow_change']:>15.4f} | {intl['avg_flow_change']:>12.4f} | {(1-intl['avg_flow_change']/trad['avg_flow_change'])*100:>9.1f}%")
-    print(f"{'平均供水保证率':<25} | {trad['avg_delivery']:>12.2%} | {adap['avg_delivery']:>15.2%} | {intl['avg_delivery']:>12.2%} | {(intl['avg_delivery']/trad['avg_delivery']-1)*100:>9.1f}%")
-    print(f"{'平均求解时间 (ms)':<25} | {trad['avg_solve_time']*1000:>12.1f} | {adap['avg_solve_time']*1000:>15.1f} | {intl['avg_solve_time']*1000:>12.1f} | {(1-intl['avg_solve_time']/trad['avg_solve_time'])*100:>9.1f}%")
-    print(f"{'平均迭代次数':<25} | {trad['avg_iterations']:>12.1f} | {adap['avg_iterations']:>15.1f} | {intl['avg_iterations']:>12.1f} | {(1-intl['avg_iterations']/trad['avg_iterations'])*100:>9.1f}%")
+    logger.info(f"{'水位RMSE (m)':<25} | {trad['rmse']:>12.4f} | {adap['rmse']:>15.4f} | {intl['rmse']:>12.4f} | {(1-intl['rmse']/trad['rmse'])*100:>9.1f}%")
+    logger.info(f"{'最大偏差 (m)':<25} | {trad['max_deviation']:>12.4f} | {adap['max_deviation']:>15.4f} | {intl['max_deviation']:>12.4f} | {(1-intl['max_deviation']/trad['max_deviation'])*100:>9.1f}%")
+    logger.info(f"{'约束违反次数':<25} | {trad['violations']:>12d} | {adap['violations']:>15d} | {intl['violations']:>12d} | {(1-intl['violations']/max(1,trad['violations']))*100:>9.1f}%")
+    logger.info(f"{'平均流量变化 (m³/s)':<25} | {trad['avg_flow_change']:>12.4f} | {adap['avg_flow_change']:>15.4f} | {intl['avg_flow_change']:>12.4f} | {(1-intl['avg_flow_change']/trad['avg_flow_change'])*100:>9.1f}%")
+    logger.info(f"{'平均供水保证率':<25} | {trad['avg_delivery']:>12.2%} | {adap['avg_delivery']:>15.2%} | {intl['avg_delivery']:>12.2%} | {(intl['avg_delivery']/trad['avg_delivery']-1)*100:>9.1f}%")
+    logger.info(f"{'平均求解时间 (ms)':<25} | {trad['avg_solve_time']*1000:>12.1f} | {adap['avg_solve_time']*1000:>15.1f} | {intl['avg_solve_time']*1000:>12.1f} | {(1-intl['avg_solve_time']/trad['avg_solve_time'])*100:>9.1f}%")
+    logger.info(f"{'平均迭代次数':<25} | {trad['avg_iterations']:>12.1f} | {adap['avg_iterations']:>15.1f} | {intl['avg_iterations']:>12.1f} | {(1-intl['avg_iterations']/trad['avg_iterations'])*100:>9.1f}%")
     
     return comparison
 
@@ -396,18 +399,18 @@ def visualize_comparison(results, comparison, test_name):
     plt.tight_layout()
     plt.savefig(f'/workspace/performance_comparison_{test_name.replace(" ", "_")}.png', 
                dpi=150, bbox_inches='tight')
-    print(f"\n  📊 对比图表已保存: performance_comparison_{test_name.replace(' ', '_')}.png")
+    logger.info(f"\n  📊 对比图表已保存: performance_comparison_{test_name.replace(' ', '_')}.png")
     
     plt.close()
 
 
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*25 + "性能对比分析")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*25 + "性能对比分析")
+    logger.info("="*80)
     
     # 生成测试场景（简化版，48小时）
-    print(f"\n生成测试场景...")
+    logger.info(f"\n生成测试场景...")
     
     scenario_plan = []
     for h in range(48):
@@ -436,11 +439,11 @@ if __name__ == "__main__":
             'alerts': alerts
         })
     
-    print(f"  ✓ {len(scenario_plan)}小时场景已生成")
+    logger.info(f"  ✓ {len(scenario_plan)}小时场景已生成")
     
     # 运行对比测试
     results, comparison = run_comparison_test(scenario_plan, "48h_Complex_Scenario")
     
-    print(f"\n{'='*80}")
-    print("对比分析完成！")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("对比分析完成！")
+    logger.info('='*80)

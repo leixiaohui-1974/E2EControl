@@ -9,6 +9,9 @@ from datetime import datetime
 from enum import Enum
 from logger import get_logger
 from config_manager import get_config
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AlertLevel(Enum):
@@ -283,10 +286,10 @@ if __name__ == "__main__":
         (40, 3.0, 30.0, 5.0, {'Z_ref': 3.0}),  # 流量过大
     ]
     
-    print("\n=== 监控系统测试 ===\n")
+    logger.info("\n=== 监控系统测试 ===\n")
     for t, level, q_in, q_out, config in test_cases:
-        print(f"时间步 {t}h: 水位={level}m, 入流={q_in}m³/s")
+        logger.info(f"时间步 {t}h: 水位={level}m, 入流={q_in}m³/s")
         alerts = monitor.check_state(t, level, q_in, q_out, config)
-        print(f"触发 {len(alerts)} 个告警\n")
+        logger.info(f"触发 {len(alerts)} 个告警\n")
     
-    print(monitor.generate_report())
+    logger.info(monitor.generate_report())

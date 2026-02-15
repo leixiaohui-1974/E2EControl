@@ -619,9 +619,9 @@ class E2EAutonomousController(nn.Module):
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("E2E Autonomous Controller Test")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("E2E Autonomous Controller Test")
+    logger.info("=" * 70)
 
     # 创建配置
     config = AutonomousConfig(
@@ -636,7 +636,7 @@ if __name__ == "__main__":
 
     # 打印模型信息
     total_params = sum(p.numel() for p in controller.parameters())
-    print(f"\nTotal parameters: {total_params:,}")
+    logger.info(f"\nTotal parameters: {total_params:,}")
 
     # 测试前向传播
     batch_size = 2
@@ -645,11 +645,11 @@ if __name__ == "__main__":
 
     output = controller(observations, target_levels)
 
-    print(f"\nOutput shapes:")
-    print(f"  Action: {output['action'].shape}")
-    print(f"  Confidence: {output['confidence'].shape}")
-    print(f"  Predictions level: {output['predictions']['level'].shape}")
-    print(f"  Is autonomous: {output['is_autonomous']}")
+    logger.info(f"\nOutput shapes:")
+    logger.info(f"  Action: {output['action'].shape}")
+    logger.info(f"  Confidence: {output['confidence'].shape}")
+    logger.info(f"  Predictions level: {output['predictions']['level'].shape}")
+    logger.info(f"  Is autonomous: {output['is_autonomous']}")
 
     # 测试step接口
     current_obs = {
@@ -661,11 +661,11 @@ if __name__ == "__main__":
     }
 
     result = controller.step(current_obs, np.ones(config.num_pools) * 4.0)
-    print(f"\nStep output:")
-    print(f"  Gate openings: {result['gate_openings'][:5]}...")
-    print(f"  Confidence: {result['confidence']:.3f}")
-    print(f"  Is autonomous: {result['is_autonomous']}")
+    logger.info(f"\nStep output:")
+    logger.info(f"  Gate openings: {result['gate_openings'][:5]}...")
+    logger.info(f"  Confidence: {result['confidence']:.3f}")
+    logger.info(f"  Is autonomous: {result['is_autonomous']}")
 
-    print("\n" + "=" * 70)
-    print("Test completed!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("Test completed!")
+    logger.info("=" * 70)

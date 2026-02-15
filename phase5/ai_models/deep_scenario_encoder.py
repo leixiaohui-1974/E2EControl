@@ -15,6 +15,8 @@ Contrastive Learning based Scenario Recognition
 4. 与现有 rule_engine.py 集成
 """
 
+import os
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -559,16 +561,22 @@ class ScenarioVectorDB:
                  vectors=np.array(self.vectors),
                  scenario_ids=np.array(self.scenario_ids),
                  metadata=np.array(self.metadata, dtype=object))
-        logger.info(f"向量数据库已保存: {path}")
+        logger.info("向量数据库已保存: %s", path)
 
     def load(self, path: str):
-        """加载数据库"""
-        data = np.load(path, allow_pickle=True)
+        """加载数据库
+
+        Note: allow_pickle=True is required because metadata is stored as
+        object arrays.  Only load files from trusted sources.
+        """
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f"Vector DB file not found: {path}")
+        data = np.load(path, allow_pickle=True)  # noqa: S301 – trusted data
         self.vectors = list(data['vectors'])
         self.scenario_ids = list(data['scenario_ids'])
         self.metadata = list(data['metadata'])
         self._index_dirty = True
-        logger.info(f"向量数据库已加载: {path}, {len(self.vectors)}个向量")
+        logger.info("向量数据库已加载: %s, %d个向量", path, len(self.vectors))
 
 
 # ==============================================================================
@@ -931,9 +939,9 @@ class HybridScenarioRecognizer:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "深度场景编码器测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "深度场景编码器测试")
+    logger.info("=" * 70)
 
     # 创建配置
     config = DeepEncoderConfig(
@@ -947,24 +955,24 @@ if __name__ == "__main__":
     encoder = DeepScenarioEncoder(config)
 
     # 测试编码
-    print("\n1. 编码测试")
-    print("-" * 50)
+    logger.info("\n1. 编码测试")
+    logger.info("-" * 50)
 
     test_data = np.random.randn(96, 5).astype(np.float32)
     embedding = encoder.encode(test_data)
-    print(f"  输入形状: {test_data.shape}")
-    print(f"  嵌入形状: {embedding.shape}")
-    print(f"  嵌入范数: {np.linalg.norm(embedding):.4f}")
+    logger.info(f"  输入形状: {test_data.shape}")
+    logger.info(f"  嵌入形状: {embedding.shape}")
+    logger.info(f"  嵌入范数: {np.linalg.norm(embedding):.4f}")
 
     # 批量编码
     batch_data = np.random.randn(8, 96, 5).astype(np.float32)
     batch_embedding = encoder.encode(batch_data)
-    print(f"  批量输入: {batch_data.shape}")
-    print(f"  批量嵌入: {batch_embedding.shape}")
+    logger.info(f"  批量输入: {batch_data.shape}")
+    logger.info(f"  批量嵌入: {batch_embedding.shape}")
 
     # 添加场景到数据库
-    print("\n2. 向量数据库测试")
-    print("-" * 50)
+    logger.info("\n2. 向量数据库测试")
+    logger.info("-" * 50)
 
     scenarios = ['flood', 'drought', 'normal', 'ice_period', 'pollution']
     for i, scenario in enumerate(scenarios):
@@ -978,49 +986,49 @@ if __name__ == "__main__":
             encoder.add_scenario(data, scenario, {'index': j})
 
     stats = encoder.vector_db.get_statistics()
-    print(f"  向量数量: {stats['num_vectors']}")
-    print(f"  场景类型: {stats['scenario_types']}")
+    logger.info(f"  向量数量: {stats['num_vectors']}")
+    logger.info(f"  场景类型: {stats['scenario_types']}")
 
     # 测试检索
-    print("\n3. 场景识别测试")
-    print("-" * 50)
+    logger.info("\n3. 场景识别测试")
+    logger.info("-" * 50)
 
     # 生成类似flood的数据
     flood_like = np.random.randn(96, 5).astype(np.float32)
     flood_like[:, 0] += 2.0
 
     results = encoder.recognize(flood_like)
-    print(f"  输入: 类似洪水场景")
-    print(f"  Top-3 结果:")
+    logger.info(f"  输入: 类似洪水场景")
+    logger.info(f"  Top-3 结果:")
     for scenario_id, similarity, _ in results[:3]:
-        print(f"    {scenario_id}: {similarity:.4f}")
+        logger.info(f"    {scenario_id}: {similarity:.4f}")
 
     # 测试异常检测
-    print("\n4. 异常检测测试")
-    print("-" * 50)
+    logger.info("\n4. 异常检测测试")
+    logger.info("-" * 50)
 
     # 正常数据
     normal_data = np.random.randn(96, 5).astype(np.float32)
     is_anomaly, score = encoder.detect_anomaly(normal_data)
-    print(f"  正常数据: is_anomaly={is_anomaly}, score={score:.4f}")
+    logger.info(f"  正常数据: is_anomaly={is_anomaly}, score={score:.4f}")
 
     # 异常数据 (极端值)
     anomaly_data = np.random.randn(96, 5).astype(np.float32) * 10
     is_anomaly, score = encoder.detect_anomaly(anomaly_data)
-    print(f"  异常数据: is_anomaly={is_anomaly}, score={score:.4f}")
+    logger.info(f"  异常数据: is_anomaly={is_anomaly}, score={score:.4f}")
 
     # 测试数据增强
-    print("\n5. 数据增强测试")
-    print("-" * 50)
+    logger.info("\n5. 数据增强测试")
+    logger.info("-" * 50)
 
     original = np.random.randn(96, 5).astype(np.float32)
     augmented = TimeSeriesAugmentation.augment(original)
-    print(f"  原始数据范围: [{original.min():.2f}, {original.max():.2f}]")
-    print(f"  增强数据范围: [{augmented.min():.2f}, {augmented.max():.2f}]")
+    logger.info(f"  原始数据范围: [{original.min():.2f}, {original.max():.2f}]")
+    logger.info(f"  增强数据范围: [{augmented.min():.2f}, {augmented.max():.2f}]")
 
     # 测试对比损失
-    print("\n6. 对比损失测试")
-    print("-" * 50)
+    logger.info("\n6. 对比损失测试")
+    logger.info("-" * 50)
 
     criterion = ContrastiveLoss(config)
 
@@ -1028,8 +1036,8 @@ if __name__ == "__main__":
     z_j = torch.randn(32, 64)
 
     loss = criterion(z_i, positives=z_j)
-    print(f"  SimCLR损失: {loss.item():.4f}")
+    logger.info(f"  SimCLR损失: {loss.item():.4f}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

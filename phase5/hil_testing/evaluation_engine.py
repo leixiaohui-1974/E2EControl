@@ -9,6 +9,9 @@ from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 from datetime import datetime
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TestStatus(Enum):
@@ -698,9 +701,9 @@ if __name__ == "__main__":
 
     result = engine.evaluate("S1_01", time_series, criteria, context)
 
-    print(f"测试状态: {result.status.value}")
-    print(f"综合得分: {result.overall_score():.1f}")
-    print(f"安全性得分: {result.safety_metrics.calculate_score():.1f}")
-    print(f"控制性能得分: {result.control_metrics.calculate_score():.1f}")
-    print(f"通过标准: {result.criteria_results}")
-    print(f"\n统计信息: {engine.get_statistics()}")
+    logger.info(f"测试状态: {result.status.value}")
+    logger.info(f"综合得分: {result.overall_score():.1f}")
+    logger.info(f"安全性得分: {result.safety_metrics.calculate_score():.1f}")
+    logger.info(f"控制性能得分: {result.control_metrics.calculate_score():.1f}")
+    logger.info(f"通过标准: {result.criteria_results}")
+    logger.info(f"\n统计信息: {engine.get_statistics()}")

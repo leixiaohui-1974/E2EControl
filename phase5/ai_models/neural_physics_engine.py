@@ -725,9 +725,9 @@ class NeuralPhysicsTrainer:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "神经物理引擎测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "神经物理引擎测试")
+    logger.info("=" * 70)
 
     # 创建配置
     config = NeuralPhysicsConfig(
@@ -741,13 +741,13 @@ if __name__ == "__main__":
     engine = NeuralPhysicsEngine(config)
     engine.reset(initial_level=4.0, initial_inflow=100.0)
 
-    print(f"\n神经物理引擎创建成功")
-    print(f"  设备: {engine.device}")
-    print(f"  输入维度: {config.input_dim}")
-    print(f"  序列长度: {config.sequence_length}")
+    logger.info(f"\n神经物理引擎创建成功")
+    logger.info(f"  设备: {engine.device}")
+    logger.info(f"  输入维度: {config.input_dim}")
+    logger.info(f"  序列长度: {config.sequence_length}")
 
     # 模拟测试
-    print(f"\n运行100步模拟测试...")
+    logger.info(f"\n运行100步模拟测试...")
     levels = []
     for i in range(100):
         # 模拟入流变化
@@ -755,15 +755,15 @@ if __name__ == "__main__":
         level = engine.step(q_in, gate_opening=0.8)
         levels.append(level)
 
-    print(f"  初始水位: {levels[0]:.3f}m")
-    print(f"  最终水位: {levels[-1]:.3f}m")
-    print(f"  平均水位: {np.mean(levels):.3f}m")
-    print(f"  水位标准差: {np.std(levels):.3f}m")
+    logger.info(f"  初始水位: {levels[0]:.3f}m")
+    logger.info(f"  最终水位: {levels[-1]:.3f}m")
+    logger.info(f"  平均水位: {np.mean(levels):.3f}m")
+    logger.info(f"  水位标准差: {np.std(levels):.3f}m")
 
     # 测试PINN损失
-    print(f"\n{'=' * 70}")
-    print("PINN损失函数测试")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("PINN损失函数测试")
+    logger.info('=' * 70)
 
     pinn_loss = PINNLoss()
 
@@ -777,12 +777,12 @@ if __name__ == "__main__":
 
     losses = pinn_loss(pred_level, target_level, q_in, q_out, prev_level)
 
-    print(f"  MSE损失: {losses['mse_loss'].item():.6f}")
-    print(f"  质量平衡损失: {losses['mass_balance_loss'].item():.6f}")
-    print(f"  水位约束损失: {losses['level_constraint_loss'].item():.6f}")
-    print(f"  平滑性损失: {losses['smoothness_loss'].item():.6f}")
-    print(f"  总损失: {losses['total_loss'].item():.6f}")
+    logger.info(f"  MSE损失: {losses['mse_loss'].item():.6f}")
+    logger.info(f"  质量平衡损失: {losses['mass_balance_loss'].item():.6f}")
+    logger.info(f"  水位约束损失: {losses['level_constraint_loss'].item():.6f}")
+    logger.info(f"  平滑性损失: {losses['smoothness_loss'].item():.6f}")
+    logger.info(f"  总损失: {losses['total_loss'].item():.6f}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

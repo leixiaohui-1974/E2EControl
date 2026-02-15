@@ -12,13 +12,16 @@ Water Transfer Autonomous System Demo
 
 import sys
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def demo_basic_simulation():
     """基础仿真演示"""
-    print("=" * 60)
-    print("  演示1: 基础闭环仿真")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("  演示1: 基础闭环仿真")
+    logger.info("=" * 60)
 
     from . import (
         SimulationConfig,
@@ -37,21 +40,21 @@ def demo_basic_simulation():
     # 创建闭环仿真
     sim = ClosedLoopSimulation(config)
 
-    print(f"\n创建仿真环境:")
-    print(f"  - 渠池数量: {config.num_pools}")
-    print(f"  - 仿真时长: {config.total_duration/60:.0f} 分钟")
-    print(f"  - 级联控制: {'启用' if config.enable_cascade else '禁用'}")
+    logger.info(f"\n创建仿真环境:")
+    logger.info(f"  - 渠池数量: {config.num_pools}")
+    logger.info(f"  - 仿真时长: {config.total_duration/60:.0f} 分钟")
+    logger.info(f"  - 级联控制: {'启用' if config.enable_cascade else '禁用'}")
 
     # 运行仿真
-    print("\n运行仿真...")
+    logger.info("\n运行仿真...")
     start = time.time()
     result = sim.run()
     elapsed = time.time() - start
 
-    print(f"\n仿真完成! 耗时: {elapsed:.2f}秒")
+    logger.info(f"\n仿真完成! 耗时: {elapsed:.2f}秒")
 
     # 打印摘要
-    print("\n" + "-" * 60)
+    logger.info("\n" + "-" * 60)
     print_simulation_summary(result)
 
     return sim, result
@@ -59,9 +62,9 @@ def demo_basic_simulation():
 
 def demo_scenario_injection():
     """场景注入演示"""
-    print("\n" + "=" * 60)
-    print("  演示2: 场景注入与响应")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("  演示2: 场景注入与响应")
+    logger.info("=" * 60)
 
     from . import (
         SimulationConfig,
@@ -106,27 +109,27 @@ def demo_scenario_injection():
 
     sim.set_scenario_plan(plan)
 
-    print(f"\n注入计划:")
+    logger.info(f"\n注入计划:")
     for inject_time, pool_id, sc_type, severity in scenarios:
-        print(f"  {inject_time/60:.0f}分钟: 池{pool_id} - {sc_type.value}")
+        logger.info(f"  {inject_time/60:.0f}分钟: 池{pool_id} - {sc_type.value}")
 
     # 运行仿真
-    print("\n运行仿真...")
+    logger.info("\n运行仿真...")
     result = sim.run()
 
     # 生成场景报告
     gen = ReportGenerator()
     report = gen.generate_scenario_report(sim)
-    print("\n" + report.summary)
+    logger.info("\n" + report.summary)
 
     return sim, result
 
 
 def demo_performance_analysis():
     """性能分析演示"""
-    print("\n" + "=" * 60)
-    print("  演示3: 性能分析")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("  演示3: 性能分析")
+    logger.info("=" * 60)
 
     from . import (
         SimulationConfig,
@@ -149,25 +152,25 @@ def demo_performance_analysis():
     )
     sim.set_scenario_plan(plan)
 
-    print(f"\n生成随机场景: {len(plan.scenarios)} 个")
+    logger.info(f"\n生成随机场景: {len(plan.scenarios)} 个")
 
     # 运行
-    print("运行仿真...")
+    logger.info("运行仿真...")
     result = sim.run()
 
     # 性能分析报告
     gen = ReportGenerator()
     report = gen.generate_performance_report(sim.simulator)
-    print("\n" + report.summary)
+    logger.info("\n" + report.summary)
 
     return sim, result
 
 
 def demo_cascade_control():
     """级联控制演示"""
-    print("\n" + "=" * 60)
-    print("  演示4: 级联控制与上报")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("  演示4: 级联控制与上报")
+    logger.info("=" * 60)
 
     from . import (
         SimulationConfig,
@@ -209,29 +212,29 @@ def demo_cascade_control():
 
     sim.set_scenario_plan(plan)
 
-    print(f"\n注入严重场景: {len(critical_scenarios)} 个")
+    logger.info(f"\n注入严重场景: {len(critical_scenarios)} 个")
 
     # 运行
-    print("运行仿真...")
+    logger.info("运行仿真...")
     result = sim.run()
 
     # 控制效果报告
     gen = ReportGenerator()
     report = gen.generate_control_report(sim)
-    print("\n" + report.summary)
+    logger.info("\n" + report.summary)
 
-    print(f"\n级联控制统计:")
-    print(f"  - 总上报次数: {result['control']['total_escalations']}")
-    print(f"  - 总干预次数: {result['control']['total_interventions']}")
+    logger.info(f"\n级联控制统计:")
+    logger.info(f"  - 总上报次数: {result['control']['total_escalations']}")
+    logger.info(f"  - 总干预次数: {result['control']['total_interventions']}")
 
     return sim, result
 
 
 def demo_dashboard():
     """系统仪表板演示"""
-    print("\n" + "=" * 60)
-    print("  演示5: 系统仪表板")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("  演示5: 系统仪表板")
+    logger.info("=" * 60)
 
     from . import (
         SimulationConfig,
@@ -255,11 +258,12 @@ def demo_dashboard():
     sim.set_scenario_plan(plan)
 
     # 运行
-    print("运行仿真...")
+    logger.info("运行仿真...")
     sim.run()
 
     # 显示仪表板
-    print()
+    logger.info("")
+
     print_dashboard(sim)
 
     return sim
@@ -267,9 +271,9 @@ def demo_dashboard():
 
 def demo_full_report():
     """完整报告演示"""
-    print("\n" + "=" * 60)
-    print("  演示6: 综合报告生成")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("  演示6: 综合报告生成")
+    logger.info("=" * 60)
 
     from . import (
         SimulationConfig,
@@ -293,11 +297,11 @@ def demo_full_report():
     sim.set_scenario_plan(plan)
 
     # 运行
-    print("运行仿真...")
+    logger.info("运行仿真...")
     result = sim.run()
 
     # 完整报告
-    print("\n生成综合报告...\n")
+    logger.info("\n生成综合报告...\n")
     print_full_report(sim, result)
 
     return sim, result
@@ -305,14 +309,16 @@ def demo_full_report():
 
 def run_all_demos():
     """运行所有演示"""
-    print()
-    print("╔" + "═" * 58 + "╗")
-    print("║" + " " * 58 + "║")
-    print("║" + "南水北调中线全线全场景自主运行系统".center(42) + "║")
-    print("║" + "系统功能演示".center(50) + "║")
-    print("║" + " " * 58 + "║")
-    print("╚" + "═" * 58 + "╝")
-    print()
+    logger.info("")
+
+    logger.info("╔" + "═" * 58 + "╗")
+    logger.info("║" + " " * 58 + "║")
+    logger.info("║" + "南水北调中线全线全场景自主运行系统".center(42) + "║")
+    logger.info("║" + "系统功能演示".center(50) + "║")
+    logger.info("║" + " " * 58 + "║")
+    logger.info("╚" + "═" * 58 + "╝")
+    logger.info("")
+
 
     demos = [
         ("基础仿真", demo_basic_simulation),
@@ -331,12 +337,12 @@ def run_all_demos():
             results.append((name, f"失败: {e}", None))
 
     # 总结
-    print("\n" + "=" * 60)
-    print("  演示总结")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("  演示总结")
+    logger.info("=" * 60)
     for name, status, _ in results:
         icon = "✓" if "成功" in status else "✗"
-        print(f"  {icon} {name}: {status}")
+        logger.info(f"  {icon} {name}: {status}")
 
     return results
 

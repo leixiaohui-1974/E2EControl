@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.gridspec import GridSpec
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ReportGenerator:
     def __init__(self, history, script):
@@ -12,11 +15,11 @@ class ReportGenerator:
         plt.rcParams['axes.unicode_minus'] = False
 
     def generate_all_artifacts(self):
-        print("Generating report and visualizations...")
+        logger.info("Generating report and visualizations...")
         self.generate_markdown_report()
         self.plot_static_results()
         self.create_animation()
-        print("Artifacts generation complete.")
+        logger.info("Artifacts generation complete.")
 
     def generate_markdown_report(self):
         """Generates a detailed markdown report of the simulation."""
@@ -160,5 +163,5 @@ class ReportGenerator:
         try:
             ani.save('simulation.gif', writer='pillow', fps=10)
         except Exception as e:
-            print(f"无法保存动画: {e}")
+            logger.info(f"无法保存动画: {e}")
         plt.close()

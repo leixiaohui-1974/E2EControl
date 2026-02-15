@@ -18,6 +18,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Dict, Optional, Tuple, Literal
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # ==============================================================================
@@ -388,15 +391,15 @@ class GraphPhysicsLoss(nn.Module):
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "物理守恒损失测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "物理守恒损失测试")
+    logger.info("=" * 70)
 
     batch_size = 32
 
     # 1. 测试 GlobalMassConservationLoss
-    print("\n1. GlobalMassConservationLoss 测试")
-    print("-" * 50)
+    logger.info("\n1. GlobalMassConservationLoss 测试")
+    logger.info("-" * 50)
 
     mass_loss = GlobalMassConservationLoss(mode='train', delta_t=900.0)
 
@@ -406,11 +409,11 @@ if __name__ == "__main__":
     q_out = torch.ones(batch_size) * 100
 
     loss = mass_loss(pred_volume, current_volume, q_in, q_out)
-    print(f"  质量守恒损失: {loss.item():.4f}")
+    logger.info(f"  质量守恒损失: {loss.item():.4f}")
 
     # 2. 测试 WaterBalanceLoss
-    print("\n2. WaterBalanceLoss 测试")
-    print("-" * 50)
+    logger.info("\n2. WaterBalanceLoss 测试")
+    logger.info("-" * 50)
 
     balance_loss = WaterBalanceLoss(dt=900.0, surface_area=100000.0)
 
@@ -420,11 +423,11 @@ if __name__ == "__main__":
     q_out = torch.ones(batch_size, 1) * 100
 
     loss = balance_loss(pred_level, current_level, q_in, q_out)
-    print(f"  水量平衡损失: {loss.item():.4f}")
+    logger.info(f"  水量平衡损失: {loss.item():.4f}")
 
     # 3. 测试 HydroPhysicsLoss
-    print("\n3. HydroPhysicsLoss 测试")
-    print("-" * 50)
+    logger.info("\n3. HydroPhysicsLoss 测试")
+    logger.info("-" * 50)
 
     hydro_loss = HydroPhysicsLoss(
         dt=900.0,
@@ -442,13 +445,13 @@ if __name__ == "__main__":
     }
 
     losses = hydro_loss(predictions, targets, physics_params)
-    print(f"  数据损失: {losses.get('data_loss', 0):.4f}")
-    print(f"  平衡损失: {losses.get('balance_loss', 0):.4f}")
-    print(f"  总损失: {losses['total_loss'].item():.4f}")
+    logger.info(f"  数据损失: {losses.get('data_loss', 0):.4f}")
+    logger.info(f"  平衡损失: {losses.get('balance_loss', 0):.4f}")
+    logger.info(f"  总损失: {losses['total_loss'].item():.4f}")
 
     # 4. 验证质量守恒
-    print("\n4. 质量守恒验证")
-    print("-" * 50)
+    logger.info("\n4. 质量守恒验证")
+    logger.info("-" * 50)
 
     # 理想情况: 入流=出流，水量不变
     pred_v = torch.tensor([10000.0])
@@ -457,15 +460,15 @@ if __name__ == "__main__":
     q_out_t = torch.tensor([100.0])
 
     loss_balanced = mass_loss(pred_v, curr_v, q_in_t, q_out_t)
-    print(f"  平衡状态损失: {loss_balanced.item():.6f}")
+    logger.info(f"  平衡状态损失: {loss_balanced.item():.6f}")
 
     # 非平衡情况: 入流>出流，水量应增加
     pred_v_wrong = torch.tensor([10000.0])  # 预测不变 (错误)
     q_in_large = torch.tensor([200.0])  # 入流增大
 
     loss_unbalanced = mass_loss(pred_v_wrong, curr_v, q_in_large, q_out_t)
-    print(f"  非平衡状态损失: {loss_unbalanced.item():.6f}")
+    logger.info(f"  非平衡状态损失: {loss_unbalanced.item():.6f}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

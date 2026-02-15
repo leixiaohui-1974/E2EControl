@@ -7,6 +7,9 @@ import numpy as np
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Callable, Any
 from enum import Enum
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class InjectionType(Enum):
@@ -564,11 +567,11 @@ if __name__ == "__main__":
 
         if t == 50:
             value = injector.apply_injection(50.0, "inflow", t)
-            print(f"T={t}: inflow = {value} (before injection)")
+            logger.info(f"T={t}: inflow = {value} (before injection)")
 
         if t == 120:
             value = injector.apply_injection(50.0, "inflow", t)
-            print(f"T={t}: inflow = {value} (after step injection)")
+            logger.info(f"T={t}: inflow = {value} (after step injection)")
 
-    print("\n注入摘要:")
-    print(injector.get_injection_summary())
+    logger.info("\n注入摘要:")
+    logger.info(injector.get_injection_summary())

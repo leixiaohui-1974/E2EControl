@@ -4,6 +4,9 @@
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('../..')
 
 import numpy as np
@@ -400,9 +403,9 @@ class AdaptiveMPCController:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*20 + "自适应MPC控制器演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "自适应MPC控制器演示")
+    logger.info("="*70)
     
     # 创建控制器
     controller = AdaptiveMPCController(
@@ -411,13 +414,13 @@ if __name__ == "__main__":
         dt=3600.0
     )
     
-    print(f"\n✓ 自适应MPC控制器已初始化")
-    print(f"  池数量: {controller.num_pools}")
-    print(f"  预测时域: {controller.horizon}")
-    print(f"  场景识别: {'启用' if controller.config.enable_scenario_recognition else '禁用'}")
-    print(f"  自适应权重: {'启用' if controller.config.enable_adaptive_weights else '禁用'}")
-    print(f"  前馈控制: {'启用' if controller.config.enable_feedforward else '禁用'}")
-    print(f"  风险调整: {'启用' if controller.config.enable_risk_adjustment else '禁用'}")
+    logger.info(f"\n✓ 自适应MPC控制器已初始化")
+    logger.info(f"  池数量: {controller.num_pools}")
+    logger.info(f"  预测时域: {controller.horizon}")
+    logger.info(f"  场景识别: {'启用' if controller.config.enable_scenario_recognition else '禁用'}")
+    logger.info(f"  自适应权重: {'启用' if controller.config.enable_adaptive_weights else '禁用'}")
+    logger.info(f"  前馈控制: {'启用' if controller.config.enable_feedforward else '禁用'}")
+    logger.info(f"  风险调整: {'启用' if controller.config.enable_risk_adjustment else '禁用'}")
     
     # 模拟几个场景
     test_cases = [
@@ -447,9 +450,9 @@ if __name__ == "__main__":
     ]
     
     for i, test in enumerate(test_cases, 1):
-        print(f"\n{'='*70}")
-        print(f"测试 {i}: {test['name']}")
-        print('='*70)
+        logger.info(f"\n{'='*70}")
+        logger.info(f"测试 {i}: {test['name']}")
+        logger.info('='*70)
         
         control_actions, debug_info = controller.compute_control(
             current_levels=test['levels'],
@@ -463,45 +466,45 @@ if __name__ == "__main__":
         # 显示结果
         if 'scenario' in debug_info:
             scenario = debug_info['scenario']
-            print(f"\n🎯 场景识别:")
-            print(f"  场景: {scenario['scenario_name']}")
-            print(f"  置信度: {scenario['confidence']:.1%}")
-            print(f"  风险: {scenario['risk_level']}")
+            logger.info(f"\n🎯 场景识别:")
+            logger.info(f"  场景: {scenario['scenario_name']}")
+            logger.info(f"  置信度: {scenario['confidence']:.1%}")
+            logger.info(f"  风险: {scenario['risk_level']}")
             
             if debug_info.get('scenario_switched'):
-                print(f"  ⚡ 场景切换!")
+                logger.info(f"  ⚡ 场景切换!")
         
         if 'mpc_config' in debug_info:
             config = debug_info['mpc_config']
-            print(f"\n⚙️ MPC配置:")
-            print(f"  时域: {config['horizon']}步")
-            print(f"  策略: {config.get('strategy_id', 'default')}")
+            logger.info(f"\n⚙️ MPC配置:")
+            logger.info(f"  时域: {config['horizon']}步")
+            logger.info(f"  策略: {config.get('strategy_id', 'default')}")
             
             if debug_info.get('strategy_switched'):
-                print(f"  ⚡ 策略切换!")
+                logger.info(f"  ⚡ 策略切换!")
         
         if 'admm' in debug_info:
             admm = debug_info['admm']
-            print(f"\n📊 ADMM求解:")
-            print(f"  迭代次数: {admm.get('iterations', 0)}")
-            print(f"  收敛: {'是' if admm.get('converged', False) else '否'}")
-            print(f"  求解时间: {admm.get('solve_time', 0)*1000:.1f}ms")
+            logger.info(f"\n📊 ADMM求解:")
+            logger.info(f"  迭代次数: {admm.get('iterations', 0)}")
+            logger.info(f"  收敛: {'是' if admm.get('converged', False) else '否'}")
+            logger.info(f"  求解时间: {admm.get('solve_time', 0)*1000:.1f}ms")
         
-        print(f"\n🎮 控制动作:")
+        logger.info(f"\n🎮 控制动作:")
         for j, (q_in, q_out) in enumerate(control_actions):
-            print(f"  池{j}: q_in={q_in:.2f}, q_out={q_out:.2f} m³/s")
+            logger.info(f"  池{j}: q_in={q_in:.2f}, q_out={q_out:.2f} m³/s")
     
     # 统计信息
-    print(f"\n{'='*70}")
-    print("统计信息")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("统计信息")
+    logger.info('='*70)
     
     stats = controller.get_statistics()
-    print(f"  总步数: {stats['total_steps']}")
-    print(f"  场景切换: {stats['scenario_switches']}次")
-    print(f"  策略切换: {stats['strategy_switches']}次")
-    print(f"  风险升级: {stats['risk_escalations']}次")
+    logger.info(f"  总步数: {stats['total_steps']}")
+    logger.info(f"  场景切换: {stats['scenario_switches']}次")
+    logger.info(f"  策略切换: {stats['strategy_switches']}次")
+    logger.info(f"  风险升级: {stats['risk_escalations']}次")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

@@ -6,6 +6,9 @@ Single Channel Fidelity Model with Distributed Parameters
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -141,7 +144,7 @@ class SingleChannelFidelity:
         for i in range(start_seg, end_seg + 1):
             self.state.n_roughness[i] = 0.025 * growth_factor
         
-        print(f"💚 水草生长：切片 {start_seg+1}-{end_seg+1}，粗糙度增至 {0.025*growth_factor:.4f}")
+        logger.info(f"💚 水草生长：切片 {start_seg+1}-{end_seg+1}，粗糙度增至 {0.025*growth_factor:.4f}")
     
     def inject_attack(self, active: bool = True, bias: float = -0.5):
         """
@@ -155,9 +158,9 @@ class SingleChannelFidelity:
         self.attack_bias = bias
         
         if active:
-            print(f"🔴 网络攻击激活：中游水位传感器被篡改 (偏差 {bias:.2f}m)")
+            logger.info(f"🔴 网络攻击激活：中游水位传感器被篡改 (偏差 {bias:.2f}m)")
         else:
-            print(f"🟢 网络攻击解除")
+            logger.info(f"🟢 网络攻击解除")
     
     def set_lateral_inflow(self, lateral: np.ndarray):
         """设置侧向入流分布"""
@@ -333,22 +336,22 @@ class SingleChannelFidelity:
 
 # 演示
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "单渠池高精度物理模型演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "单渠池高精度物理模型演示")
+    logger.info("="*80)
     
     # 创建物理模型
     geom = ChannelGeometry()
     model = SingleChannelFidelity(geom, dt=60.0)
     
-    print(f"\n渠道参数:")
-    print(f"  总长度: {geom.length/1000:.1f} km")
-    print(f"  切片数: {geom.N}")
-    print(f"  切片长度: {geom.segment_length():.0f} m")
-    print(f"  渠道宽度: {geom.width:.0f} m")
+    logger.info(f"\n渠道参数:")
+    logger.info(f"  总长度: {geom.length/1000:.1f} km")
+    logger.info(f"  切片数: {geom.N}")
+    logger.info(f"  切片长度: {geom.segment_length():.0f} m")
+    logger.info(f"  渠道宽度: {geom.width:.0f} m")
     
     # 仿真10步
-    print(f"\n运行仿真...")
+    logger.info(f"\n运行仿真...")
     for t in range(10):
         u_in = 50.0 + 10.0 * np.sin(0.1 * t)
         u_out = 48.0
@@ -357,8 +360,8 @@ if __name__ == "__main__":
         
         if t % 3 == 0:
             stats = model.get_statistics()
-            print(f"  t={t:3d}: 平均水位={stats['mean_level']:.2f}m, "
+            logger.info(f"  t={t:3d}: 平均水位={stats['mean_level']:.2f}m, "
                   f"平均流量={stats['mean_flow']:.1f}m³/s")
     
-    print("\n✅ 物理模型演示完成！")
-    print("="*80)
+    logger.info("\n✅ 物理模型演示完成！")
+    logger.info("="*80)

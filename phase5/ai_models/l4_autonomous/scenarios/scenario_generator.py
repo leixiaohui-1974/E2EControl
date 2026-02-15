@@ -343,9 +343,9 @@ class DynamicScenarioBuilder:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("场景生成器测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("场景生成器测试")
+    logger.info("=" * 70)
 
     generator = ScenarioGenerator(num_pools=10, num_gates=11)
 
@@ -353,14 +353,14 @@ if __name__ == "__main__":
     scenario = COMPLETE_SCENARIO_MATRIX["NORMAL_001"]
     states = generator.generate(scenario, num_steps=100)
 
-    print(f"\n场景: {scenario.name_cn}")
-    print(f"生成步数: {len(states)}")
-    print(f"初始水位: {states[0].levels[:5]}")
-    print(f"最终水位: {states[-1].levels[:5]}")
+    logger.info(f"\n场景: {scenario.name_cn}")
+    logger.info(f"生成步数: {len(states)}")
+    logger.info(f"初始水位: {states[0].levels[:5]}")
+    logger.info(f"最终水位: {states[-1].levels[:5]}")
 
     # 测试动态场景
     builder = DynamicScenarioBuilder()
     timeline = builder.create_stress_test(24.0)
-    print(f"\n压力测试场景段数: {len(timeline)}")
+    logger.info(f"\n压力测试场景段数: {len(timeline)}")
 
-    print("\n" + "=" * 70)
+    logger.info("\n" + "=" * 70)

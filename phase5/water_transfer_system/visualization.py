@@ -16,6 +16,9 @@ from enum import Enum
 import time
 from datetime import datetime
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .hydraulic_simulator import (
     FullLineHydraulicSimulator, PoolState, SimulationRecord,
@@ -608,20 +611,20 @@ def print_simulation_summary(result: Dict[str, Any]):
     """打印仿真摘要"""
     gen = ReportGenerator()
     report = gen.generate_simulation_summary(result)
-    print(report.summary)
+    logger.info(report.summary)
 
 
 def print_dashboard(simulation: ClosedLoopSimulation):
     """打印系统仪表板"""
     gen = ReportGenerator()
     report = gen.generate_dashboard(simulation)
-    print(report.summary)
+    logger.info(report.summary)
 
 
 def print_full_report(simulation: ClosedLoopSimulation, result: Dict[str, Any]):
     """打印完整报告"""
     gen = ComprehensiveReportGenerator()
-    print(gen.generate_full_report(simulation, result))
+    logger.info(gen.generate_full_report(simulation, result))
 
 
 # ==============================================================================

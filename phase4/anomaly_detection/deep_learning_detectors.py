@@ -4,6 +4,9 @@
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 import numpy as np
@@ -334,9 +337,9 @@ class VariationalAutoencoderDetector(BaseDetector):
 
 # 演示
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "深度学习异常检测器演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "深度学习异常检测器演示")
+    logger.info("="*80)
     
     # 生成测试数据
     np.random.seed(42)
@@ -354,15 +357,15 @@ if __name__ == "__main__":
     ]
     
     # 训练
-    print("\n训练检测器...")
+    logger.info("\n训练检测器...")
     for detector in detectors:
         detector.fit(normal_data)
-        print(f"  ✓ {detector.name} 已训练")
+        logger.info(f"  ✓ {detector.name} 已训练")
     
     # 测试数据（含异常）
-    print("\n" + "-"*80)
-    print("测试异常检测...")
-    print("-"*80)
+    logger.info("\n" + "-"*80)
+    logger.info("测试异常检测...")
+    logger.info("-"*80)
     
     test_data = list(normal_data[-30:])
     test_data[10] = 6.0  # 注入异常
@@ -372,26 +375,26 @@ if __name__ == "__main__":
     
     for t, value in enumerate(test_data):
         if t % 10 == 0 or value in [6.0, 1.0]:
-            print(f"\n[T={t}] 值={value:.2f}")
+            logger.info(f"\n[T={t}] 值={value:.2f}")
             
         for detector in detectors:
             report = detector.detect(value, t, "test_var")
             if report:
                 anomaly_counts[detector.name] += 1
                 if value in [6.0, 1.0]:
-                    print(f"  🔴 {detector.name}: {report.description[:60]}...")
+                    logger.info(f"  🔴 {detector.name}: {report.description[:60]}...")
     
     # 统计
-    print("\n" + "="*80)
-    print("检测统计")
-    print("="*80)
+    logger.info("\n" + "="*80)
+    logger.info("检测统计")
+    logger.info("="*80)
     
     for detector in detectors:
         count = anomaly_counts[detector.name]
-        print(f"\n{detector.name}:")
-        print(f"  异常检出次数: {count}")
-        print(f"  检出率: {count / 2 * 100:.0f}% (预期2个异常)")
+        logger.info(f"\n{detector.name}:")
+        logger.info(f"  异常检出次数: {count}")
+        logger.info(f"  检出率: {count / 2 * 100:.0f}% (预期2个异常)")
     
-    print("\n✅ 演示完成！")
-    print("\n注：这是简化实现，生产环境应使用PyTorch/TensorFlow")
-    print("="*80)
+    logger.info("\n✅ 演示完成！")
+    logger.info("\n注：这是简化实现，生产环境应使用PyTorch/TensorFlow")
+    logger.info("="*80)

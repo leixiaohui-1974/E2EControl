@@ -516,10 +516,10 @@ class IntegratedWaterNetworkSystem:
 # 演示
 def run_comprehensive_demo():
     """运行完整的系统演示"""
-    print("\n" + "="*80)
-    print(" "*15 + "智能水网控制系统 - 完整集成演示")
-    print("="*80)
-    
+    logger.info("=" * 80)
+    logger.info("智能水网控制系统 - 完整集成演示")
+    logger.info("=" * 80)
+
     # 创建集成系统
     system = IntegratedWaterNetworkSystem(
         num_pools=3,
@@ -527,7 +527,7 @@ def run_comprehensive_demo():
         enable_self_healing=True,
         enable_anomaly_detection=True
     )
-    
+
     # 定义场景脚本
     scenario_script = [
         (0, "保持水位平稳，正常供水"),
@@ -535,43 +535,43 @@ def run_comprehensive_demo():
         (60, "恢复正常供水"),
         (90, "进入夜间节水模式")
     ]
-    
+
     # 运行仿真（启用故障注入）
     history = system.run_simulation(
         scenario_script=scenario_script,
         total_steps=100,
         enable_faults=True
     )
-    
+
     # 生成可视化报告
     system.visualize_results("/workspace/phase5/integrated_system_results.png")
-    
+
     # 获取系统状态
     status = system.get_system_status()
-    
-    print("\n" + "="*80)
-    print(" "*25 + "系统状态摘要")
-    print("="*80)
-    print(f"\n当前时间: {status['timestamp']}")
-    print(f"仿真步数: {status['current_time']}")
-    print(f"\n启用模块:")
+
+    logger.info("=" * 80)
+    logger.info("系统状态摘要")
+    logger.info("=" * 80)
+    logger.info("当前时间: %s", status['timestamp'])
+    logger.info("仿真步数: %s", status['current_time'])
+    logger.info("启用模块:")
     for module, enabled in status['modules'].items():
-        print(f"  {module}: {'✓' if enabled else '✗'}")
-    
+        logger.info("  %s: %s", module, "enabled" if enabled else "disabled")
+
     if 'operation_mode' in status:
-        print(f"\n当前运行模式: {status['operation_mode']}")
-        print(f"系统健康度: {status['system_health']:.2%}")
-    
-    print(f"\n统计信息:")
-    print(f"  异常检测: {status['statistics']['total_anomalies']}次")
-    print(f"  故障发生: {status['statistics']['total_faults']}次")
-    print(f"  自愈执行: {status['statistics']['total_healings']}次")
-    print(f"  自愈成功率: {status['statistics']['healing_success_rate']:.1f}%")
-    
-    print("\n" + "="*80)
-    print("✅ 完整系统演示完成！")
-    print("="*80)
-    
+        logger.info("当前运行模式: %s", status['operation_mode'])
+        logger.info("系统健康度: %.2f%%", status['system_health'] * 100)
+
+    logger.info("统计信息:")
+    logger.info("  异常检测: %d次", status['statistics']['total_anomalies'])
+    logger.info("  故障发生: %d次", status['statistics']['total_faults'])
+    logger.info("  自愈执行: %d次", status['statistics']['total_healings'])
+    logger.info("  自愈成功率: %.1f%%", status['statistics']['healing_success_rate'])
+
+    logger.info("=" * 80)
+    logger.info("完整系统演示完成!")
+    logger.info("=" * 80)
+
     return system
 
 

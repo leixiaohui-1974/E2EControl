@@ -665,20 +665,20 @@ class SNWDMiddleRouteModel:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("="*70)
-    print(" " * 15 + "南水北调中线物理模型测试")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" " * 15 + "南水北调中线物理模型测试")
+    logger.info("="*70)
 
     # 创建全线模型
     model = SNWDMiddleRouteModel()
     model.reset(initial_level=4.0, initial_flow=300.0)
 
-    print(f"\n✓ 创建南水北调中线模型")
-    print(f"  渠池数量: {model.topology.num_pools}")
-    print(f"  特殊建筑物: {len(model.special_nodes)}")
+    logger.info(f"\n✓ 创建南水北调中线模型")
+    logger.info(f"  渠池数量: {model.topology.num_pools}")
+    logger.info(f"  特殊建筑物: {len(model.special_nodes)}")
 
     # 运行模拟
-    print(f"\n运行24小时模拟 (时间步长=15分钟)...")
+    logger.info(f"\n运行24小时模拟 (时间步长=15分钟)...")
 
     for hour in range(24):
         for step in range(4):  # 每小时4步
@@ -690,34 +690,34 @@ if __name__ == "__main__":
 
         if hour % 6 == 0:
             summary = model.get_summary()
-            print(f"  {hour:2d}h: 平均水位={summary['avg_level']:.2f}m, "
+            logger.info(f"  {hour:2d}h: 平均水位={summary['avg_level']:.2f}m, "
                   f"入流={summary['source_inflow']:.0f}m³/s, "
                   f"出流={summary['end_outflow']:.0f}m³/s")
 
     # 最终状态
-    print(f"\n最终状态:")
+    logger.info(f"\n最终状态:")
     summary = model.get_summary()
     for key, value in summary.items():
         if isinstance(value, float):
-            print(f"  {key}: {value:.2f}")
+            logger.info(f"  {key}: {value:.2f}")
         else:
-            print(f"  {key}: {value}")
+            logger.info(f"  {key}: {value}")
 
     # 测试IDZ模型
-    print(f"\n{'='*70}")
-    print("IDZ模型测试")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("IDZ模型测试")
+    logger.info('='*70)
 
     idz_params = IDZParameters(tau=14400, A_s=100000)
     idz = IDZModel(idz_params, dt=900)
     idz.reset(initial_level=4.0, initial_inflow=100)
 
-    print(f"  滞后时间: {idz_params.tau/3600:.1f} 小时")
-    print(f"  延迟步数: {idz.delay_steps}")
-    print(f"  积分增益: {idz_params.integrator_gain:.2e} 1/m²")
+    logger.info(f"  滞后时间: {idz_params.tau/3600:.1f} 小时")
+    logger.info(f"  延迟步数: {idz.delay_steps}")
+    logger.info(f"  积分增益: {idz_params.integrator_gain:.2e} 1/m²")
 
     # 阶跃响应
-    print(f"\n阶跃响应 (入流从100增加到150):")
+    logger.info(f"\n阶跃响应 (入流从100增加到150):")
     levels = []
     for i in range(20):
         q_in = 150 if i >= 5 else 100
@@ -725,18 +725,18 @@ if __name__ == "__main__":
         level = idz.step(q_in, q_out)
         levels.append(level)
         if i % 4 == 0:
-            print(f"    步骤{i:2d}: 入流={q_in}, 水位={level:.3f}m")
+            logger.info(f"    步骤{i:2d}: 入流={q_in}, 水位={level:.3f}m")
 
     # 测试区域状态
-    print(f"\n{'='*70}")
-    print("区域状态测试")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("区域状态测试")
+    logger.info('='*70)
 
     for region_id in range(5):
         state = model.get_region_state(region_id)
-        print(f"  {state['region_name']}: {state['num_pools']}池, "
+        logger.info(f"  {state['region_name']}: {state['num_pools']}池, "
               f"平均水位={state['avg_level']:.2f}m")
 
-    print("\n" + "="*70)
-    print("测试完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("测试完成!")
+    logger.info("="*70)

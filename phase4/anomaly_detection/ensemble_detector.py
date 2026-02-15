@@ -4,6 +4,9 @@
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 import numpy as np
@@ -85,22 +88,22 @@ class HybridEnsembleDetector(BaseDetector):
         
     def fit(self, data: np.ndarray):
         """训练所有检测器"""
-        print(f"  训练 {self.name}...")
+        logger.info(f"  训练 {self.name}...")
         
         # 统计层
         for detector in self.statistical_detectors:
             detector.fit(data)
-            print(f"    ✓ {detector.name}")
+            logger.info(f"    ✓ {detector.name}")
         
         # 机器学习层
         for detector in self.ml_detectors:
             detector.fit(data)
-            print(f"    ✓ {detector.name}")
+            logger.info(f"    ✓ {detector.name}")
         
         # 深度学习层
         for detector in self.dl_detectors:
             detector.fit(data)
-            print(f"    ✓ {detector.name}")
+            logger.info(f"    ✓ {detector.name}")
         
         self.is_trained = True
     
@@ -301,9 +304,9 @@ class HybridEnsembleDetector(BaseDetector):
 
 # 演示
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "集成学习异常检测器演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "集成学习异常检测器演示")
+    logger.info("="*80)
     
     # 生成测试数据
     np.random.seed(42)
@@ -321,16 +324,16 @@ if __name__ == "__main__":
     ]
     
     # 训练
-    print("\n训练集成检测器...")
-    print("="*80)
+    logger.info("\n训练集成检测器...")
+    logger.info("="*80)
     for detector in detectors:
         detector.fit(normal_data)
-        print()
+        logger.info()
     
     # 测试数据（含异常）
-    print("="*80)
-    print("测试异常检测...")
-    print("="*80)
+    logger.info("="*80)
+    logger.info("测试异常检测...")
+    logger.info("="*80)
     
     test_data = list(normal_data[-30:])
     test_data[10] = 5.5  # 异常1
@@ -344,27 +347,27 @@ if __name__ == "__main__":
             if report:
                 anomaly_counts[detector.fusion_method] += 1
                 if value in [5.5, 1.2]:
-                    print(f"\n[T={t}] 值={value:.2f}")
-                    print(f"  {detector.fusion_method}: {report.description}")
+                    logger.info(f"\n[T={t}] 值={value:.2f}")
+                    logger.info(f"  {detector.fusion_method}: {report.description}")
     
     # 统计
-    print("\n" + "="*80)
-    print("检测统计对比")
-    print("="*80)
+    logger.info("\n" + "="*80)
+    logger.info("检测统计对比")
+    logger.info("="*80)
     
     for detector in detectors:
         count = anomaly_counts[detector.fusion_method]
         stats = detector.get_statistics()
         
-        print(f"\n{detector.fusion_method.upper()} 融合:")
-        print(f"  异常检出次数: {count}")
-        print(f"  检测器层数: {sum(stats['layers'].values())}层")
-        print(f"    - 统计层: {stats['layers']['statistical']}个")
-        print(f"    - ML层: {stats['layers']['ml']}个")
-        print(f"    - DL层: {stats['layers']['dl']}个")
-        print(f"  融合权重:")
+        logger.info(f"\n{detector.fusion_method.upper()} 融合:")
+        logger.info(f"  异常检出次数: {count}")
+        logger.info(f"  检测器层数: {sum(stats['layers'].values())}层")
+        logger.info(f"    - 统计层: {stats['layers']['statistical']}个")
+        logger.info(f"    - ML层: {stats['layers']['ml']}个")
+        logger.info(f"    - DL层: {stats['layers']['dl']}个")
+        logger.info(f"  融合权重:")
         for layer, weight in stats['weights'].items():
-            print(f"    - {layer}: {weight:.2f}")
+            logger.info(f"    - {layer}: {weight:.2f}")
     
-    print("\n✅ 集成检测器演示完成！")
-    print("="*80)
+    logger.info("\n✅ 集成检测器演示完成！")
+    logger.info("="*80)

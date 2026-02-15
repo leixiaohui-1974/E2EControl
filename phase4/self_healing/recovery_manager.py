@@ -4,6 +4,9 @@ Automatic Recovery Manager
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 from enum import Enum
@@ -361,10 +364,10 @@ class RecoveryManager:
         
         # 逐步执行恢复动作
         for i, action in enumerate(plan.recovery_actions):
-            print(f"\n执行恢复动作 {i+1}/{len(plan.recovery_actions)}: {action.strategy.value}")
-            print(f"  目标组件: {action.target_component}")
-            print(f"  预计时间: {action.estimated_time}s")
-            print(f"  成功概率: {action.success_probability:.2%}")
+            logger.info(f"\n执行恢复动作 {i+1}/{len(plan.recovery_actions)}: {action.strategy.value}")
+            logger.info(f"  目标组件: {action.target_component}")
+            logger.info(f"  预计时间: {action.estimated_time}s")
+            logger.info(f"  成功概率: {action.success_probability:.2%}")
             
             # 更新阶段
             if action.strategy == RecoveryStrategy.SWITCH_BACKUP:
@@ -391,15 +394,15 @@ class RecoveryManager:
             
             if success:
                 results['actions_completed'] += 1
-                print(f"  ✓ 动作成功")
+                logger.info(f"  ✓ 动作成功")
             else:
                 results['actions_failed'] += 1
                 results['success'] = False
-                print(f"  ✗ 动作失败")
+                logger.info(f"  ✗ 动作失败")
                 
                 # 如果有后备计划，切换到后备计划
                 if plan.fallback_plan:
-                    print(f"\n启动后备计划...")
+                    logger.info(f"\n启动后备计划...")
                     fallback_result = self.execute_recovery_plan(plan.fallback_plan)
                     results['fallback_executed'] = True
                     results['fallback_result'] = fallback_result
@@ -409,23 +412,23 @@ class RecoveryManager:
         # 验证阶段
         if results['success']:
             self.current_phase = RecoveryPhase.VALIDATION
-            print(f"\n验证恢复效果...")
+            logger.info(f"\n验证恢复效果...")
             
             # 模拟验证
             validation_success = np.random.random() < 0.9
             
             if validation_success:
                 self.current_phase = RecoveryPhase.RESTORATION
-                print("  ✓ 验证通过")
+                logger.info("  ✓ 验证通过")
                 
                 # 渐进恢复
                 self.current_phase = RecoveryPhase.COMPLETED
-                print("  ✓ 恢复完成")
+                logger.info("  ✓ 恢复完成")
                 
                 self.stats['successful_recoveries'] += 1
             else:
                 self.current_phase = RecoveryPhase.FAILED
-                print("  ✗ 验证失败")
+                logger.info("  ✗ 验证失败")
                 results['success'] = False
                 
                 self.stats['failed_recoveries'] += 1
@@ -467,9 +470,9 @@ class RecoveryManager:
 
 # 演示
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "自动恢复管理器演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "自动恢复管理器演示")
+    logger.info("="*80)
     
     # 创建恢复管理器
     manager = RecoveryManager()
@@ -497,12 +500,12 @@ if __name__ == "__main__":
     ]
     
     for scenario in scenarios:
-        print(f"\n{'='*80}")
-        print(f"场景: {scenario['name']}")
-        print('='*80)
+        logger.info(f"\n{'='*80}")
+        logger.info(f"场景: {scenario['name']}")
+        logger.info('='*80)
         
         # 生成恢复计划
-        print("\n生成恢复计划...")
+        logger.info("\n生成恢复计划...")
         plan = manager.generate_recovery_plan(
             fault_type=scenario['fault_type'],
             fault_component=scenario['component'],
@@ -510,44 +513,44 @@ if __name__ == "__main__":
             system_state={}
         )
         
-        print(f"\n恢复计划:")
-        print(f"  故障ID: {plan.fault_id}")
-        print(f"  故障类型: {plan.fault_type}")
-        print(f"  受影响组件: {', '.join(plan.affected_components)}")
-        print(f"  恢复动作数: {len(plan.recovery_actions)}")
-        print(f"  预计总时间: {plan.total_estimated_time}s")
-        print(f"  成功概率: {plan.success_probability:.2%}")
+        logger.info(f"\n恢复计划:")
+        logger.info(f"  故障ID: {plan.fault_id}")
+        logger.info(f"  故障类型: {plan.fault_type}")
+        logger.info(f"  受影响组件: {', '.join(plan.affected_components)}")
+        logger.info(f"  恢复动作数: {len(plan.recovery_actions)}")
+        logger.info(f"  预计总时间: {plan.total_estimated_time}s")
+        logger.info(f"  成功概率: {plan.success_probability:.2%}")
         
-        print(f"\n恢复步骤:")
+        logger.info(f"\n恢复步骤:")
         for i, action in enumerate(plan.recovery_actions):
-            print(f"  {i+1}. {action.strategy.value} - {action.target_component}")
-            print(f"     时间: {action.estimated_time}s, 风险: {action.risk_level}")
+            logger.info(f"  {i+1}. {action.strategy.value} - {action.target_component}")
+            logger.info(f"     时间: {action.estimated_time}s, 风险: {action.risk_level}")
         
         # 执行恢复计划
-        print(f"\n{'='*80}")
-        print("执行恢复计划")
-        print('='*80)
+        logger.info(f"\n{'='*80}")
+        logger.info("执行恢复计划")
+        logger.info('='*80)
         
         result = manager.execute_recovery_plan(plan)
         
-        print(f"\n恢复结果:")
-        print(f"  总体状态: {'✓ 成功' if result['success'] else '✗ 失败'}")
-        print(f"  完成动作: {result['actions_completed']}/{len(plan.recovery_actions)}")
-        print(f"  实际时间: {result['total_time']}s")
+        logger.info(f"\n恢复结果:")
+        logger.info(f"  总体状态: {'✓ 成功' if result['success'] else '✗ 失败'}")
+        logger.info(f"  完成动作: {result['actions_completed']}/{len(plan.recovery_actions)}")
+        logger.info(f"  实际时间: {result['total_time']}s")
     
     # 显示统计
-    print(f"\n{'='*80}")
-    print("恢复统计")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("恢复统计")
+    logger.info('='*80)
     
     status = manager.get_recovery_status()
     stats = status['statistics']
     
-    print(f"  总恢复次数: {stats['total_recoveries']}")
-    print(f"  成功次数: {stats['successful_recoveries']}")
-    print(f"  失败次数: {stats['failed_recoveries']}")
-    print(f"  成功率: {stats['successful_recoveries']/stats['total_recoveries']*100:.1f}%")
-    print(f"  平均恢复时间: {stats['avg_recovery_time']:.1f}s")
+    logger.info(f"  总恢复次数: {stats['total_recoveries']}")
+    logger.info(f"  成功次数: {stats['successful_recoveries']}")
+    logger.info(f"  失败次数: {stats['failed_recoveries']}")
+    logger.info(f"  成功率: {stats['successful_recoveries']/stats['total_recoveries']*100:.1f}%")
+    logger.info(f"  平均恢复时间: {stats['avg_recovery_time']:.1f}s")
     
-    print("\n✅ 演示完成！")
-    print("="*80)
+    logger.info("\n✅ 演示完成！")
+    logger.info("="*80)

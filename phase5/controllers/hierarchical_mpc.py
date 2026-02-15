@@ -23,7 +23,10 @@ import numpy as np
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass, field
 from enum import Enum
+import logging
 import time
+
+logger = logging.getLogger(__name__)
 
 # 导入L3和L2组件
 from phase5.controllers.centralized_scheduler import (
@@ -297,8 +300,8 @@ class HierarchicalMPCController:
         # 更新L2物理参数
         self.l2_controller.set_scenario_physics(new_scenario.value)
 
-        print(f"[物理场景切换] {old_scenario.value} -> {new_scenario.value}")
-        print(f"  流速效率: {new_efficiency:.2f}")
+        logger.info(f"[物理场景切换] {old_scenario.value} -> {new_scenario.value}")
+        logger.info(f"  流速效率: {new_efficiency:.2f}")
 
         return True
 
@@ -434,7 +437,7 @@ class HierarchicalMPCController:
                                      q_out * 1.5)
                 l2_result['control_actions'][i] = (q_in, q_out_emergency)
                 emergency_applied = True
-                print(f"[紧急覆盖] 池{i}水位{level:.2f}m接近上限, 增大出流至{q_out_emergency:.2f}")
+                logger.info(f"[紧急覆盖] 池{i}水位{level:.2f}m接近上限, 增大出流至{q_out_emergency:.2f}")
 
             elif level < self.topology.pool_levels_min[i] + 0.3:
                 # 接近下限, 强制减小出流
@@ -442,7 +445,7 @@ class HierarchicalMPCController:
                 q_out_emergency = max(0, q_out * 0.5)
                 l2_result['control_actions'][i] = (q_in, q_out_emergency)
                 emergency_applied = True
-                print(f"[紧急覆盖] 池{i}水位{level:.2f}m接近下限, 减小出流至{q_out_emergency:.2f}")
+                logger.info(f"[紧急覆盖] 池{i}水位{level:.2f}m接近下限, 减小出流至{q_out_emergency:.2f}")
 
         l2_result['emergency_applied'] = emergency_applied
         return l2_result
@@ -485,9 +488,9 @@ class HierarchicalMPCController:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*15 + "双层MPC控制器演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*15 + "双层MPC控制器演示")
+    logger.info("="*70)
 
     # 创建双层控制器
     config = HierarchicalConfig(
@@ -500,15 +503,15 @@ if __name__ == "__main__":
 
     controller = HierarchicalMPCController(num_pools=3, config=config)
 
-    print(f"\n✓ 双层MPC控制器已初始化")
-    print(f"  L3规划时域: {config.l3_planning_horizon} 小时")
-    print(f"  L3更新间隔: {config.l3_update_interval} 小时")
-    print(f"  L2控制时域: {config.l2_control_horizon} 步")
+    logger.info(f"\n✓ 双层MPC控制器已初始化")
+    logger.info(f"  L3规划时域: {config.l3_planning_horizon} 小时")
+    logger.info(f"  L3更新间隔: {config.l3_update_interval} 小时")
+    logger.info(f"  L2控制时域: {config.l2_control_horizon} 步")
 
     # 测试1: 正常运行
-    print(f"\n{'='*70}")
-    print("测试1: 正常运行模式")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试1: 正常运行模式")
+    logger.info('='*70)
 
     current_time = 0.0
     current_levels = [3.0, 3.0, 3.0]
@@ -522,22 +525,22 @@ if __name__ == "__main__":
         current_demands=current_demands
     )
 
-    print(f"\n调试信息:")
-    print(f"  L3更新: {debug_info['l3_updated']}")
+    logger.info(f"\n调试信息:")
+    logger.info(f"  L3更新: {debug_info['l3_updated']}")
     if debug_info['l3_updated']:
-        print(f"  L3模式: {debug_info['l3_result']['mode']}")
-        print(f"  L3求解时间: {debug_info['l3_result']['solve_time']*1000:.1f} ms")
-    print(f"  L2收敛: {debug_info['l2_result']['converged']}")
-    print(f"  L2迭代: {debug_info['l2_result']['iterations']}")
+        logger.info(f"  L3模式: {debug_info['l3_result']['mode']}")
+        logger.info(f"  L3求解时间: {debug_info['l3_result']['solve_time']*1000:.1f} ms")
+    logger.info(f"  L2收敛: {debug_info['l2_result']['converged']}")
+    logger.info(f"  L2迭代: {debug_info['l2_result']['iterations']}")
 
-    print(f"\n控制动作:")
+    logger.info(f"\n控制动作:")
     for i, (q_in, q_out) in enumerate(control_actions):
-        print(f"  池{i}: q_in={q_in:.2f}, q_out={q_out:.2f} m³/s")
+        logger.info(f"  池{i}: q_in={q_in:.2f}, q_out={q_out:.2f} m³/s")
 
     # 测试2: 结冰场景 + 物理参数变化
-    print(f"\n{'='*70}")
-    print("测试2: 结冰场景 (认知驱动物理参数调整)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试2: 结冰场景 (认知驱动物理参数调整)")
+    logger.info('='*70)
 
     current_time = 0.5  # 不触发L3更新
 
@@ -549,15 +552,15 @@ if __name__ == "__main__":
         detected_scenario='ICE_FORMATION'
     )
 
-    print(f"\n调试信息:")
-    print(f"  物理参数更新: {debug_info['physical_updated']}")
-    print(f"  当前物理场景: {debug_info.get('physical_scenario', 'N/A')}")
-    print(f"  流速效率: {debug_info.get('flow_efficiencies', [])}")
+    logger.info(f"\n调试信息:")
+    logger.info(f"  物理参数更新: {debug_info['physical_updated']}")
+    logger.info(f"  当前物理场景: {debug_info.get('physical_scenario', 'N/A')}")
+    logger.info(f"  流速效率: {debug_info.get('flow_efficiencies', [])}")
 
     # 测试3: 暴雨预警 -> L3强制更新
-    print(f"\n{'='*70}")
-    print("测试3: 暴雨预警 (L3强制更新 + 预泄模式)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试3: 暴雨预警 (L3强制更新 + 预泄模式)")
+    logger.info('='*70)
 
     current_time = 1.0
 
@@ -576,29 +579,29 @@ if __name__ == "__main__":
         detected_scenario='NORMAL'
     )
 
-    print(f"\n调试信息:")
-    print(f"  L3强制更新: {debug_info['l3_updated']}")
+    logger.info(f"\n调试信息:")
+    logger.info(f"  L3强制更新: {debug_info['l3_updated']}")
     if debug_info['l3_updated']:
-        print(f"  L3模式: {debug_info['l3_result']['mode']}")
+        logger.info(f"  L3模式: {debug_info['l3_result']['mode']}")
         for rec in debug_info['l3_result'].get('recommendations', []):
-            print(f"    - {rec}")
+            logger.info(f"    - {rec}")
 
     # 显示参考轨迹
     trajectory = controller.get_current_trajectory()
     if trajectory is not None:
-        print(f"\n当前参考轨迹 (前5步):")
+        logger.info(f"\n当前参考轨迹 (前5步):")
         for i in range(min(3, trajectory.shape[0])):
             levels = trajectory[i, :5]
-            print(f"  池{i}: {', '.join([f'{l:.2f}' for l in levels])} m")
+            logger.info(f"  池{i}: {', '.join([f'{l:.2f}' for l in levels])} m")
 
     # 统计
-    print(f"\n{'='*70}")
-    print("统计信息")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("统计信息")
+    logger.info('='*70)
     stats = controller.get_statistics()
     for key, value in stats.items():
-        print(f"  {key}: {value}")
+        logger.info(f"  {key}: {value}")
 
-    print("\n" + "="*70)
-    print("演示完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成!")
+    logger.info("="*70)

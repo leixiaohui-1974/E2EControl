@@ -511,9 +511,9 @@ class ContinualLearner:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("Continual Learner Test")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("Continual Learner Test")
+    logger.info("=" * 70)
 
     # 创建简单模型
     model = nn.Sequential(
@@ -532,7 +532,7 @@ if __name__ == "__main__":
     learner = ContinualLearner(model, config)
 
     # 模拟学习过程
-    print("\n模拟学习过程...")
+    logger.info("\n模拟学习过程...")
     for i in range(500):
         state = np.random.randn(10)
         action = np.random.randn(1)
@@ -543,16 +543,16 @@ if __name__ == "__main__":
         result = learner.step(state, action, reward, next_state, done)
 
         if result['updated'] and i % 50 == 0:
-            print(f"  Step {i}: loss={result['loss']:.4f}, td_error={result['td_error']:.4f}")
+            logger.info(f"  Step {i}: loss={result['loss']:.4f}, td_error={result['td_error']:.4f}")
 
     # 获取统计
     stats = learner.get_learning_stats()
-    print(f"\n学习统计:")
-    print(f"  总步数: {stats['stats']['total_steps']}")
-    print(f"  总更新: {stats['stats']['total_updates']}")
-    print(f"  平均损失: {stats['stats']['avg_loss']:.4f}")
-    print(f"  回放缓冲区: {stats['replay_stats']}")
+    logger.info(f"\n学习统计:")
+    logger.info(f"  总步数: {stats['stats']['total_steps']}")
+    logger.info(f"  总更新: {stats['stats']['total_updates']}")
+    logger.info(f"  平均损失: {stats['stats']['avg_loss']:.4f}")
+    logger.info(f"  回放缓冲区: {stats['replay_stats']}")
 
-    print("\n" + "=" * 70)
-    print("Test completed!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("Test completed!")
+    logger.info("=" * 70)

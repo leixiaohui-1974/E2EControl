@@ -714,14 +714,14 @@ class HotReconfigurableMPC:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("="*70)
-    print(" " * 15 + "增强参数化MPC测试")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" " * 15 + "增强参数化MPC测试")
+    logger.info("="*70)
 
     # 测试1: 基本MPC
-    print(f"\n{'='*70}")
-    print("测试1: 基本MPC求解")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试1: 基本MPC求解")
+    logger.info('='*70)
 
     mpc = EnhancedParameterizedMPC(
         pool_id=30,
@@ -734,32 +734,32 @@ if __name__ == "__main__":
         q_in_prev=100.0
     )
 
-    print(f"  求解状态: {mpc.last_solve_status}")
-    print(f"  入流: {q_in:.2f} m³/s")
-    print(f"  出流: {q_out:.2f} m³/s")
+    logger.info(f"  求解状态: {mpc.last_solve_status}")
+    logger.info(f"  入流: {q_in:.2f} m³/s")
+    logger.info(f"  出流: {q_out:.2f} m³/s")
 
     # 测试2: 角色切换
-    print(f"\n{'='*70}")
-    print("测试2: 角色切换 (TRANSMIT -> ISOLATE)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试2: 角色切换 (TRANSMIT -> ISOLATE)")
+    logger.info('='*70)
 
-    print(f"  切换前: 角色={mpc.current_role.value}")
-    print(f"  切换前: W_level={mpc.active_weights.W_level:.1f}, "
+    logger.info(f"  切换前: 角色={mpc.current_role.value}")
+    logger.info(f"  切换前: W_level={mpc.active_weights.W_level:.1f}, "
           f"W_flow={mpc.active_weights.W_flow:.1f}")
 
     mpc.apply_role(PoolRole.ISOLATE)
 
-    print(f"  切换后: 角色={mpc.current_role.value}")
-    print(f"  切换后: W_level={mpc.active_weights.W_level:.1f}, "
+    logger.info(f"  切换后: 角色={mpc.current_role.value}")
+    logger.info(f"  切换后: W_level={mpc.active_weights.W_level:.1f}, "
           f"W_flow={mpc.active_weights.W_flow:.1f}")
 
     q_in, q_out, success = mpc.solve(current_level=4.0, q_in_prev=100.0)
-    print(f"  出流: {q_out:.2f} m³/s (应为0)")
+    logger.info(f"  出流: {q_out:.2f} m³/s (应为0)")
 
     # 测试3: 指令应用
-    print(f"\n{'='*70}")
-    print("测试3: 指令应用")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试3: 指令应用")
+    logger.info('='*70)
 
     mpc2 = EnhancedParameterizedMPC(pool_id=31, horizon=10)
 
@@ -772,14 +772,14 @@ if __name__ == "__main__":
 
     mpc2.apply_directive(directive)
 
-    print(f"  角色: {mpc2.current_role.value}")
-    print(f"  Z_ref: {mpc2.Z_ref:.2f} (包含偏移)")
-    print(f"  W_level: {mpc2.active_weights.W_level:.2f}")
+    logger.info(f"  角色: {mpc2.current_role.value}")
+    logger.info(f"  Z_ref: {mpc2.Z_ref:.2f} (包含偏移)")
+    logger.info(f"  W_level: {mpc2.active_weights.W_level:.2f}")
 
     # 测试4: 热重构管理器
-    print(f"\n{'='*70}")
-    print("测试4: 热重构MPC管理器")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试4: 热重构MPC管理器")
+    logger.info('='*70)
 
     manager = HotReconfigurableMPC(num_pools=60, horizon=10)
 
@@ -797,8 +797,8 @@ if __name__ == "__main__":
     )
 
     summary = manager.get_summary()
-    print(f"  场景: {summary['current_scenario']}")
-    print(f"  角色分布: {summary['role_distribution']}")
+    logger.info(f"  场景: {summary['current_scenario']}")
+    logger.info(f"  角色分布: {summary['role_distribution']}")
 
     # 求解
     levels = np.ones(60) * 4.0
@@ -806,13 +806,13 @@ if __name__ == "__main__":
 
     Q_in, Q_out = manager.solve_all(levels, flows)
 
-    print(f"  池30出流: {Q_out[30]:.2f} (应为0)")
-    print(f"  平均出流: {np.mean(Q_out):.2f}")
+    logger.info(f"  池30出流: {Q_out[30]:.2f} (应为0)")
+    logger.info(f"  平均出流: {np.mean(Q_out):.2f}")
 
     # 测试5: 角色-参数映射
-    print(f"\n{'='*70}")
-    print("测试5: 角色-参数映射")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试5: 角色-参数映射")
+    logger.info('='*70)
 
     base_weights = MPCWeights()
     base_constraints = MPCConstraints()
@@ -821,9 +821,9 @@ if __name__ == "__main__":
                  PoolRole.DRAIN, PoolRole.STABLE]:
         weights = RoleParameterMapper.get_weights_for_role(role, base_weights)
         constraints = RoleParameterMapper.get_constraints_for_role(role, base_constraints)
-        print(f"  {role.value}: W_level={weights.W_level:.1f}, "
+        logger.info(f"  {role.value}: W_level={weights.W_level:.1f}, "
               f"W_flow={weights.W_flow:.1f}, Q_max={constraints.Q_max:.1f}")
 
-    print("\n" + "="*70)
-    print("测试完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("测试完成!")
+    logger.info("="*70)

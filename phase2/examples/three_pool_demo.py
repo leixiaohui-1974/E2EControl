@@ -5,6 +5,9 @@
 
 import sys
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 # 添加项目根目录到路径
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, project_root)
@@ -23,21 +26,21 @@ except ImportError:
 def run_cascaded_simulation(total_hours: int = 50):
     """运行级联系统仿真"""
     
-    print("="*70)
-    print(" "*20 + "三池级联系统仿真演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "三池级联系统仿真演示")
+    logger.info("="*70)
     
     # 1. 初始化系统
-    print("\n1. 初始化系统...")
+    logger.info("\n1. 初始化系统...")
     system = CascadedCanalSystem(num_pools=3, pool_area=10000.0, dt=3600.0)
     controller = DistributedMPCController(num_pools=3, horizon=10, dt=3600.0)
     
-    print(f"   渠池数量: {system.num_pools}")
-    print(f"   闸门数量: {len(system.gates)}")
-    print(f"   MPC时域: {controller.horizon}")
+    logger.info(f"   渠池数量: {system.num_pools}")
+    logger.info(f"   闸门数量: {len(system.gates)}")
+    logger.info(f"   MPC时域: {controller.horizon}")
     
     # 2. 生成需求场景
-    print("\n2. 生成需求场景...")
+    logger.info("\n2. 生成需求场景...")
     np.random.seed(42)
     base_demand = 5.0
     demands = base_demand + np.random.normal(0, 0.5, total_hours + 20)
@@ -46,11 +49,11 @@ def run_cascaded_simulation(total_hours: int = 50):
     demands[10:20] += 2.0  # 高峰期
     demands[30:40] -= 1.0  # 低谷期
     
-    print(f"   基础需求: {base_demand:.2f} m³/s")
-    print(f"   需求波动: ±{0.5:.2f} m³/s")
+    logger.info(f"   基础需求: {base_demand:.2f} m³/s")
+    logger.info(f"   需求波动: ±{0.5:.2f} m³/s")
     
     # 3. 仿真循环
-    print(f"\n3. 运行仿真 ({total_hours}小时)...")
+    logger.info(f"\n3. 运行仿真 ({total_hours}小时)...")
     
     history = {
         'time': [],
@@ -94,34 +97,34 @@ def run_cascaded_simulation(total_hours: int = 50):
         
         # 进度显示
         if (t + 1) % 10 == 0:
-            print(f"   进度: {t+1}/{total_hours}h", end='\r')
+            logger.info(f"   进度: {t+1}/{total_hours}h", end='\r')
     
-    print(f"\n   仿真完成！")
+    logger.info(f"\n   仿真完成！")
     
     # 4. 分析结果
-    print("\n4. 分析结果...")
+    logger.info("\n4. 分析结果...")
     
     for i in range(system.num_pools):
         levels = np.array(history['pool_levels'][i])
         target = 3.0
         rmse = np.sqrt(np.mean((levels - target)**2))
         max_dev = np.max(np.abs(levels - target))
-        print(f"   池{i}: RMSE={rmse:.4f}m, 最大偏差={max_dev:.4f}m")
+        logger.info(f"   池{i}: RMSE={rmse:.4f}m, 最大偏差={max_dev:.4f}m")
     
     # 检查流量平衡
     for i in range(system.num_pools - 1):
         q_out_i = np.array(history['pool_outflows'][i])
         q_in_i1 = np.array(history['pool_inflows'][i + 1])
         balance_error = np.mean(np.abs(q_out_i - q_in_i1))
-        print(f"   池{i}→池{i+1} 流量平衡误差: {balance_error:.4f} m³/s")
+        logger.info(f"   池{i}→池{i+1} 流量平衡误差: {balance_error:.4f} m³/s")
     
     # 5. 可视化
-    print("\n5. 生成可视化...")
+    logger.info("\n5. 生成可视化...")
     visualize_results(history, system.num_pools)
     
-    print("\n" + "="*70)
-    print("演示完成！结果已保存为 cascaded_system_result.png")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！结果已保存为 cascaded_system_result.png")
+    logger.info("="*70)
 
 
 def visualize_results(history, num_pools):
@@ -161,15 +164,15 @@ def visualize_results(history, num_pools):
     
     plt.tight_layout()
     plt.savefig('cascaded_system_result.png', dpi=150)
-    print("   图表已保存: cascaded_system_result.png")
+    logger.info("   图表已保存: cascaded_system_result.png")
 
 
 if __name__ == "__main__":
     try:
         run_cascaded_simulation(total_hours=50)
     except KeyboardInterrupt:
-        print("\n\n仿真被用户中断")
+        logger.info("\n\n仿真被用户中断")
     except Exception as e:
-        print(f"\n\n错误: {e}")
+        logger.info(f"\n\n错误: {e}")
         import traceback
         traceback.print_exc()

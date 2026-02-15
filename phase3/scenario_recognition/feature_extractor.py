@@ -7,6 +7,9 @@ import numpy as np
 from typing import List, Dict, Tuple
 from collections import deque
 from dataclasses import dataclass
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -211,15 +214,15 @@ class FeatureExtractor:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*25 + "特征提取器演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*25 + "特征提取器演示")
+    logger.info("="*70)
     
     # 创建提取器
     extractor = FeatureExtractor(window_size=24)
     
     # 模拟数据：日周期需求
-    print("\n生成模拟数据（24小时日周期）...")
+    logger.info("\n生成模拟数据（24小时日周期）...")
     for t in range(36):
         hour = t % 24
         
@@ -237,27 +240,27 @@ if __name__ == "__main__":
         extractor.add_observation([level], [flow], [demand])
     
     # 提取特征
-    print("\n提取特征...")
+    logger.info("\n提取特征...")
     features = extractor.extract_features()
     
     for name, feat in features.items():
-        print(f"\n{name.upper()} 特征:")
-        print(f"  均值: {feat.mean:.2f}")
-        print(f"  标准差: {feat.std:.2f}")
-        print(f"  范围: [{feat.min:.2f}, {feat.max:.2f}]")
-        print(f"  趋势斜率: {feat.trend:.4f}")
-        print(f"  趋势强度(R²): {feat.trend_strength:.4f}")
-        print(f"  波动率: {feat.volatility:.4f}")
-        print(f"  变异系数: {feat.cv:.4f}")
-        print(f"  周期性: {'是' if feat.has_cycle else '否'} " +
+        logger.info(f"\n{name.upper()} 特征:")
+        logger.info(f"  均值: {feat.mean:.2f}")
+        logger.info(f"  标准差: {feat.std:.2f}")
+        logger.info(f"  范围: [{feat.min:.2f}, {feat.max:.2f}]")
+        logger.info(f"  趋势斜率: {feat.trend:.4f}")
+        logger.info(f"  趋势强度(R²): {feat.trend_strength:.4f}")
+        logger.info(f"  波动率: {feat.volatility:.4f}")
+        logger.info(f"  变异系数: {feat.cv:.4f}")
+        logger.info(f"  周期性: {'是' if feat.has_cycle else '否'} " +
               (f"(周期={feat.cycle_period}h)" if feat.has_cycle else ""))
     
     # 场景指标
-    print("\n场景指标:")
+    logger.info("\n场景指标:")
     indicators = extractor.get_scenario_indicators()
     for key, value in indicators.items():
-        print(f"  {key}: {value:.2%}")
+        logger.info(f"  {key}: {value:.2%}")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

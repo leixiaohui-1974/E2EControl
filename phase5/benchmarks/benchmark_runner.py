@@ -382,27 +382,27 @@ class BenchmarkRunner:
 
     def print_summary(self):
         """打印性能摘要"""
-        print("\n" + "=" * 60)
-        print("E2EControl 性能基准测试报告")
-        print("=" * 60)
-        print(f"设备: {self.device}")
+        logger.info("\n" + "=" * 60)
+        logger.info("E2EControl 性能基准测试报告")
+        logger.info("=" * 60)
+        logger.info(f"设备: {self.device}")
         if torch.cuda.is_available():
-            print(f"GPU: {torch.cuda.get_device_name(0)}")
-        print(f"测试数量: {len(self.results)}")
-        print("-" * 60)
+            logger.info(f"GPU: {torch.cuda.get_device_name(0)}")
+        logger.info(f"测试数量: {len(self.results)}")
+        logger.info("-" * 60)
 
         for result in self.results:
-            print(result.summary())
-            print("-" * 60)
+            logger.info(result.summary())
+            logger.info("-" * 60)
 
         summary = self._generate_summary()
         if summary.get('bottlenecks'):
-            print("\n⚠️  性能瓶颈:")
+            logger.info("\n⚠️  性能瓶颈:")
             for b in summary['bottlenecks']:
-                print(f"  - {b['name']}: 占用 {b['time_ratio']*100:.1f}% 时间")
-                print(f"    建议: {b['suggestion']}")
+                logger.info(f"  - {b['name']}: 占用 {b['time_ratio']*100:.1f}% 时间")
+                logger.info(f"    建议: {b['suggestion']}")
 
-        print("\n" + "=" * 60)
+        logger.info("\n" + "=" * 60)
 
 
 def run_quick_benchmark(func: Callable, inputs: Any, name: str = "quick_test") -> BenchmarkResult:

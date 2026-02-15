@@ -27,6 +27,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime, timedelta
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SystemHealthLevel(Enum):
@@ -150,7 +153,7 @@ class MacroCognitiveLayer:
             'risk_alerts': 0
         }
 
-        print("[MacroCognitiveLayer] 宏观认知层初始化完成")
+        logger.info("[MacroCognitiveLayer] 宏观认知层初始化完成")
 
     def _init_equipment_registry(self):
         """初始化设备注册表"""

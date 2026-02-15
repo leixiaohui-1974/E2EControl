@@ -11,6 +11,9 @@ from collections import deque
 from scenario_types import ScenarioDefinition, SCENARIO_LIBRARY
 from rule_engine import RuleEngine, SystemState
 from feature_extractor import FeatureExtractor
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -279,9 +282,9 @@ class ScenarioRecognizer:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*20 + "场景识别器综合演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "场景识别器综合演示")
+    logger.info("="*70)
     
     # 创建识别器
     recognizer = ScenarioRecognizer(window_size=24)
@@ -330,37 +333,37 @@ if __name__ == "__main__":
     
     # 逐个测试
     for i, test in enumerate(scenarios_to_test, 1):
-        print(f"\n{'='*70}")
-        print(f"测试场景 {i}: {test['name']}")
-        print('='*70)
+        logger.info(f"\n{'='*70}")
+        logger.info(f"测试场景 {i}: {test['name']}")
+        logger.info('='*70)
         
         result = recognizer.recognize(test['state'])
         
-        print(f"\n识别结果:")
-        print(f"  场景: {result.scenario_name}")
-        print(f"  置信度: {result.confidence:.2%}")
-        print(f"  识别方法: {result.method}")
-        print(f"  类别: {result.category}")
-        print(f"  优先级: {result.priority}")
-        print(f"  描述: {result.description}")
+        logger.info(f"\n识别结果:")
+        logger.info(f"  场景: {result.scenario_name}")
+        logger.info(f"  置信度: {result.confidence:.2%}")
+        logger.info(f"  识别方法: {result.method}")
+        logger.info(f"  类别: {result.category}")
+        logger.info(f"  优先级: {result.priority}")
+        logger.info(f"  描述: {result.description}")
         
         if result.recommended_actions:
-            print(f"\n建议措施:")
+            logger.info(f"\n建议措施:")
             for action in result.recommended_actions:
-                print(f"    {action}")
+                logger.info(f"    {action}")
     
     # 分析趋势
-    print(f"\n{'='*70}")
-    print("场景变化趋势分析")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("场景变化趋势分析")
+    logger.info('='*70)
     
     trend = recognizer.get_scenario_trend(window=4)
-    print(f"  状态: {trend['status']}")
-    print(f"  平均置信度: {trend['avg_confidence']:.2%}")
-    print(f"  最常见场景: {trend['most_common_scenario']}")
-    print(f"  出现频率: {trend['scenario_frequency']:.1%}")
-    print(f"  场景变化: {trend['unique_scenarios']}种不同场景")
+    logger.info(f"  状态: {trend['status']}")
+    logger.info(f"  平均置信度: {trend['avg_confidence']:.2%}")
+    logger.info(f"  最常见场景: {trend['most_common_scenario']}")
+    logger.info(f"  出现频率: {trend['scenario_frequency']:.1%}")
+    logger.info(f"  场景变化: {trend['unique_scenarios']}种不同场景")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

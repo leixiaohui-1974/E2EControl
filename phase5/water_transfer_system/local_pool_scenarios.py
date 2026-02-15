@@ -1034,19 +1034,19 @@ class L1ScenarioGenerator:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "L1层渠池全场景系统测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "L1层渠池全场景系统测试")
+    logger.info("=" * 70)
 
     # 测试场景生成
-    print(f"\n{'=' * 70}")
-    print("测试1: L1场景生成")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试1: L1场景生成")
+    logger.info('=' * 70)
 
     generator = L1ScenarioGenerator(seed=42)
     events = generator.generate_batch(100)
 
-    print(f"生成场景数: {len(events)}")
+    logger.info(f"生成场景数: {len(events)}")
 
     # 统计类型分布
     type_counts = {}
@@ -1054,24 +1054,24 @@ if __name__ == "__main__":
         t = e.scenario_type.value
         type_counts[t] = type_counts.get(t, 0) + 1
 
-    print("\n类型分布:")
+    logger.info("\n类型分布:")
     for t, c in sorted(type_counts.items(), key=lambda x: -x[1])[:10]:
-        print(f"  {t}: {c}")
+        logger.info(f"  {t}: {c}")
 
     # 测试污染追踪
-    print(f"\n{'=' * 70}")
-    print("测试2: 污染追踪溯源")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试2: 污染追踪溯源")
+    logger.info('=' * 70)
 
     tracker = PollutionTracker(num_pools=60)
 
     # 模拟污染检测
     event = tracker.detect_pollution(pool_id=30, concentration=0.5, timestamp=0)
     if event:
-        print(f"检测到污染: {event.event_id}")
-        print(f"  位置: 池{event.pool_id}")
-        print(f"  浓度: {event.measured_value}")
-        print(f"  严重程度: {event.severity.value}")
+        logger.info(f"检测到污染: {event.event_id}")
+        logger.info(f"  位置: 池{event.pool_id}")
+        logger.info(f"  浓度: {event.measured_value}")
+        logger.info(f"  严重程度: {event.severity.value}")
 
     # 模拟追踪
     tracking_id = event.event_id if event else "TEST"
@@ -1081,14 +1081,14 @@ if __name__ == "__main__":
     # 溯源
     trace_event = tracker.trace_source(tracking_id)
     if trace_event:
-        print(f"\n溯源结果: {trace_event.event_id}")
-        print(f"  估计源头: 池{trace_event.pool_id}")
-        print(f"  置信度: {trace_event.metadata.get('confidence', 0):.2f}")
+        logger.info(f"\n溯源结果: {trace_event.event_id}")
+        logger.info(f"  估计源头: 池{trace_event.pool_id}")
+        logger.info(f"  置信度: {trace_event.metadata.get('confidence', 0):.2f}")
 
     # 测试边坡监测
-    print(f"\n{'=' * 70}")
-    print("测试3: 边坡衬砌板监测")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试3: 边坡衬砌板监测")
+    logger.info('=' * 70)
 
     monitor = SlopePanelMonitor(num_pools=60)
 
@@ -1101,26 +1101,26 @@ if __name__ == "__main__":
     )
 
     if event:
-        print(f"检测到边坡异常: {event.scenario_type.value}")
-        print(f"  地下水位: {event.groundwater_level}m")
-        print(f"  严重程度: {event.severity.value}")
+        logger.info(f"检测到边坡异常: {event.scenario_type.value}")
+        logger.info(f"  地下水位: {event.groundwater_level}m")
+        logger.info(f"  严重程度: {event.severity.value}")
 
     condition = monitor.conditions.get(25)
     if condition:
-        print(f"  安全系数: {condition.safety_factor:.2f}")
-        print(f"  稳定性: {'稳定' if condition.is_stable else '不稳定'}")
+        logger.info(f"  安全系数: {condition.safety_factor:.2f}")
+        logger.info(f"  稳定性: {'稳定' if condition.is_stable else '不稳定'}")
 
     # 推荐动作
     action = monitor.recommend_action(25)
     if action:
-        print(f"\n推荐动作: {action.action_type.value}")
-        print(f"  闸门开度: {action.gate_position}")
-        print(f"  优先级: {action.priority}")
+        logger.info(f"\n推荐动作: {action.action_type.value}")
+        logger.info(f"  闸门开度: {action.gate_position}")
+        logger.info(f"  优先级: {action.priority}")
 
     # 测试退水管理
-    print(f"\n{'=' * 70}")
-    print("测试4: 退水管理")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试4: 退水管理")
+    logger.info('=' * 70)
 
     discharge_mgr = DischargeManager(num_pools=60)
 
@@ -1132,26 +1132,26 @@ if __name__ == "__main__":
         priority=9,
     )
 
-    print(f"退水请求: {request.request_id}")
-    print(f"  类型: {request.discharge_type.value}")
-    print(f"  目标水位: {request.target_level}m")
-    print(f"  最大流量: {request.max_rate:.1f}m³/s")
-    print(f"  预计时间: {request.estimated_duration/60:.0f}分钟")
+    logger.info(f"退水请求: {request.request_id}")
+    logger.info(f"  类型: {request.discharge_type.value}")
+    logger.info(f"  目标水位: {request.target_level}m")
+    logger.info(f"  最大流量: {request.max_rate:.1f}m³/s")
+    logger.info(f"  预计时间: {request.estimated_duration/60:.0f}分钟")
 
     commands = discharge_mgr.generate_discharge_commands(request.request_id)
-    print(f"\n生成动作指令: {len(commands)}个")
+    logger.info(f"\n生成动作指令: {len(commands)}个")
     for cmd in commands:
-        print(f"  - {cmd.action_type.value} @ 池{cmd.pool_id}")
+        logger.info(f"  - {cmd.action_type.value} @ 池{cmd.pool_id}")
 
     # 统计可能场景数
-    print(f"\n{'=' * 70}")
-    print("L1层场景统计")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("L1层场景统计")
+    logger.info('=' * 70)
 
     counts = generator.count_possible_scenarios()
     for key, value in counts.items():
-        print(f"  {key}: {value:,}")
+        logger.info(f"  {key}: {value:,}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

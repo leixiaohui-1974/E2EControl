@@ -4,6 +4,9 @@ The "Deep-Dive" Scenario: 100 steps of intensive physical-information-control co
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 import numpy as np
@@ -66,10 +69,10 @@ class DeepDiveSimulation:
     
     def run(self):
         """运行完整仿真"""
-        print("\n" + "="*80)
-        print(" "*15 + "🌊 单渠池数字孪生深度仿真 🌊")
-        print(" "*20 + "六重内卷场景 (T=100步)")
-        print("="*80)
+        logger.info("\n" + "="*80)
+        logger.info(" "*15 + "🌊 单渠池数字孪生深度仿真 🌊")
+        logger.info(" "*20 + "六重内卷场景 (T=100步)")
+        logger.info("="*80)
         
         for t in range(self.T_total):
             self.current_step = t
@@ -111,30 +114,30 @@ class DeepDiveSimulation:
             if t % 10 == 0 or self._is_critical_moment(t):
                 self._print_status(t, risk, debug_info)
         
-        print("\n" + "="*80)
-        print("✅ 仿真完成！")
-        print("="*80)
+        logger.info("\n" + "="*80)
+        logger.info("✅ 仿真完成！")
+        logger.info("="*80)
     
     def _execute_scenario_stage(self, t: int):
         """执行场景阶段"""
         # Phase 1: T=0-20 参数漂移
         if t == 10:
-            print(f"\n{'='*80}")
-            print(f"📍 阶段1 (T={t}): 参数漂移 - 中游水草疯长")
-            print(f"{'='*80}")
+            logger.info(f"\n{'='*80}")
+            logger.info(f"📍 阶段1 (T={t}): 参数漂移 - 中游水草疯长")
+            logger.info(f"{'='*80}")
             self.physical.grow_vegetation(start_seg=9, end_seg=14, growth_factor=1.8)
         
         # Phase 2: T=20-40 经济调度
         if t == 20:
-            print(f"\n{'='*80}")
-            print(f"📍 阶段2 (T={t}): 经济调度 - 低谷电价期，蓄能运行")
-            print(f"{'='*80}")
+            logger.info(f"\n{'='*80}")
+            logger.info(f"📍 阶段2 (T={t}): 经济调度 - 低谷电价期，蓄能运行")
+            logger.info(f"{'='*80}")
         
         # Phase 3: T=40-60 网络攻击
         if t == 40:
-            print(f"\n{'='*80}")
-            print(f"📍 阶段3 (T={t}): 网络攻击 - 黑客篡改中游传感器")
-            print(f"{'='*80}")
+            logger.info(f"\n{'='*80}")
+            logger.info(f"📍 阶段3 (T={t}): 网络攻击 - 黑客篡改中游传感器")
+            logger.info(f"{'='*80}")
             self.physical.inject_attack(active=True, bias=-0.5)
         
         if t == 60:
@@ -143,17 +146,17 @@ class DeepDiveSimulation:
         
         # Phase 4: T=60-80 突发污染
         if t == 60:
-            print(f"\n{'='*80}")
-            print(f"📍 阶段4 (T={t}): 突发污染 + 漂浮物")
-            print(f"{'='*80}")
+            logger.info(f"\n{'='*80}")
+            logger.info(f"📍 阶段4 (T={t}): 突发污染 + 漂浮物")
+            logger.info(f"{'='*80}")
             # 注入漂浮物
             self.observer.inject_debris(position=0.0)
         
         # Phase 5: T=80-100 边坡危机
         if t == 80:
-            print(f"\n{'='*80}")
-            print(f"📍 阶段5 (T={t}): 边坡危机 - 暴雨后急剧退水")
-            print(f"{'='*80}")
+            logger.info(f"\n{'='*80}")
+            logger.info(f"📍 阶段5 (T={t}): 边坡危机 - 暴雨后急剧退水")
+            logger.info(f"{'='*80}")
             # 模拟暴雨：增大侧向入流
             lateral = np.zeros(self.geom.N)
             lateral[10:15] = 15.0  # 中游暴雨
@@ -210,29 +213,29 @@ class DeepDiveSimulation:
         stats = self.physical.get_statistics()
         mode = self.observer.current_mode.value
         
-        print(f"\n[T={t:3d}] 状态报告:")
-        print(f"  物理: 平均水位={stats['mean_level']:.2f}m, "
+        logger.info(f"\n[T={t:3d}] 状态报告:")
+        logger.info(f"  物理: 平均水位={stats['mean_level']:.2f}m, "
               f"平均流量={stats['mean_flow']:.1f}m³/s")
-        print(f"  控制: u_in={debug_info['u_in_safe']:.1f}, "
+        logger.info(f"  控制: u_in={debug_info['u_in_safe']:.1f}, "
               f"u_out={debug_info['u_out_safe']:.1f} m³/s")
-        print(f"  能耗: {debug_info['energy_cost']:.4f}元 "
+        logger.info(f"  能耗: {debug_info['energy_cost']:.4f}元 "
               f"(电价{debug_info['electricity_price']:.2f}元/kWh)")
-        print(f"  风险: {risk.max_risk_level}")
-        print(f"  模式: {mode}")
+        logger.info(f"  风险: {risk.max_risk_level}")
+        logger.info(f"  模式: {mode}")
         
         if risk.cyber_risk:
-            print(f"  🔴 网络攻击告警！")
+            logger.info(f"  🔴 网络攻击告警！")
         
         if risk.debris_eta > 0 and risk.debris_eta < 3600:
-            print(f"  ⚠️  漂浮物ETA: {risk.debris_eta:.0f}s")
+            logger.info(f"  ⚠️  漂浮物ETA: {risk.debris_eta:.0f}s")
         
         if np.max(risk.slope_risk) >= 2:
             critical_segs = np.where(risk.slope_risk >= 2)[0]
-            print(f"  ⚠️  边坡风险: 切片 {critical_segs + 1}")
+            logger.info(f"  ⚠️  边坡风险: 切片 {critical_segs + 1}")
     
     def visualize(self, save_path: str = 'digital_twin_dashboard.png'):
         """生成3x3可视化大屏"""
-        print(f"\n生成可视化大屏...")
+        logger.info(f"\n生成可视化大屏...")
         
         fig = plt.figure(figsize=(20, 16))
         fig.suptitle('🌊 单渠池数字孪生深度仿真 - 六重内卷场景分析', 
@@ -279,7 +282,7 @@ class DeepDiveSimulation:
         
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
         plt.close()
-        print(f"✅ 可视化大屏已保存: {save_path}")
+        logger.info(f"✅ 可视化大屏已保存: {save_path}")
 
         return fig
     
@@ -502,6 +505,6 @@ if __name__ == "__main__":
     # 生成可视化
     simulation.visualize(save_path='/workspace/digital_twin_dashboard.png')
     
-    print("\n" + "="*80)
-    print("🎊 数字孪生深度仿真完成！")
-    print("="*80)
+    logger.info("\n" + "="*80)
+    logger.info("🎊 数字孪生深度仿真完成！")
+    logger.info("="*80)

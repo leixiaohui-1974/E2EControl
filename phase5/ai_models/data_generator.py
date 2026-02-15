@@ -593,9 +593,9 @@ class FullLineDataGenerator:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "物理数据生成器测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "物理数据生成器测试")
+    logger.info("=" * 70)
 
     # 配置
     config = DataGeneratorConfig(
@@ -609,30 +609,30 @@ if __name__ == "__main__":
     # 生成数据集
     train_dataset, val_dataset, test_dataset = generator.create_dataset()
 
-    print(f"\n数据集信息:")
-    print(f"  训练集大小: {len(train_dataset)}")
-    print(f"  验证集大小: {len(val_dataset)}")
-    print(f"  测试集大小: {len(test_dataset)}")
+    logger.info(f"\n数据集信息:")
+    logger.info(f"  训练集大小: {len(train_dataset)}")
+    logger.info(f"  验证集大小: {len(val_dataset)}")
+    logger.info(f"  测试集大小: {len(test_dataset)}")
 
     # 检查数据形状
     sample = train_dataset[0]
-    print(f"\n样本形状:")
-    print(f"  输入: {sample['input'].shape}")
-    print(f"  目标: {sample['target'].shape}")
+    logger.info(f"\n样本形状:")
+    logger.info(f"  输入: {sample['input'].shape}")
+    logger.info(f"  目标: {sample['target'].shape}")
 
     # 创建DataLoader
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
     for batch in train_loader:
-        print(f"\n批次形状:")
-        print(f"  输入: {batch['input'].shape}")
-        print(f"  目标: {batch['target'].shape}")
+        logger.info(f"\n批次形状:")
+        logger.info(f"  输入: {batch['input'].shape}")
+        logger.info(f"  目标: {batch['target'].shape}")
         break
 
     # 测试全线数据生成
-    print(f"\n{'=' * 70}")
-    print("全线模型数据生成测试")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("全线模型数据生成测试")
+    logger.info('=' * 70)
 
     full_generator = FullLineDataGenerator(config)
     full_data = full_generator.generate_multi_pool_data(
@@ -641,8 +641,8 @@ if __name__ == "__main__":
     )
 
     for pid, pool_data in full_data.items():
-        print(f"  池{pid}: 序列{pool_data['sequences'].shape}, 目标{pool_data['targets'].shape}")
+        logger.info(f"  池{pid}: 序列{pool_data['sequences'].shape}, 目标{pool_data['targets'].shape}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

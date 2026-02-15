@@ -7,6 +7,9 @@ import json
 from typing import List, Dict, Optional
 from dataclasses import dataclass, asdict
 from collections import defaultdict
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -299,40 +302,40 @@ class SimpleKnowledgeBase:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*25 + "知识库演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*25 + "知识库演示")
+    logger.info("="*70)
     
     # 创建知识库
     kb = SimpleKnowledgeBase()
     
-    print(f"\n默认策略数: {len(kb.strategies)}")
+    logger.info(f"\n默认策略数: {len(kb.strategies)}")
     
     # 查看策略
-    print("\n策略列表:")
+    logger.info("\n策略列表:")
     for sid, strategy in kb.strategies.items():
-        print(f"  {strategy.name} ({sid})")
-        print(f"    场景: {strategy.scenario_id}")
-        print(f"    时域: {strategy.horizon}")
-        print(f"    权重: {strategy.weights}")
+        logger.info(f"  {strategy.name} ({sid})")
+        logger.info(f"    场景: {strategy.scenario_id}")
+        logger.info(f"    时域: {strategy.horizon}")
+        logger.info(f"    权重: {strategy.weights}")
     
     # 查询特定场景的策略
-    print("\n" + "-"*70)
-    print("查询'高峰需求'场景的策略")
-    print("-"*70)
+    logger.info("\n" + "-"*70)
+    logger.info("查询'高峰需求'场景的策略")
+    logger.info("-"*70)
     
     peak_strategies = kb.get_strategies_for_scenario("peak_demand")
     for strategy in peak_strategies:
-        print(f"\n策略: {strategy.name}")
-        print(f"  时域: {strategy.horizon}步")
-        print(f"  供水权重: {strategy.weights['water_delivery']}")
-        print(f"  最大流量变化率: {strategy.max_flow_change_rate} m³/s/h")
-        print(f"  前馈补偿: {'启用' if strategy.use_feedforward else '禁用'}")
+        logger.info(f"\n策略: {strategy.name}")
+        logger.info(f"  时域: {strategy.horizon}步")
+        logger.info(f"  供水权重: {strategy.weights['water_delivery']}")
+        logger.info(f"  最大流量变化率: {strategy.max_flow_change_rate} m³/s/h")
+        logger.info(f"  前馈补偿: {'启用' if strategy.use_feedforward else '禁用'}")
     
     # 添加案例
-    print("\n" + "-"*70)
-    print("添加历史案例")
-    print("-"*70)
+    logger.info("\n" + "-"*70)
+    logger.info("添加历史案例")
+    logger.info("-"*70)
     
     case1 = CaseRecord(
         case_id="case_001",
@@ -350,16 +353,16 @@ if __name__ == "__main__":
     
     # 获取最佳实践
     best_practices = kb.get_best_practices("peak_demand")
-    print(f"\n最佳实践:")
-    print(f"  推荐策略: {best_practices['recommended_strategy']}")
-    print(f"  成功率: {best_practices['success_rate']:.1%}")
-    print(f"  案例数: {best_practices['total_cases']}")
+    logger.info(f"\n最佳实践:")
+    logger.info(f"  推荐策略: {best_practices['recommended_strategy']}")
+    logger.info(f"  成功率: {best_practices['success_rate']:.1%}")
+    logger.info(f"  案例数: {best_practices['total_cases']}")
     
     if best_practices['lessons_learned']:
-        print(f"  经验教训:")
+        logger.info(f"  经验教训:")
         for lesson in best_practices['lessons_learned']:
-            print(f"    - {lesson}")
+            logger.info(f"    - {lesson}")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

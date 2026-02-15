@@ -4,6 +4,9 @@ Phase 3 综合演示
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 import numpy as np
@@ -14,17 +17,17 @@ from decision.decision_engine import DecisionEngine
 def run_integrated_demo():
     """运行综合演示"""
     
-    print("="*80)
-    print(" "*25 + "Phase 3 智能决策系统演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*25 + "Phase 3 智能决策系统演示")
+    logger.info("="*80)
     
     # 创建决策引擎
-    print("\n🚀 初始化智能决策引擎...")
+    logger.info("\n🚀 初始化智能决策引擎...")
     engine = DecisionEngine()
     
-    print(f"  ✓ 场景识别器已加载 (窗口={engine.recognizer.feature_extractor.window_size}h)")
-    print(f"  ✓ 知识库已加载 ({len(engine.knowledge_base.strategies)}个策略)")
-    print(f"  ✓ 规则引擎已加载 ({len(engine.recognizer.rule_engine.rules)}条规则)")
+    logger.info(f"  ✓ 场景识别器已加载 (窗口={engine.recognizer.feature_extractor.window_size}h)")
+    logger.info(f"  ✓ 知识库已加载 ({len(engine.knowledge_base.strategies)}个策略)")
+    logger.info(f"  ✓ 规则引擎已加载 ({len(engine.recognizer.rule_engine.rules)}条规则)")
     
     # 场景序列
     scenarios = [
@@ -95,87 +98,87 @@ def run_integrated_demo():
     
     # 逐场景演示
     for i, scenario in enumerate(scenarios):
-        print(f"\n{'='*80}")
-        print(f"{scenario['name']}")
-        print(f"{scenario['description']}")
-        print('='*80)
+        logger.info(f"\n{'='*80}")
+        logger.info(f"{scenario['name']}")
+        logger.info(f"{scenario['description']}")
+        logger.info('='*80)
         
         # 做出决策
         decision = engine.make_decision(scenario['state'])
         
         # 显示结果
-        print(f"\n📍 当前状态:")
-        print(f"  时间: {scenario['state'].time}h")
-        print(f"  平均水位: {np.mean(scenario['state'].levels):.2f}m")
-        print(f"  平均流量: {np.mean(scenario['state'].flows):.2f} m³/s")
-        print(f"  平均需求: {np.mean(scenario['state'].demands):.2f} m³/s")
+        logger.info(f"\n📍 当前状态:")
+        logger.info(f"  时间: {scenario['state'].time}h")
+        logger.info(f"  平均水位: {np.mean(scenario['state'].levels):.2f}m")
+        logger.info(f"  平均流量: {np.mean(scenario['state'].flows):.2f} m³/s")
+        logger.info(f"  平均需求: {np.mean(scenario['state'].demands):.2f} m³/s")
         if scenario['state'].alerts:
-            print(f"  ⚠️  告警: {', '.join(scenario['state'].alerts)}")
+            logger.info(f"  ⚠️  告警: {', '.join(scenario['state'].alerts)}")
         
-        print(f"\n🎯 场景识别:")
-        print(f"  ├─ 场景: {decision.scenario.scenario_name}")
-        print(f"  ├─ 置信度: {decision.scenario.confidence:.1%}")
-        print(f"  ├─ 类别: {decision.scenario.category}")
-        print(f"  └─ 优先级: {decision.scenario.priority}")
+        logger.info(f"\n🎯 场景识别:")
+        logger.info(f"  ├─ 场景: {decision.scenario.scenario_name}")
+        logger.info(f"  ├─ 置信度: {decision.scenario.confidence:.1%}")
+        logger.info(f"  ├─ 类别: {decision.scenario.category}")
+        logger.info(f"  └─ 优先级: {decision.scenario.priority}")
         
-        print(f"\n💡 智能策略:")
-        print(f"  ├─ 策略: {decision.strategy.name}")
-        print(f"  ├─ MPC时域: {decision.mpc_config['horizon']}步")
-        print(f"  ├─ 更新频率: {decision.mpc_config['dt']/60:.0f}分钟")
-        print(f"  └─ 前馈补偿: {'启用' if decision.mpc_config['use_feedforward'] else '禁用'}")
+        logger.info(f"\n💡 智能策略:")
+        logger.info(f"  ├─ 策略: {decision.strategy.name}")
+        logger.info(f"  ├─ MPC时域: {decision.mpc_config['horizon']}步")
+        logger.info(f"  ├─ 更新频率: {decision.mpc_config['dt']/60:.0f}分钟")
+        logger.info(f"  └─ 前馈补偿: {'启用' if decision.mpc_config['use_feedforward'] else '禁用'}")
         
         # 风险评估
         risk_emoji = {'low': '✅', 'medium': '⚠️', 'high': '🔶', 'critical': '🚨'}
-        print(f"\n{risk_emoji[decision.risk_level]} 风险评估: {decision.risk_level.upper()}")
+        logger.info(f"\n{risk_emoji[decision.risk_level]} 风险评估: {decision.risk_level.upper()}")
         if decision.risk_factors:
             for factor in decision.risk_factors[:3]:
-                print(f"  • {factor}")
+                logger.info(f"  • {factor}")
         
         # 立即行动（显示前3条）
-        print(f"\n🚀 立即行动:")
+        logger.info(f"\n🚀 立即行动:")
         for action in decision.immediate_actions[:3]:
-            print(f"  {action}")
+            logger.info(f"  {action}")
         
         # 监控要点
-        print(f"\n🔍 监控要点:")
+        logger.info(f"\n🔍 监控要点:")
         for point in decision.monitoring_points[:3]:
-            print(f"  {point}")
+            logger.info(f"  {point}")
         
         # 暂停（方便查看）
         if i < len(scenarios) - 1:
             input(f"\n{'─'*80}\n按回车键继续下一个场景...\n{'─'*80}\n")
     
     # 总结
-    print(f"\n{'='*80}")
-    print("📊 演示总结")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("📊 演示总结")
+    logger.info('='*80)
     
-    print(f"\n✓ 共演示 {len(scenarios)} 个场景")
-    print(f"✓ 所有场景均成功识别并给出决策")
-    print(f"✓ 系统能够:")
-    print(f"  • 自动识别从正常到紧急的各种场景")
-    print(f"  • 根据场景动态选择最优控制策略")
-    print(f"  • 实时评估风险并给出应对建议")
-    print(f"  • 提供决策推理过程，可解释性强")
+    logger.info(f"\n✓ 共演示 {len(scenarios)} 个场景")
+    logger.info(f"✓ 所有场景均成功识别并给出决策")
+    logger.info(f"✓ 系统能够:")
+    logger.info(f"  • 自动识别从正常到紧急的各种场景")
+    logger.info(f"  • 根据场景动态选择最优控制策略")
+    logger.info(f"  • 实时评估风险并给出应对建议")
+    logger.info(f"  • 提供决策推理过程，可解释性强")
     
-    print(f"\n🎯 关键特性:")
-    print(f"  ✓ 规则引擎 + 特征提取 混合识别")
-    print(f"  ✓ 知识库驱动的策略选择")
-    print(f"  ✓ 多维度风险评估")
-    print(f"  ✓ 场景自适应参数调整")
-    print(f"  ✓ 完整的决策推理链")
+    logger.info(f"\n🎯 关键特性:")
+    logger.info(f"  ✓ 规则引擎 + 特征提取 混合识别")
+    logger.info(f"  ✓ 知识库驱动的策略选择")
+    logger.info(f"  ✓ 多维度风险评估")
+    logger.info(f"  ✓ 场景自适应参数调整")
+    logger.info(f"  ✓ 完整的决策推理链")
     
-    print("\n" + "="*80)
-    print("🎉 Phase 3 核心功能演示完成！")
-    print("="*80)
+    logger.info("\n" + "="*80)
+    logger.info("🎉 Phase 3 核心功能演示完成！")
+    logger.info("="*80)
 
 
 if __name__ == "__main__":
     try:
         run_integrated_demo()
     except KeyboardInterrupt:
-        print("\n\n演示被用户中断")
+        logger.info("\n\n演示被用户中断")
     except Exception as e:
-        print(f"\n\n错误: {e}")
+        logger.info(f"\n\n错误: {e}")
         import traceback
         traceback.print_exc()

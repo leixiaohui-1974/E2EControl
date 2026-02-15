@@ -1142,33 +1142,33 @@ class ScenarioLibrary:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("场景库统计")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("场景库统计")
+    logger.info("=" * 70)
 
     library = ScenarioLibrary()
     stats = library.get_statistics()
 
-    print(f"\n总场景数: {stats['total_scenarios']}")
+    logger.info(f"\n总场景数: {stats['total_scenarios']}")
 
-    print("\n按类别分布:")
+    logger.info("\n按类别分布:")
     for cat, count in stats['by_category'].items():
-        print(f"  {cat}: {count}")
+        logger.info(f"  {cat}: {count}")
 
-    print("\n按严重程度分布:")
+    logger.info("\n按严重程度分布:")
     for sev, count in stats['by_severity'].items():
-        print(f"  {sev}: {count}")
+        logger.info(f"  {sev}: {count}")
 
-    print("\n按所需等级分布:")
+    logger.info("\n按所需等级分布:")
     for level, count in stats['by_level'].items():
-        print(f"  {level}: {count}")
+        logger.info(f"  {level}: {count}")
 
-    print("\n覆盖矩阵:")
+    logger.info("\n覆盖矩阵:")
     matrix = stats['coverage_matrix']
     levels = [l.name for l in RequiredLevel]
-    print("         ", "  ".join(f"{l:>12}" for l in levels))
+    logger.info("         ", "  ".join(f"{l:>12}" for l in levels))
     for cat, data in matrix.items():
         row = "  ".join(f"{data[l]:>12}" for l in levels)
-        print(f"{cat:>8}: {row}")
+        logger.info(f"{cat:>8}: {row}")
 
-    print("\n" + "=" * 70)
+    logger.info("\n" + "=" * 70)

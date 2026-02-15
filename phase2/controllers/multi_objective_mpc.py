@@ -8,6 +8,9 @@ import cvxpy as cp
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ObjectiveType(Enum):
@@ -192,7 +195,7 @@ class MultiObjectiveMPC:
             else:
                 return q_in_prev, demand_forecast[0], {}
         except Exception as e:
-            print(f"优化失败: {e}")
+            logger.info(f"优化失败: {e}")
             return q_in_prev, demand_forecast[0], {}
     
     def _solve_pareto(self, current_level: float, q_in_prev: float,
@@ -293,9 +296,9 @@ class MultiObjectiveMPC:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*20 + "多目标MPC演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "多目标MPC演示")
+    logger.info("="*70)
     
     # 创建控制器
     controller = MultiObjectiveMPC(pool_id=0, horizon=10)
@@ -305,33 +308,33 @@ if __name__ == "__main__":
     q_in_prev = 5.0
     demand = [5.0 + np.sin(k*0.5) for k in range(10)]
     
-    print("\n1. 加权求和模式...")
+    logger.info("\n1. 加权求和模式...")
     q_in, q_out, costs = controller.solve(current_level, q_in_prev, demand, 
                                           mode='weighted_sum')
-    print(f"   最优控制: 入流={q_in:.2f}, 出流={q_out:.2f}")
-    print(f"   目标成本:")
+    logger.info(f"   最优控制: 入流={q_in:.2f}, 出流={q_out:.2f}")
+    logger.info(f"   目标成本:")
     for obj, cost in costs.items():
-        print(f"     {obj.value}: {cost:.4f}")
+        logger.info(f"     {obj.value}: {cost:.4f}")
     
-    print("\n2. Pareto优化模式...")
+    logger.info("\n2. Pareto优化模式...")
     q_in, q_out, costs = controller.solve(current_level, q_in_prev, demand,
                                           mode='pareto')
-    print(f"   Pareto最优: 入流={q_in:.2f}, 出流={q_out:.2f}")
+    logger.info(f"   Pareto最优: 入流={q_in:.2f}, 出流={q_out:.2f}")
     
-    print("\n3. 自适应权重模式...")
+    logger.info("\n3. 自适应权重模式...")
     for i in range(5):
         q_in, q_out, costs = controller.solve(current_level, q_in_prev, demand,
                                               mode='adaptive')
         current_level += (q_in - q_out) * controller.dt / controller.area
         q_in_prev = q_in
-        print(f"   步骤{i+1}: 入流={q_in:.2f}, 水位={current_level:.3f}")
+        logger.info(f"   步骤{i+1}: 入流={q_in:.2f}, 水位={current_level:.3f}")
     
-    print("\n4. 性能指标...")
+    logger.info("\n4. 性能指标...")
     metrics = controller.get_performance_metrics()
     for obj_name, stats in metrics.items():
-        print(f"   {obj_name}:")
-        print(f"     均值={stats['mean']:.4f}, 标准差={stats['std']:.4f}")
+        logger.info(f"   {obj_name}:")
+        logger.info(f"     均值={stats['mean']:.4f}, 标准差={stats['std']:.4f}")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

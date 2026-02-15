@@ -4,6 +4,9 @@
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 import numpy as np
@@ -449,9 +452,9 @@ class AutoencoderDetector(BaseDetector):
 
 # 演示
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "机器学习异常检测器演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "机器学习异常检测器演示")
+    logger.info("="*80)
     
     # 生成测试数据
     np.random.seed(42)
@@ -474,15 +477,15 @@ if __name__ == "__main__":
     ]
     
     # 训练
-    print("\n训练检测器...")
+    logger.info("\n训练检测器...")
     for detector in detectors:
         detector.fit(normal_data)
-        print(f"  ✓ {detector.name} 已训练")
+        logger.info(f"  ✓ {detector.name} 已训练")
     
     # 测试异常数据
-    print("\n" + "-"*80)
-    print("测试异常检测...")
-    print("-"*80)
+    logger.info("\n" + "-"*80)
+    logger.info("测试异常检测...")
+    logger.info("-"*80)
     
     # 注入异常
     test_cases = [
@@ -493,25 +496,25 @@ if __name__ == "__main__":
     ]
     
     for t, test_values in enumerate(test_cases):
-        print(f"\n[T={t}] 测试: level={test_values['level']}, "
+        logger.info(f"\n[T={t}] 测试: level={test_values['level']}, "
               f"flow={test_values['flow']}, demand={test_values['demand']}")
         
         for detector in detectors:
             reports = detector.detect(test_values, t)
             if reports:
                 for report in reports:
-                    print(f"  🔴 {detector.name}: {report.description}")
+                    logger.info(f"  🔴 {detector.name}: {report.description}")
             else:
-                print(f"  ✓ {detector.name}: 正常")
+                logger.info(f"  ✓ {detector.name}: 正常")
     
     # 统计
-    print("\n" + "="*80)
-    print("检测统计")
-    print("="*80)
+    logger.info("\n" + "="*80)
+    logger.info("检测统计")
+    logger.info("="*80)
     
     for detector in detectors:
-        print(f"\n{detector.name}:")
-        print(f"  训练状态: {'已训练' if detector.is_trained else '未训练'}")
+        logger.info(f"\n{detector.name}:")
+        logger.info(f"  训练状态: {'已训练' if detector.is_trained else '未训练'}")
     
-    print("\n✅ 演示完成！")
-    print("="*80)
+    logger.info("\n✅ 演示完成！")
+    logger.info("="*80)

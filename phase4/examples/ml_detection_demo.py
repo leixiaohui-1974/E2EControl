@@ -4,6 +4,9 @@ Phase 4.2 机器学习异常检测完整演示
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 import numpy as np
@@ -65,12 +68,12 @@ def generate_complex_data(n_samples: int = 500) -> tuple:
 
 def run_detection_comparison():
     """运行检测器对比"""
-    print("="*80)
-    print(" "*15 + "Phase 4.2 机器学习异常检测完整演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*15 + "Phase 4.2 机器学习异常检测完整演示")
+    logger.info("="*80)
     
     # 生成数据
-    print("\n生成测试数据...")
+    logger.info("\n生成测试数据...")
     data, true_anomalies = generate_complex_data()
     
     # 分割训练/测试
@@ -78,13 +81,13 @@ def run_detection_comparison():
     train_data = data[:train_size]
     test_data = data[train_size:]
     
-    print(f"  训练数据: {train_size}个样本")
-    print(f"  测试数据: {len(test_data)}个样本")
-    print(f"  真实异常: {len([a for a in true_anomalies if a[0] >= train_size])}个")
+    logger.info(f"  训练数据: {train_size}个样本")
+    logger.info(f"  测试数据: {len(test_data)}个样本")
+    logger.info(f"  真实异常: {len([a for a in true_anomalies if a[0] >= train_size])}个")
     
     # 创建检测器
-    print("\n初始化检测器...")
-    print("-"*80)
+    logger.info("\n初始化检测器...")
+    logger.info("-"*80)
     
     detectors = {
         '3-Sigma (统计)': ThreeSigmaDetector(),
@@ -98,8 +101,8 @@ def run_detection_comparison():
     }
     
     # 训练
-    print("\n训练检测器...")
-    print("="*80)
+    logger.info("\n训练检测器...")
+    logger.info("="*80)
     
     for name, detector in detectors.items():
         if 'Isolation' in name or 'OneClass' in name or 'LOF' in name:
@@ -110,11 +113,11 @@ def run_detection_comparison():
             detector.fit(train_data)
         
         if name != '集成(Weighted)':
-            print(f"  ✓ {name}")
+            logger.info(f"  ✓ {name}")
     
     # 测试
-    print("\n运行异常检测...")
-    print("="*80)
+    logger.info("\n运行异常检测...")
+    logger.info("="*80)
     
     results = {name: [] for name in detectors.keys()}
     
@@ -134,8 +137,8 @@ def run_detection_comparison():
             results[name].append(1 if detected else 0)
     
     # 计算性能指标
-    print("\n计算性能指标...")
-    print("-"*80)
+    logger.info("\n计算性能指标...")
+    logger.info("-"*80)
     
     performance = {}
     
@@ -165,19 +168,19 @@ def run_detection_comparison():
             'fp': fp
         }
         
-        print(f"\n{name}:")
-        print(f"  精确率: {precision:.2%}")
-        print(f"  召回率: {recall:.2%}")
-        print(f"  F1分数: {f1:.2%}")
-        print(f"  准确率: {accuracy:.2%}")
-        print(f"  误报数: {fp}")
+        logger.info(f"\n{name}:")
+        logger.info(f"  精确率: {precision:.2%}")
+        logger.info(f"  召回率: {recall:.2%}")
+        logger.info(f"  F1分数: {f1:.2%}")
+        logger.info(f"  准确率: {accuracy:.2%}")
+        logger.info(f"  误报数: {fp}")
     
     # 可视化
-    print("\n生成可视化...")
+    logger.info("\n生成可视化...")
     visualize_results(data, test_data, train_size, results, true_anomalies, performance)
     
-    print("\n✅ 演示完成！")
-    print("="*80)
+    logger.info("\n✅ 演示完成！")
+    logger.info("="*80)
     
     return results, performance
 
@@ -275,7 +278,7 @@ def visualize_results(data, test_data, train_size, results, true_anomalies, perf
     ax8.grid(True)
     
     plt.savefig('/workspace/phase4_ml_detection_comparison.png', dpi=150, bbox_inches='tight')
-    print(f"  ✓ 保存可视化: /workspace/phase4_ml_detection_comparison.png")
+    logger.info(f"  ✓ 保存可视化: /workspace/phase4_ml_detection_comparison.png")
 
 
 if __name__ == "__main__":

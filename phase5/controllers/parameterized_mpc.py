@@ -19,6 +19,9 @@ import cvxpy as cp
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -364,7 +367,7 @@ class ParameterizedLocalMPC:
             else:
                 return q_in_prev, 5.0, False
         except Exception as e:
-            print(f"池{self.pool_id}求解失败: {e}")
+            logger.info(f"池{self.pool_id}求解失败: {e}")
             return q_in_prev, 5.0, False
 
     def get_output_sequence(self) -> np.ndarray:
@@ -599,52 +602,52 @@ class ParameterizedDistributedMPC:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*15 + "参数化MPC演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*15 + "参数化MPC演示")
+    logger.info("="*70)
 
     # 创建参数化分布式MPC
     controller = ParameterizedDistributedMPC(num_pools=3, horizon=5)
 
-    print(f"\n✓ 参数化MPC已初始化")
+    logger.info(f"\n✓ 参数化MPC已初始化")
 
     # 测试1: 正常模式
-    print(f"\n{'='*70}")
-    print("测试1: 正常模式 (flow_efficiency=1.0)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试1: 正常模式 (flow_efficiency=1.0)")
+    logger.info('='*70)
 
     current_levels = [3.0, 3.0, 3.0]
     q_in_prevs = [5.0, 5.0, 5.0]
 
     solutions, info = controller.solve(current_levels, q_in_prevs)
 
-    print(f"\n结果:")
-    print(f"  收敛: {info['converged']}")
-    print(f"  迭代: {info['iterations']}")
+    logger.info(f"\n结果:")
+    logger.info(f"  收敛: {info['converged']}")
+    logger.info(f"  迭代: {info['iterations']}")
     for i, (q_in, q_out) in enumerate(solutions):
         state = info['physical_states'][i]
-        print(f"  池{i}: q_in={q_in:.2f}, q_out={q_out:.2f}, eta={state['flow_efficiency']}")
+        logger.info(f"  池{i}: q_in={q_in:.2f}, q_out={q_out:.2f}, eta={state['flow_efficiency']}")
 
     # 测试2: 结冰场景
-    print(f"\n{'='*70}")
-    print("测试2: 结冰场景 (flow_efficiency=0.75)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试2: 结冰场景 (flow_efficiency=0.75)")
+    logger.info('='*70)
 
     # 设置结冰物理参数
     controller.set_scenario_physics('ICE_FORMATION')
 
     solutions, info = controller.solve(current_levels, q_in_prevs)
 
-    print(f"\n结果:")
-    print(f"  收敛: {info['converged']}")
+    logger.info(f"\n结果:")
+    logger.info(f"  收敛: {info['converged']}")
     for i, (q_in, q_out) in enumerate(solutions):
         state = info['physical_states'][i]
-        print(f"  池{i}: q_in={q_in:.2f}, q_out={q_out:.2f}, eta={state['flow_efficiency']:.2f}")
+        logger.info(f"  池{i}: q_in={q_in:.2f}, q_out={q_out:.2f}, eta={state['flow_efficiency']:.2f}")
 
     # 测试3: L3轨迹跟踪
-    print(f"\n{'='*70}")
-    print("测试3: L3参考轨迹跟踪")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试3: L3参考轨迹跟踪")
+    logger.info('='*70)
 
     # 恢复正常物理参数
     controller.set_scenario_physics('NORMAL')
@@ -659,13 +662,13 @@ if __name__ == "__main__":
 
     solutions, info = controller.solve(current_levels, q_in_prevs)
 
-    print(f"\n结果:")
-    print(f"  收敛: {info['converged']}")
+    logger.info(f"\n结果:")
+    logger.info(f"  收敛: {info['converged']}")
     for i, (q_in, q_out) in enumerate(solutions):
         pred_level = controller.local_controllers[i].get_level_prediction()
-        print(f"  池{i}: q_in={q_in:.2f}, q_out={q_out:.2f}")
-        print(f"       预测水位: {', '.join([f'{l:.2f}' for l in pred_level])} m")
+        logger.info(f"  池{i}: q_in={q_in:.2f}, q_out={q_out:.2f}")
+        logger.info(f"       预测水位: {', '.join([f'{l:.2f}' for l in pred_level])} m")
 
-    print("\n" + "="*70)
-    print("演示完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成!")
+    logger.info("="*70)

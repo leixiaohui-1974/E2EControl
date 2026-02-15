@@ -628,9 +628,9 @@ class MacroMicroBridge:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "微观世界适配器测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "微观世界适配器测试")
+    logger.info("=" * 70)
 
     # 创建配置
     config = MicroWorldConfig(
@@ -643,14 +643,14 @@ if __name__ == "__main__":
     # 创建适配器
     adapter = MicroWorldAdapter(config)
 
-    print(f"\n配置:")
-    print(f"  节点数: {config.num_nodes}")
-    print(f"  隐藏维度: {config.hidden_dim}")
-    print(f"  DGL 可用: {DGL_AVAILABLE}")
+    logger.info(f"\n配置:")
+    logger.info(f"  节点数: {config.num_nodes}")
+    logger.info(f"  隐藏维度: {config.hidden_dim}")
+    logger.info(f"  DGL 可用: {DGL_AVAILABLE}")
 
     # 测试推理
-    print("\n推理测试...")
-    print("-" * 50)
+    logger.info("\n推理测试...")
+    logger.info("-" * 50)
 
     results = adapter.inference(
         upstream_Q=200.0,    # 200 m³/s
@@ -660,20 +660,20 @@ if __name__ == "__main__":
         num_steps=10
     )
 
-    print(f"  流速 x 形状: {results['velocity_x'].shape}")
-    print(f"  压力场形状: {results['pressure'].shape}")
-    print(f"  位置形状: {results['positions'].shape}")
+    logger.info(f"  流速 x 形状: {results['velocity_x'].shape}")
+    logger.info(f"  压力场形状: {results['pressure'].shape}")
+    logger.info(f"  位置形状: {results['positions'].shape}")
 
     # 关键指标
     metrics = adapter.get_key_metrics(results)
-    print(f"\n关键指标:")
+    logger.info(f"\n关键指标:")
     for key, value in metrics.items():
-        print(f"  {key}: {value:.4f}")
+        logger.info(f"  {key}: {value:.4f}")
 
     # 测试宏观-微观桥接
     if True:
-        print("\n宏观-微观桥接测试...")
-        print("-" * 50)
+        logger.info("\n宏观-微观桥接测试...")
+        logger.info("-" * 50)
 
         bridge = MacroMicroBridge(adapter)
         macro_output = bridge.simulate_macro_step(
@@ -682,10 +682,10 @@ if __name__ == "__main__":
             gate_opening=0.8
         )
 
-        print(f"  平均流速: {macro_output['avg_velocity']:.4f} m/s")
-        print(f"  下游水深: {macro_output['downstream_depth']:.4f} m")
-        print(f"  流量: {macro_output['flow_rate']:.2f} m³/s")
+        logger.info(f"  平均流速: {macro_output['avg_velocity']:.4f} m/s")
+        logger.info(f"  下游水深: {macro_output['downstream_depth']:.4f} m")
+        logger.info(f"  流量: {macro_output['flow_rate']:.2f} m³/s")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

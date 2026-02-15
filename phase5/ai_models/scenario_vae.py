@@ -751,9 +751,9 @@ class AIScenarioGenerator:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "场景VAE测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "场景VAE测试")
+    logger.info("=" * 70)
 
     # 创建配置
     config = ScenarioVAEConfig(
@@ -763,8 +763,8 @@ if __name__ == "__main__":
     )
 
     # 测试基础VAE
-    print("\n1. 基础VAE测试")
-    print("-" * 70)
+    logger.info("\n1. 基础VAE测试")
+    logger.info("-" * 70)
 
     vae = ScenarioVAE(config)
 
@@ -774,17 +774,17 @@ if __name__ == "__main__":
 
     # 前向传播
     output = vae(x)
-    print(f"  输入形状: {x.shape}")
-    print(f"  重建形状: {output['recon_mu'].shape}")
-    print(f"  隐向量形状: {output['z'].shape}")
+    logger.info(f"  输入形状: {x.shape}")
+    logger.info(f"  重建形状: {output['recon_mu'].shape}")
+    logger.info(f"  隐向量形状: {output['z'].shape}")
 
     # 采样
     samples = vae.sample(num_samples=4)
-    print(f"  采样形状: {samples.shape}")
+    logger.info(f"  采样形状: {samples.shape}")
 
     # 测试CVAE
-    print("\n2. 条件VAE测试")
-    print("-" * 70)
+    logger.info("\n2. 条件VAE测试")
+    logger.info("-" * 70)
 
     cvae = ConditionalScenarioVAE(config)
 
@@ -794,16 +794,16 @@ if __name__ == "__main__":
 
     # 前向传播
     output = cvae(x, conditions)
-    print(f"  条件输入: ['winter', 'flood']")
-    print(f"  重建形状: {output['recon_mu'].shape}")
+    logger.info(f"  条件输入: ['winter', 'flood']")
+    logger.info(f"  重建形状: {output['recon_mu'].shape}")
 
     # 条件生成
     generated = cvae.generate(['summer', 'normal'], num_samples=4)
-    print(f"  条件生成形状: {generated.shape}")
+    logger.info(f"  条件生成形状: {generated.shape}")
 
     # 测试AI场景生成器
-    print("\n3. AI场景生成器测试")
-    print("-" * 70)
+    logger.info("\n3. AI场景生成器测试")
+    logger.info("-" * 70)
 
     generator = AIScenarioGenerator(config=config)
 
@@ -813,14 +813,14 @@ if __name__ == "__main__":
         duration_hours=24.0
     )
 
-    print(f"  生成场景数: {len(scenarios['upstream_flow'])}")
-    print(f"  序列长度: {len(scenarios['time'])}")
-    print(f"  上游流量范围: [{scenarios['upstream_flow'].min():.1f}, {scenarios['upstream_flow'].max():.1f}]")
-    print(f"  糙率范围: [{scenarios['roughness'].min():.4f}, {scenarios['roughness'].max():.4f}]")
+    logger.info(f"  生成场景数: {len(scenarios['upstream_flow'])}")
+    logger.info(f"  序列长度: {len(scenarios['time'])}")
+    logger.info(f"  上游流量范围: [{scenarios['upstream_flow'].min():.1f}, {scenarios['upstream_flow'].max():.1f}]")
+    logger.info(f"  糙率范围: [{scenarios['roughness'].min():.4f}, {scenarios['roughness'].max():.4f}]")
 
     # 测试损失函数
-    print("\n4. VAE损失函数测试")
-    print("-" * 70)
+    logger.info("\n4. VAE损失函数测试")
+    logger.info("-" * 70)
 
     criterion = VAELoss(kl_weight=0.001)
     losses = criterion(
@@ -831,10 +831,10 @@ if __name__ == "__main__":
         output['logvar']
     )
 
-    print(f"  重建损失: {losses['recon_loss'].item():.4f}")
-    print(f"  KL损失: {losses['kl_loss'].item():.4f}")
-    print(f"  总损失: {losses['total_loss'].item():.4f}")
+    logger.info(f"  重建损失: {losses['recon_loss'].item():.4f}")
+    logger.info(f"  KL损失: {losses['kl_loss'].item():.4f}")
+    logger.info(f"  总损失: {losses['total_loss'].item():.4f}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

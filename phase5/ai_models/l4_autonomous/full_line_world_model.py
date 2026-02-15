@@ -556,9 +556,9 @@ class PhysicsConstraintLayer(nn.Module):
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("Full Line World Model Test")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("Full Line World Model Test")
+    logger.info("=" * 70)
 
     # 创建配置
     config = WorldModelConfig(
@@ -573,7 +573,7 @@ if __name__ == "__main__":
 
     # 打印模型信息
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"\nTotal parameters: {total_params:,}")
+    logger.info(f"\nTotal parameters: {total_params:,}")
 
     # 测试前向传播
     batch_size = 2
@@ -582,9 +582,9 @@ if __name__ == "__main__":
 
     output = model(observations, action_sequence)
 
-    print(f"\nOutput keys: {output.keys()}")
-    print(f"State shape: {output['state'].shape}")
-    print(f"Prediction horizons: {list(output['predictions'].keys())}")
+    logger.info(f"\nOutput keys: {output.keys()}")
+    logger.info(f"State shape: {output['state'].shape}")
+    logger.info(f"Prediction horizons: {list(output['predictions'].keys())}")
 
     # 测试级联效应预测
     cascade = model.predict_cascade_effect(
@@ -592,10 +592,10 @@ if __name__ == "__main__":
         disturbance_magnitude=0.5,
         current_state=output['state']
     )
-    print(f"\nCascade effect from pool 3:")
-    print(f"  Effects: {cascade['effects'][:5].numpy()}...")
-    print(f"  Arrival times: {cascade['arrival_times'][:5].numpy()}... hours")
+    logger.info(f"\nCascade effect from pool 3:")
+    logger.info(f"  Effects: {cascade['effects'][:5].numpy()}...")
+    logger.info(f"  Arrival times: {cascade['arrival_times'][:5].numpy()}... hours")
 
-    print("\n" + "=" * 70)
-    print("Test completed!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("Test completed!")
+    logger.info("=" * 70)

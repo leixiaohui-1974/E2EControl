@@ -3,6 +3,7 @@
 处理效率与安全的冲突
 """
 
+import logging
 import sys
 sys.path.append('..')
 
@@ -10,6 +11,8 @@ import numpy as np
 import cvxpy as cp
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
 
 from perception.intelligent_observer import DynamicConstraints
 
@@ -198,7 +201,8 @@ class SinglePoolADMM:
                     prob.solve(solver=solver, verbose=False)
                     if prob.status == cp.OPTIMAL:
                         return float(u_in.value), float(u_out.value), float(prob.value)
-                except Exception:
+                except Exception as exc:
+                    logger.debug("Solver %s failed: %s", solver, exc)
                     continue
             
             # 所有求解器都失败，返回保守值

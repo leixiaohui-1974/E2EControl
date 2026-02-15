@@ -4,6 +4,9 @@ Fault Isolation Strategy
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 from enum import Enum
@@ -416,73 +419,73 @@ class FaultIsolationStrategy:
 
 # 演示
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "故障隔离策略演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "故障隔离策略演示")
+    logger.info("="*80)
     
     # 创建隔离策略管理器
     strategy = FaultIsolationStrategy()
     
-    print(f"\n系统初始状态:")
+    logger.info(f"\n系统初始状态:")
     status = strategy.get_system_status()
-    print(f"  总组件数: {status['total_components']}")
-    print(f"  激活组件: {status['active_components']}")
-    print(f"  关键组件: {status['critical_active']}")
+    logger.info(f"  总组件数: {status['total_components']}")
+    logger.info(f"  激活组件: {status['active_components']}")
+    logger.info(f"  关键组件: {status['critical_active']}")
     
     # 测试场景1: 传感器故障
-    print(f"\n{'='*80}")
-    print("场景1: 水位传感器故障")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("场景1: 水位传感器故障")
+    logger.info('='*80)
     
     faulty_sensor = "sensor_level_1"
     
     # 评估影响
-    print(f"\n评估故障影响...")
+    logger.info(f"\n评估故障影响...")
     assessment = strategy.assess_fault_impact(faulty_sensor)
-    print(f"  故障组件: {assessment['faulty_component'].name}")
-    print(f"  风险等级: {assessment['risk_level']}")
-    print(f"  影响描述: {assessment['impact']}")
-    print(f"  受影响组件: {len(assessment['affected_components'])}个")
+    logger.info(f"  故障组件: {assessment['faulty_component'].name}")
+    logger.info(f"  风险等级: {assessment['risk_level']}")
+    logger.info(f"  影响描述: {assessment['impact']}")
+    logger.info(f"  受影响组件: {len(assessment['affected_components'])}个")
     
     # 生成隔离方案
-    print(f"\n生成隔离方案...")
+    logger.info(f"\n生成隔离方案...")
     plan = strategy.generate_isolation_plan(faulty_sensor)
-    print(f"  隔离动作: {plan.isolation_action.value}")
-    print(f"  备用组件: {len(plan.backup_components)}个")
-    print(f"  预计恢复时间: {plan.recovery_time:.0f}秒")
+    logger.info(f"  隔离动作: {plan.isolation_action.value}")
+    logger.info(f"  备用组件: {len(plan.backup_components)}个")
+    logger.info(f"  预计恢复时间: {plan.recovery_time:.0f}秒")
     
     # 执行隔离
-    print(f"\n执行隔离...")
+    logger.info(f"\n执行隔离...")
     result = strategy.execute_isolation(plan)
-    print(f"  执行结果: {'成功' if result['success'] else '失败'}")
-    print(f"  {result['message']}")
+    logger.info(f"  执行结果: {'成功' if result['success'] else '失败'}")
+    logger.info(f"  {result['message']}")
     
     # 测试场景2: 闸门故障
-    print(f"\n{'='*80}")
-    print("场景2: 闸门故障（无备用）")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("场景2: 闸门故障（无备用）")
+    logger.info('='*80)
     
     faulty_gate = "gate_2"
     
     assessment = strategy.assess_fault_impact(faulty_gate)
-    print(f"\n故障组件: {assessment['faulty_component'].name}")
-    print(f"风险等级: {assessment['risk_level']}")
-    print(f"影响描述: {assessment['impact']}")
+    logger.info(f"\n故障组件: {assessment['faulty_component'].name}")
+    logger.info(f"风险等级: {assessment['risk_level']}")
+    logger.info(f"影响描述: {assessment['impact']}")
     
     plan = strategy.generate_isolation_plan(faulty_gate)
-    print(f"\n隔离动作: {plan.isolation_action.value}")
-    print(f"可以隔离: {'是' if plan.can_isolate else '否'}")
+    logger.info(f"\n隔离动作: {plan.isolation_action.value}")
+    logger.info(f"可以隔离: {'是' if plan.can_isolate else '否'}")
     
     # 最终状态
-    print(f"\n{'='*80}")
-    print("系统最终状态")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("系统最终状态")
+    logger.info('='*80)
     
     status = strategy.get_system_status()
-    print(f"  总组件数: {status['total_components']}")
-    print(f"  激活组件: {status['active_components']}")
-    print(f"  隔离组件: {status['isolated_components']}")
-    print(f"  隔离历史: {status['isolation_history_count']}次")
+    logger.info(f"  总组件数: {status['total_components']}")
+    logger.info(f"  激活组件: {status['active_components']}")
+    logger.info(f"  隔离组件: {status['isolated_components']}")
+    logger.info(f"  隔离历史: {status['isolation_history_count']}次")
     
-    print("\n✅ 演示完成！")
-    print("="*80)
+    logger.info("\n✅ 演示完成！")
+    logger.info("="*80)

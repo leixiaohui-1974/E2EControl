@@ -903,5 +903,5 @@ if __name__ == "__main__":
     runner.export_report(report, "certification_report.md", "markdown")
     runner.export_report(report, "certification_report.html", "html")
 
-    print(f"\n达成等级: {report.achieved_level.name}")
-    print(f"通过率: {report.overall_pass_rate:.1%}")
+    logger.info(f"\n达成等级: {report.achieved_level.name}")
+    logger.info(f"通过率: {report.overall_pass_rate:.1%}")
