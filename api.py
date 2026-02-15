@@ -8,6 +8,7 @@ management, health monitoring, and scenario listing.
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import uuid
 from datetime import datetime
@@ -296,4 +297,5 @@ if __name__ == '__main__':
         level=logging.INFO,
         format='%(asctime)s %(levelname)s %(name)s: %(message)s',
     )
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    port = int(os.environ.get('E2E_API_PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

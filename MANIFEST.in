@@ -1,0 +1,16 @@
+include LICENSE
+include README.md
+include pyproject.toml
+include config.yaml
+
+recursive-include web *.html *.css *.js *.svg *.png *.ico
+recursive-include phase2 *.py *.yaml
+recursive-include phase3 *.py *.yaml
+recursive-include phase4 *.py *.yaml
+recursive-include phase5 *.py *.yaml
+recursive-include digital_twin *.py *.yaml
+recursive-include integration *.py *.yaml
+
+recursive-exclude tests *
+recursive-exclude __pycache__ *
+recursive-exclude *.egg-info *

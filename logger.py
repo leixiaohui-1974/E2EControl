@@ -113,25 +113,25 @@ class SmartPoolLogger:
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
     
-    def debug(self, message: str, **kwargs):
+    def debug(self, message: str, *args, **kwargs):
         """调试日志"""
-        self.logger.debug(message, extra={'extra_data': kwargs})
-    
-    def info(self, message: str, **kwargs):
+        self.logger.debug(message, *args, extra={'extra_data': kwargs})
+
+    def info(self, message: str, *args, **kwargs):
         """信息日志"""
-        self.logger.info(message, extra={'extra_data': kwargs})
-    
-    def warning(self, message: str, **kwargs):
+        self.logger.info(message, *args, extra={'extra_data': kwargs})
+
+    def warning(self, message: str, *args, **kwargs):
         """警告日志"""
-        self.logger.warning(message, extra={'extra_data': kwargs})
-    
-    def error(self, message: str, **kwargs):
+        self.logger.warning(message, *args, extra={'extra_data': kwargs})
+
+    def error(self, message: str, *args, **kwargs):
         """错误日志"""
-        self.logger.error(message, extra={'extra_data': kwargs})
-    
-    def critical(self, message: str, **kwargs):
+        self.logger.error(message, *args, extra={'extra_data': kwargs})
+
+    def critical(self, message: str, *args, **kwargs):
         """严重错误日志"""
-        self.logger.critical(message, extra={'extra_data': kwargs})
+        self.logger.critical(message, *args, extra={'extra_data': kwargs})
     
     def log_control_action(self, time_step: int, level: float, q_in: float, 
                           q_out: float, config: dict):
