@@ -13,6 +13,9 @@ from enum import Enum
 
 from phase5.hil_testing.test_runner import TestSuite, TestCase, TestStatus
 from phase5.hil_testing.scenario_generator import AutonomousLevel, ScenarioCategory, DifficultyLevel
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ReportFormat(Enum):
@@ -848,9 +851,9 @@ def main():
     """演示报告生成"""
     from phase5.hil_testing.test_runner import HILTestRunner
 
-    print("=" * 60)
-    print("HIL测试报告生成器 - 演示")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("HIL测试报告生成器 - 演示")
+    logger.info("=" * 60)
 
     # 运行一些测试
     runner = HILTestRunner()
@@ -886,25 +889,25 @@ def main():
     # 生成报告
     report_gen = ReportGenerator()
 
-    print("\n生成测试报告...")
+    logger.info("\n生成测试报告...")
 
     # HTML报告
     html_path = report_gen.generate([suite], ReportFormat.HTML)
-    print(f"  HTML报告: {html_path}")
+    logger.info(f"  HTML报告: {html_path}")
 
     # Markdown报告
     md_path = report_gen.generate([suite], ReportFormat.MARKDOWN)
-    print(f"  Markdown报告: {md_path}")
+    logger.info(f"  Markdown报告: {md_path}")
 
     # JSON报告
     json_path = report_gen.generate([suite], ReportFormat.JSON)
-    print(f"  JSON报告: {json_path}")
+    logger.info(f"  JSON报告: {json_path}")
 
     # 文本报告
     txt_path = report_gen.generate([suite], ReportFormat.TEXT)
-    print(f"  文本报告: {txt_path}")
+    logger.info(f"  文本报告: {txt_path}")
 
-    print("\n报告生成完成！")
+    logger.info("\n报告生成完成！")
 
 
 if __name__ == '__main__':

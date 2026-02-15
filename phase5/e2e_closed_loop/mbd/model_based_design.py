@@ -41,6 +41,19 @@ class ValidationLevel(Enum):
     HIL = "hil"                         # Hardware-in-the-Loop
 
 
+class DevelopmentPhase(Enum):
+    """V模型开发阶段"""
+    REQUIREMENTS = "requirements"
+    SYSTEM_DESIGN = "system_design"
+    COMPONENT_DESIGN = "component_design"
+    IMPLEMENTATION = "implementation"
+    UNIT_TESTING = "unit_testing"
+    SIL_TESTING = "sil_testing"
+    HIL_TESTING = "hil_testing"
+    SYSTEM_TESTING = "system_testing"
+    ACCEPTANCE = "acceptance"
+
+
 class TestStatus(Enum):
     """测试状态"""
     PENDING = "pending"
@@ -329,11 +342,56 @@ class ModelBasedDesignManager:
                     link_type="verifies",
                 )
 
+    def add_test_case(
+        self,
+        test_id: str,
+        name: str,
+        description: str,
+        phase: DevelopmentPhase = DevelopmentPhase.SIL_TESTING,
+        requirements: List[str] = None,
+        pass_criteria: Dict[str, Any] = None,
+    ):
+        """
+        添加测试用例 (简化接口)
+
+        Args:
+            test_id: 测试用例ID
+            name: 测试名称
+            description: 测试描述
+            phase: 开发阶段
+            requirements: 关联需求ID列表
+            pass_criteria: 通过标准
+        """
+        level_map = {
+            DevelopmentPhase.SIL_TESTING: ValidationLevel.SIL,
+            DevelopmentPhase.HIL_TESTING: ValidationLevel.HIL,
+            DevelopmentPhase.UNIT_TESTING: ValidationLevel.MIL,
+        }
+        tc = TestCase(
+            test_id=test_id,
+            title=name,
+            description=description,
+            validation_level=level_map.get(phase, ValidationLevel.SIL),
+            requirements=requirements or [],
+            pass_criteria=pass_criteria or {},
+        )
+        self.test_cases[tc.test_id] = tc
+
+        # Auto-traceability
+        for req_id in tc.requirements:
+            self.add_traceability(
+                source_type="test",
+                source_id=tc.test_id,
+                target_type="requirement",
+                target_id=req_id,
+                link_type="verifies",
+            )
+
     def register_model(self, model: ModelArtifact):
         """注册模型"""
         model.compute_checksum()
         self.models[model.model_id] = model
-        logger.info(f"Model registered: {model.model_id} v{model.version}")
+        logger.info("Model registered: %s v%s", model.model_id, model.version)
 
     def update_model(self, model_id: str, updates: Dict[str, Any]):
         """更新模型"""
@@ -354,7 +412,7 @@ class ModelBasedDesignManager:
         model.updated_at = datetime.now()
         model.compute_checksum()
 
-        logger.info(f"Model updated: {model_id} {old_version} -> {model.version}")
+        logger.info("Model updated: %s %s -> %s", model_id, old_version, model.version)
 
     def add_traceability(
         self,
@@ -427,7 +485,7 @@ class ModelBasedDesignManager:
             tc.actual_results = [str(result)]
 
         except Exception as e:
-            logger.error(f"Test {test_id} failed: {e}")
+            logger.error("Test %s failed: %s", test_id, e)
             tc.status = TestStatus.FAILED
             tc.actual_results = [f"Error: {str(e)}"]
             result = {"error": str(e)}
@@ -544,3 +602,220 @@ class ModelBasedDesignManager:
             "passed_tests": sum(1 for tc in self.test_cases.values() if tc.status == TestStatus.PASSED),
             "failed_tests": sum(1 for tc in self.test_cases.values() if tc.status == TestStatus.FAILED),
         }
+
+    def generate_controller_code(
+        self,
+        model_id: str,
+        target: str = "python",
+    ) -> str:
+        """
+        从模型定义生成控制器代码
+
+        Args:
+            model_id: 模型ID
+            target: 目标语言 (python, c, structured_text)
+
+        Returns:
+            生成的代码字符串
+        """
+        if model_id not in self.models:
+            raise ValueError(f"Model not found: {model_id}")
+
+        model = self.models[model_id]
+        generators = {
+            "python": self._gen_python,
+            "c": self._gen_c_header,
+            "structured_text": self._gen_structured_text,
+        }
+
+        gen = generators.get(target)
+        if gen is None:
+            raise ValueError(f"Unsupported target: {target}")
+
+        code = gen(model)
+        logger.info("Code generated for %s (target=%s, %d chars)",
+                     model_id, target, len(code))
+        return code
+
+    def _gen_python(self, model: ModelArtifact) -> str:
+        """生成Python控制器代码"""
+        inputs = model.interfaces.get("inputs", [])
+        outputs = model.interfaces.get("outputs", [])
+        params = model.parameters
+
+        lines = [
+            f'"""Auto-generated controller: {model.model_id} v{model.version}"""',
+            "",
+            "import numpy as np",
+            "from dataclasses import dataclass, field",
+            "from typing import Dict, List",
+            "",
+            "",
+            "@dataclass",
+            f"class {_class_name(model.model_id)}Config:",
+            '    """Controller configuration parameters"""',
+        ]
+        for k, v in params.items():
+            lines.append(f"    {k}: float = {v}")
+        if not params:
+            lines.append("    pass")
+
+        lines += [
+            "",
+            "",
+            f"class {_class_name(model.model_id)}:",
+            f'    """Generated controller for {model.description}"""',
+            "",
+            f"    def __init__(self, config: {_class_name(model.model_id)}Config = None):",
+            f"        self.config = config or {_class_name(model.model_id)}Config()",
+            "        self._state: Dict[str, float] = {}",
+            "",
+            "    def step(self, inputs: Dict[str, float]) -> Dict[str, float]:",
+            '        """Execute one control step"""',
+        ]
+        for inp in inputs:
+            lines.append(f'        {inp} = inputs.get("{inp}", 0.0)')
+        lines.append("")
+        lines.append("        # Controller logic (implement specific algorithm here)")
+        for out in outputs:
+            lines.append(f'        {out} = 0.0  # TODO: compute from inputs')
+        lines.append("")
+        lines.append("        return {")
+        for out in outputs:
+            lines.append(f'            "{out}": {out},')
+        lines.append("        }")
+
+        return "\n".join(lines) + "\n"
+
+    def _gen_c_header(self, model: ModelArtifact) -> str:
+        """生成C语言头文件"""
+        inputs = model.interfaces.get("inputs", [])
+        outputs = model.interfaces.get("outputs", [])
+        params = model.parameters
+        name = _class_name(model.model_id)
+        guard = f"_{name.upper()}_H_"
+
+        lines = [
+            f"/* Auto-generated: {model.model_id} v{model.version} */",
+            f"#ifndef {guard}",
+            f"#define {guard}",
+            "",
+            "#include <stdint.h>",
+            "",
+            f"typedef struct {{",
+        ]
+        for k, v in params.items():
+            lines.append(f"    double {k};")
+        lines += [
+            f"}} {name}Config;",
+            "",
+            f"typedef struct {{",
+        ]
+        for inp in inputs:
+            lines.append(f"    double {inp};")
+        lines += [
+            f"}} {name}Inputs;",
+            "",
+            f"typedef struct {{",
+        ]
+        for out in outputs:
+            lines.append(f"    double {out};")
+        lines += [
+            f"}} {name}Outputs;",
+            "",
+            f"void {name}_Init({name}Config* cfg);",
+            f"void {name}_Step({name}Config* cfg, const {name}Inputs* in, {name}Outputs* out);",
+            "",
+            f"#endif /* {guard} */",
+        ]
+        return "\n".join(lines) + "\n"
+
+    def _gen_structured_text(self, model: ModelArtifact) -> str:
+        """生成IEC 61131-3 结构化文本 (PLC)"""
+        inputs = model.interfaces.get("inputs", [])
+        outputs = model.interfaces.get("outputs", [])
+        name = _class_name(model.model_id)
+
+        lines = [
+            f"(* Auto-generated: {model.model_id} v{model.version} *)",
+            f"FUNCTION_BLOCK {name}",
+            "VAR_INPUT",
+        ]
+        for inp in inputs:
+            lines.append(f"    {inp} : REAL;")
+        lines += [
+            "END_VAR",
+            "VAR_OUTPUT",
+        ]
+        for out in outputs:
+            lines.append(f"    {out} : REAL;")
+        lines += [
+            "END_VAR",
+            "VAR",
+            "    (* Internal state *)",
+            "END_VAR",
+            "",
+            "(* Control logic *)",
+        ]
+        for out in outputs:
+            lines.append(f"{out} := 0.0; (* TODO: implement *)")
+        lines.append("")
+        lines.append(f"END_FUNCTION_BLOCK")
+        return "\n".join(lines) + "\n"
+
+    def generate_test_harness(self, test_id: str) -> str:
+        """
+        从测试用例生成自动化测试代码
+
+        Args:
+            test_id: 测试用例ID
+
+        Returns:
+            生成的pytest测试代码
+        """
+        if test_id not in self.test_cases:
+            raise ValueError(f"Test case not found: {test_id}")
+
+        tc = self.test_cases[test_id]
+        func_name = test_id.lower().replace("-", "_")
+
+        lines = [
+            f'"""Auto-generated test: {tc.title}"""',
+            "",
+            "import pytest",
+            "",
+            "",
+            f"class Test{_class_name(test_id)}:",
+            f'    """{tc.description}"""',
+            "",
+        ]
+
+        # Preconditions as setup
+        if tc.preconditions:
+            lines.append("    def setup_method(self):")
+            for pre in tc.preconditions:
+                lines.append(f"        # {pre}")
+            lines.append("        pass")
+            lines.append("")
+
+        # Main test
+        lines.append(f"    def test_{func_name}(self):")
+        for step in tc.test_steps:
+            lines.append(f"        # {step}")
+        lines.append("        result = {}  # TODO: run simulation")
+        lines.append("")
+
+        # Assertions from pass criteria
+        for key, threshold in tc.pass_criteria.items():
+            if isinstance(threshold, bool):
+                lines.append(f'        assert result.get("{key}") is {threshold}')
+            elif isinstance(threshold, (int, float)):
+                lines.append(f'        assert result.get("{key}", float("inf")) <= {threshold}')
+
+        return "\n".join(lines) + "\n"
+
+
+def _class_name(identifier: str) -> str:
+    """Convert an identifier like MDL-PLANT-001 to MdlPlant001."""
+    parts = identifier.replace("-", "_").split("_")
+    return "".join(p.capitalize() for p in parts)

@@ -9,6 +9,9 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 from enum import Enum
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ScenarioCategory(Enum):
@@ -327,7 +330,7 @@ class ScenarioGenerator:
     def load_all_scenarios(self) -> Dict[str, Scenario]:
         """加载所有场景配置文件"""
         if not os.path.exists(self.scenarios_dir):
-            print(f"警告: 场景目录不存在 {self.scenarios_dir}")
+            logger.info(f"警告: 场景目录不存在 {self.scenarios_dir}")
             return self.scenarios
 
         for filename in os.listdir(self.scenarios_dir):
@@ -336,7 +339,7 @@ class ScenarioGenerator:
                 try:
                     self.load_scenario(filepath)
                 except Exception as e:
-                    print(f"加载场景失败 {filename}: {e}")
+                    logger.info(f"加载场景失败 {filename}: {e}")
 
         return self.scenarios
 
@@ -416,25 +419,25 @@ class ScenarioGenerator:
         """打印场景库摘要"""
         stats = self.get_statistics()
 
-        print("=" * 60)
-        print("            场景库统计信息")
-        print("=" * 60)
-        print(f"场景总数: {stats['total_scenarios']}")
-        print(f"工况总数: {stats['total_conditions']}")
+        logger.info("=" * 60)
+        logger.info("            场景库统计信息")
+        logger.info("=" * 60)
+        logger.info(f"场景总数: {stats['total_scenarios']}")
+        logger.info(f"工况总数: {stats['total_conditions']}")
 
-        print("\n按类别统计:")
+        logger.info("\n按类别统计:")
         for cat, count in stats['by_category'].items():
-            print(f"  {cat}: {count}个工况")
+            logger.info(f"  {cat}: {count}个工况")
 
-        print("\n按难度统计:")
+        logger.info("\n按难度统计:")
         for diff, count in stats['by_difficulty'].items():
             stars = "★" * int(diff.split('_')[1]) + "☆" * (5 - int(diff.split('_')[1]))
-            print(f"  {stars}: {count}个工况")
+            logger.info(f"  {stars}: {count}个工况")
 
-        print("\n按等级要求统计:")
+        logger.info("\n按等级要求统计:")
         for level, count in stats['by_level'].items():
-            print(f"  {level}: {count}个工况")
-        print("=" * 60)
+            logger.info(f"  {level}: {count}个工况")
+        logger.info("=" * 60)
 
 
 # 示例使用

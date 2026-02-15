@@ -4,6 +4,9 @@ Intelligent Observer with Adaptive ID & Cyber Defense
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 import numpy as np
@@ -161,29 +164,29 @@ class IntelligentObserver:
                         
                         # 如果实测dZ与expected_dZ严重不符
                         if abs(dZ - expected_dZ) > 0.3:
-                            print(f"    🔴 物理一致性检测: 切片{i+1}数据异常！")
-                            print(f"       实测dZ={dZ:.3f}m, 期望dZ={expected_dZ:.3f}m")
+                            logger.info(f"    🔴 物理一致性检测: 切片{i+1}数据异常！")
+                            logger.info(f"       实测dZ={dZ:.3f}m, 期望dZ={expected_dZ:.3f}m")
                             
                             # 使用孪生模型推演值替代
                             if self.twin_Z_pred is not None and len(self.twin_Z_pred) == self.N:
                                 cleaned_state.Z[i] = self.twin_Z_pred[i]
-                                print(f"       ✅ 使用孪生模型清洗值: {cleaned_state.Z[i]:.3f}m")
+                                logger.info(f"       ✅ 使用孪生模型清洗值: {cleaned_state.Z[i]:.3f}m")
                             else:
                                 # 使用邻近插值
                                 if i > 0 and i < self.N - 1:
                                     cleaned_state.Z[i] = (prev_Z[i-1] + prev_Z[i+1]) / 2
-                                    print(f"       ✅ 使用邻近插值: {cleaned_state.Z[i]:.3f}m")
+                                    logger.info(f"       ✅ 使用邻近插值: {cleaned_state.Z[i]:.3f}m")
         
         if attack_detected and not self.cyber_defense_active:
             self.cyber_defense_active = True
             self.attack_detected_at = time_step
             self.current_mode = OperationMode.CYBER_DEFENSE
-            print(f"\n🛡️  启动网络防御模式 (t={time_step})")
+            logger.info(f"\n🛡️  启动网络防御模式 (t={time_step})")
         
         elif not attack_detected and self.cyber_defense_active:
             # 攻击结束
             self.cyber_defense_active = False
-            print(f"\n✅ 网络防御模式解除 (t={time_step})")
+            logger.info(f"\n✅ 网络防御模式解除 (t={time_step})")
         
         self.cleaned_state = cleaned_state
         
@@ -336,7 +339,7 @@ class IntelligentObserver:
     def inject_debris(self, position: float = 0.0):
         """注入漂浮物"""
         self.debris_position = position
-        print(f"⚠️  检测到漂浮物！位置: {position/1000:.1f}km")
+        logger.info(f"⚠️  检测到漂浮物！位置: {position/1000:.1f}km")
     
     def _generate_dynamic_constraints(self, risk: RiskAssessment) -> DynamicConstraints:
         """
@@ -416,9 +419,9 @@ class IntelligentObserver:
 
 # 演示
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "智能感知层演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "智能感知层演示")
+    logger.info("="*80)
     
     from physics.single_channel_fidelity import ChannelGeometry, SingleChannelFidelity
     
@@ -429,8 +432,8 @@ if __name__ == "__main__":
     # 创建感知层
     observer = IntelligentObserver(physical_model)
     
-    print(f"\n初始化完成")
-    print(f"  运行模式: {observer.current_mode.value}")
+    logger.info(f"\n初始化完成")
+    logger.info(f"  运行模式: {observer.current_mode.value}")
     
     # 仿真几步
     for t in range(5):
@@ -442,10 +445,10 @@ if __name__ == "__main__":
         measured_state = physical_model.get_measured_state()
         cleaned_state, risk, constraints = observer.observe_and_analyze(measured_state, t)
         
-        print(f"\nt={t}:")
-        print(f"  风险等级: {risk.max_risk_level}")
-        print(f"  运行模式: {observer.current_mode.value}")
-        print(f"  约束: 最大dZ/dt={constraints.max_dZ_dt:.4f}m/s")
+        logger.info(f"\nt={t}:")
+        logger.info(f"  风险等级: {risk.max_risk_level}")
+        logger.info(f"  运行模式: {observer.current_mode.value}")
+        logger.info(f"  约束: 最大dZ/dt={constraints.max_dZ_dt:.4f}m/s")
     
-    print("\n✅ 感知层演示完成！")
-    print("="*80)
+    logger.info("\n✅ 感知层演示完成！")
+    logger.info("="*80)

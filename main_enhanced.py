@@ -75,7 +75,7 @@ class SmartPoolSimulation:
         if self.config.get('database.enabled', False):
             db_path = self.config.get('database.path', 'simulation_data.db')
             self.db = SimulationDatabase(db_path)
-            self.logger.info(f"数据库已启用: {db_path}")
+            self.logger.info("数据库已启用: %s", db_path)
         
         # 仿真数据
         self.history = {
@@ -134,8 +134,8 @@ class SmartPoolSimulation:
         current_instruction = script[0][1]
         last_control_action = base_demand
         
-        self.logger.info(f"开始仿真: 总时长={self.total_hours}h, 步长={self.dt}s")
-        self.logger.info(f"场景数量: {len(script)}")
+        self.logger.info("开始仿真: 总时长=%dh, 步长=%ds", self.total_hours, self.dt)
+        self.logger.info("场景数量: %d", len(script))
         
         start_time = time.time()
         
@@ -149,9 +149,7 @@ class SmartPoolSimulation:
             for start_hour, instruction in script:
                 if t == start_hour:
                     current_instruction = instruction
-                    self.logger.info(f"\n{'='*50}")
-                    self.logger.info(f"[时间 {t}h] 新指令: {current_instruction}")
-                    self.logger.info(f"{'='*50}\n")
+                    self.logger.info("[时间 %dh] 新指令: %s", t, current_instruction)
                     break
             
             # 语义解释
@@ -219,9 +217,8 @@ class SmartPoolSimulation:
         if self.db and self.simulation_id:
             self.db.finish_simulation(self.simulation_id)
         
-        self.logger.info(f"\n仿真完成!")
-        self.logger.info(f"总耗时: {elapsed:.2f}秒")
-        self.logger.info(f"平均每步: {elapsed/self.total_hours*1000:.1f}ms")
+        self.logger.info("仿真完成! 总耗时: %.2f秒, 平均每步: %.1fms",
+                         elapsed, elapsed / self.total_hours * 1000)
         
         # 生成报告
         self._generate_report(script)
@@ -334,7 +331,7 @@ class SmartPoolSimulation:
         plt.tight_layout()
         plt.savefig('simulation_result_enhanced.png', dpi=150)
         plt.close()
-        
+
         self.logger.info("图表已保存: simulation_result_enhanced.png")
     
     def _create_animation(self, script: List[tuple]):
@@ -419,7 +416,7 @@ class SmartPoolSimulation:
             ani.save('simulation_enhanced.gif', writer='pillow', fps=fps)
             self.logger.info("动画已保存: simulation_enhanced.gif")
         except Exception as e:
-            self.logger.error(f"动画保存失败: {e}")
+            self.logger.error("动画保存失败: %s", e)
         
         plt.close()
 

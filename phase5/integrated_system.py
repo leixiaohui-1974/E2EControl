@@ -15,12 +15,16 @@ sys.path.append('..')
 sys.path.append('../digital_twin')
 sys.path.append('../phase4')
 
+import logging
+import threading
 import numpy as np
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
+
+logger = logging.getLogger(__name__)
 
 # Phase 1: 基础控制
 from brain import SemanticInterpreter
@@ -35,7 +39,7 @@ try:
     DIGITAL_TWIN_AVAILABLE = True
 except ImportError:
     DIGITAL_TWIN_AVAILABLE = False
-    print("⚠️ 数字孪生模块未加载")
+    logger.info("Digital twin modules not available")
 
 # Phase 4: 智能决策与自愈
 try:
@@ -45,7 +49,7 @@ try:
     PHASE4_AVAILABLE = True
 except ImportError:
     PHASE4_AVAILABLE = False
-    print("⚠️ Phase 4模块未加载")
+    logger.info("Phase 4 modules not available")
 
 
 class IntegratedWaterNetworkSystem:
@@ -105,16 +109,14 @@ class IntegratedWaterNetworkSystem:
             enable_self_healing: 是否启用自愈系统
             enable_anomaly_detection: 是否启用异常检测
         """
-        print("\n" + "="*80)
-        print(" "*20 + "智能水网控制系统初始化")
-        print("="*80)
-        
+        logger.info("智能水网控制系统初始化")
+
         self.num_pools = num_pools
-        
+
         # Phase 1: 基础控制模块
-        print("\n[Phase 1] 初始化基础控制模块...")
+        logger.info("[Phase 1] 初始化基础控制模块...")
         self.semantic_interpreter = SemanticInterpreter()
-        self.mpc_controllers = [UniversalMPCSolver(horizon=10, dt=3600.0, area=10000.0, delay_steps=1) 
+        self.mpc_controllers = [UniversalMPCSolver(horizon=10, dt=3600.0, area=10000.0, delay_steps=1)
                                 for _ in range(num_pools)]
         self.pools = [CanalPoolSimulator(
             area=10000.0,
@@ -123,25 +125,26 @@ class IntegratedWaterNetworkSystem:
             initial_level=3.0
         ) for _ in range(num_pools)]
         self.q_prev = [0.0] * num_pools  # 记录上一步的控制输入
-        self.active_faults = [] # List of active faults
-        print("  ✓ MPC控制器已初始化")
-        print("  ✓ 物理仿真器已初始化")
+        self._faults_lock = threading.Lock()
+        self.active_faults = []  # List of active faults
+        logger.info("MPC控制器已初始化")
+        logger.info("物理仿真器已初始化")
         
         # Phase 3: 数字孪生
         self.digital_twin = None
         if enable_digital_twin and DIGITAL_TWIN_AVAILABLE:
-            print("\n[Phase 3] 初始化数字孪生系统...")
+            logger.info("[Phase 3] 初始化数字孪生系统...")
             try:
                 self.digital_twin = {
                     'physics': SingleChannelFidelity(N=20, L=20000.0),
                     'observer': IntelligentObserver(N=20),
                     'controller': SinglePoolADMM(N=20, horizon=10)
                 }
-                print("  ✓ 高精度物理本体已加载")
-                print("  ✓ 智能感知层已加载")
-                print("  ✓ 鲁棒ADMM求解器已加载")
+                logger.info("高精度物理本体已加载")
+                logger.info("智能感知层已加载")
+                logger.info("鲁棒ADMM求解器已加载")
             except Exception as e:
-                print(f"  ⚠️ 数字孪生初始化失败: {e}")
+                logger.warning("数字孪生初始化失败: %s", e)
                 self.digital_twin = None
         
         # Phase 4: 智能决策与自愈
@@ -151,7 +154,7 @@ class IntegratedWaterNetworkSystem:
         
         if PHASE4_AVAILABLE:
             if enable_anomaly_detection:
-                print("\n[Phase 4.1] 初始化异常检测系统...")
+                logger.info("[Phase 4.1] 初始化异常检测系统...")
                 try:
                     self.anomaly_detector = EnsembleDetector(
                         detector_configs=[
@@ -161,24 +164,24 @@ class IntegratedWaterNetworkSystem:
                         ],
                         fusion_method='weighted'
                     )
-                    print("  ✓ 集成异常检测器已加载（3种算法）")
+                    logger.info("集成异常检测器已加载（3种算法）")
                 except Exception as e:
-                    print(f"  ⚠️ 异常检测器初始化失败: {e}")
-            
-            print("\n[Phase 4.2] 初始化故障诊断引擎...")
+                    logger.warning("异常检测器初始化失败: %s", e)
+
+            logger.info("[Phase 4.2] 初始化故障诊断引擎...")
             try:
                 self.diagnosis_engine = DiagnosisEngine()
-                print("  ✓ 诊断引擎已加载（5大故障类型）")
+                logger.info("诊断引擎已加载（5大故障类型）")
             except Exception as e:
-                print(f"  ⚠️ 诊断引擎初始化失败: {e}")
-            
+                logger.warning("诊断引擎初始化失败: %s", e)
+
             if enable_self_healing:
-                print("\n[Phase 4.3] 初始化自愈控制系统...")
+                logger.info("[Phase 4.3] 初始化自愈控制系统...")
                 try:
                     self.self_healing = SelfHealingSystem()
-                    print("  ✓ 自愈系统已加载（10步闭环）")
+                    logger.info("自愈系统已加载（10步闭环）")
                 except Exception as e:
-                    print(f"  ⚠️ 自愈系统初始化失败: {e}")
+                    logger.warning("自愈系统初始化失败: %s", e)
         
         # 系统状态
         self.current_time = 0
@@ -193,9 +196,7 @@ class IntegratedWaterNetworkSystem:
             'mode': []
         }
         
-        print("\n" + "="*80)
-        print("✅ 系统初始化完成！")
-        print("="*80)
+        logger.info("系统初始化完成！")
         
     def step(self, t: int, instruction: Optional[str] = None, enable_faults: bool = True) -> Dict:
         """
@@ -205,9 +206,9 @@ class IntegratedWaterNetworkSystem:
         
         # 场景切换
         if instruction:
-            print(f"\n[T={t}] 场景切换: {instruction}")
+            logger.info("[T=%s] 场景切换: %s", t, instruction)
             self.current_config = self.semantic_interpreter.interpret(instruction)
-            print(f"  ✓ 场景配置已更新")
+            logger.info("场景配置已更新")
         
         # 故障注入 logic
         current_disturbances = [0.0] * self.num_pools
@@ -225,9 +226,10 @@ class IntegratedWaterNetworkSystem:
         # In step, we apply them.
         # We need a way to clear them.
         
-        for fault in self.active_faults:
+        with self._faults_lock:
+            faults_snapshot = list(self.active_faults)
+        for fault in faults_snapshot:
             if fault['type'] == 'flood':
-                # Apply to all pools or specific? Default all for massive flood
                 magnitude = fault.get('magnitude', 20.0)
                 for i in range(self.num_pools):
                     current_disturbances[i] += magnitude
@@ -274,7 +276,8 @@ class IntegratedWaterNetworkSystem:
                 q_out_forecast = [3.0] * controller.N
                 u_in = controller.solve(Z, self.q_prev[i], q_out_forecast, config)
                 self.q_prev[i] = u_in
-            except:
+            except Exception as exc:
+                logger.debug("MPC solve failed for pool %d: %s", i, exc)
                 u_in = 0.0
             
             u_out = u_in * 0.9
@@ -301,78 +304,74 @@ class IntegratedWaterNetworkSystem:
         """
         运行完整的仿真
         """
-        print("\n" + "="*80)
-        print(" "*25 + "开始仿真")
-        print("="*80)
-        
+        logger.info("开始仿真")
+
         scenario_dict = {t: instruction for t, instruction in scenario_script}
         self.current_config = None
-        
+
         for t in range(total_steps):
             instruction = scenario_dict.get(t)
             self.step(t, instruction, enable_faults)
-            
+
         self._generate_statistics()
         return self.history
     
     def _generate_statistics(self):
         """生成统计报告"""
-        print("\n" + "="*80)
-        print(" "*25 + "仿真统计")
-        print("="*80)
-        
+        logger.info("仿真统计")
+
         # 基础统计
-        print(f"\n【基础控制】")
+        logger.info("【基础控制】")
         for i in range(self.num_pools):
             levels = self.history['levels'][i]
-            print(f"  池{i+1}:")
-            print(f"    平均水位: {np.mean(levels):.2f}m")
-            print(f"    水位波动: {np.std(levels):.3f}m")
-            print(f"    最大水位: {np.max(levels):.2f}m")
-            print(f"    最小水位: {np.min(levels):.2f}m")
-        
+            logger.info("池%s:", i+1)
+            logger.info("  平均水位: %.2fm", np.mean(levels))
+            logger.info("  水位波动: %.3fm", np.std(levels))
+            logger.info("  最大水位: %.2fm", np.max(levels))
+            logger.info("  最小水位: %.2fm", np.min(levels))
+
         # 异常检测统计
         if self.history['anomalies']:
-            print(f"\n【异常检测】")
-            print(f"  检测到异常: {len(self.history['anomalies'])}次")
+            logger.info("【异常检测】")
+            logger.info("检测到异常: %s次", len(self.history['anomalies']))
             avg_score = np.mean([a['score'] for a in self.history['anomalies']])
-            print(f"  平均异常评分: {avg_score:.3f}")
-        
+            logger.info("平均异常评分: %.3f", avg_score)
+
         # 故障统计
         if self.history['faults']:
-            print(f"\n【故障诊断】")
-            print(f"  总故障数: {len(self.history['faults'])}次")
+            logger.info("【故障诊断】")
+            logger.info("总故障数: %s次", len(self.history['faults']))
             for fault in self.history['faults']:
-                print(f"    T={fault['time']}: {fault['type']} ({fault['severity']})")
-        
+                logger.info("  T=%s: %s (%s)", fault['time'], fault['type'], fault['severity'])
+
         # 自愈统计
         if self.history['healing_events']:
-            print(f"\n【自愈控制】")
+            logger.info("【自愈控制】")
             total = len(self.history['healing_events'])
             success = sum(1 for e in self.history['healing_events'] if e['success'])
-            print(f"  总自愈次数: {total}")
-            print(f"  成功次数: {success}")
-            print(f"  成功率: {success/total*100:.1f}%")
-            
+            logger.info("总自愈次数: %s", total)
+            logger.info("成功次数: %s", success)
+            logger.info("成功率: %.1f%%", success/total*100)
+
             if success > 0:
-                avg_time = np.mean([e['healing_time'] 
-                                   for e in self.history['healing_events'] 
+                avg_time = np.mean([e['healing_time']
+                                   for e in self.history['healing_events']
                                    if e['success']])
-                print(f"  平均自愈时间: {avg_time:.1f}s")
-        
+                logger.info("平均自愈时间: %.1fs", avg_time)
+
         # 运行模式统计
         if self.history['mode']:
-            print(f"\n【运行模式】")
+            logger.info("【运行模式】")
             from collections import Counter
             mode_counts = Counter(self.history['mode'])
             for mode, count in mode_counts.most_common():
                 percentage = count / len(self.history['mode']) * 100
-                print(f"  {mode}: {count}步 ({percentage:.1f}%)")
+                logger.info("%s: %s步 (%.1f%%)", mode, count, percentage)
     
     def visualize_results(self, save_path: str = "integrated_system_results.png"):
         """可视化仿真结果"""
-        print(f"\n生成可视化报告...")
-        
+        logger.info("生成可视化报告...")
+
         fig = plt.figure(figsize=(16, 12))
         
         # 2x3 布局
@@ -475,6 +474,18 @@ class IntegratedWaterNetworkSystem:
         
         plt.tight_layout()
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
+        plt.close()
+
+        logger.info("可视化报告已保存: %s", save_path)
+
+    def get_system_status(self) -> Dict:
+        """获取系统状态"""
+        status = {
+            'timestamp': datetime.now().isoformat(),
+            'current_time': self.current_time,
+            'modules': {
+                'digital_twin': self.digital_twin is not None,
+                'anomaly_detection': self.anomaly_detector is not None,
                 'fault_diagnosis': self.diagnosis_engine is not None,
                 'self_healing': self.self_healing is not None
             }
@@ -506,10 +517,10 @@ class IntegratedWaterNetworkSystem:
 # 演示
 def run_comprehensive_demo():
     """运行完整的系统演示"""
-    print("\n" + "="*80)
-    print(" "*15 + "智能水网控制系统 - 完整集成演示")
-    print("="*80)
-    
+    logger.info("=" * 80)
+    logger.info("智能水网控制系统 - 完整集成演示")
+    logger.info("=" * 80)
+
     # 创建集成系统
     system = IntegratedWaterNetworkSystem(
         num_pools=3,
@@ -517,7 +528,7 @@ def run_comprehensive_demo():
         enable_self_healing=True,
         enable_anomaly_detection=True
     )
-    
+
     # 定义场景脚本
     scenario_script = [
         (0, "保持水位平稳，正常供水"),
@@ -525,43 +536,43 @@ def run_comprehensive_demo():
         (60, "恢复正常供水"),
         (90, "进入夜间节水模式")
     ]
-    
+
     # 运行仿真（启用故障注入）
     history = system.run_simulation(
         scenario_script=scenario_script,
         total_steps=100,
         enable_faults=True
     )
-    
+
     # 生成可视化报告
     system.visualize_results("/workspace/phase5/integrated_system_results.png")
-    
+
     # 获取系统状态
     status = system.get_system_status()
-    
-    print("\n" + "="*80)
-    print(" "*25 + "系统状态摘要")
-    print("="*80)
-    print(f"\n当前时间: {status['timestamp']}")
-    print(f"仿真步数: {status['current_time']}")
-    print(f"\n启用模块:")
+
+    logger.info("=" * 80)
+    logger.info("系统状态摘要")
+    logger.info("=" * 80)
+    logger.info("当前时间: %s", status['timestamp'])
+    logger.info("仿真步数: %s", status['current_time'])
+    logger.info("启用模块:")
     for module, enabled in status['modules'].items():
-        print(f"  {module}: {'✓' if enabled else '✗'}")
-    
+        logger.info("  %s: %s", module, "enabled" if enabled else "disabled")
+
     if 'operation_mode' in status:
-        print(f"\n当前运行模式: {status['operation_mode']}")
-        print(f"系统健康度: {status['system_health']:.2%}")
-    
-    print(f"\n统计信息:")
-    print(f"  异常检测: {status['statistics']['total_anomalies']}次")
-    print(f"  故障发生: {status['statistics']['total_faults']}次")
-    print(f"  自愈执行: {status['statistics']['total_healings']}次")
-    print(f"  自愈成功率: {status['statistics']['healing_success_rate']:.1f}%")
-    
-    print("\n" + "="*80)
-    print("✅ 完整系统演示完成！")
-    print("="*80)
-    
+        logger.info("当前运行模式: %s", status['operation_mode'])
+        logger.info("系统健康度: %.2f%%", status['system_health'] * 100)
+
+    logger.info("统计信息:")
+    logger.info("  异常检测: %d次", status['statistics']['total_anomalies'])
+    logger.info("  故障发生: %d次", status['statistics']['total_faults'])
+    logger.info("  自愈执行: %d次", status['statistics']['total_healings'])
+    logger.info("  自愈成功率: %.1f%%", status['statistics']['healing_success_rate'])
+
+    logger.info("=" * 80)
+    logger.info("完整系统演示完成!")
+    logger.info("=" * 80)
+
     return system
 
 

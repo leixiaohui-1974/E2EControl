@@ -274,5 +274,5 @@ if __name__ == "__main__":
     model_path = train(args)
 
     # 评估
-    print("\n")
+    logger.info("\n")
     evaluate_model(model_path, args.device)

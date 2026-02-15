@@ -86,3 +86,28 @@ class DatabaseError(SmartPoolException):
 class MonitoringError(SmartPoolException):
     """监控系统错误"""
     pass
+
+
+class APIError(SmartPoolException):
+    """API请求或响应错误"""
+
+    def __init__(self, message: str, status_code: int = None):
+        """
+        初始化API错误
+
+        Args:
+            message: 错误信息
+            status_code: HTTP状态码
+        """
+        super().__init__(message)
+        self.status_code = status_code
+
+
+class NetworkError(SmartPoolException):
+    """网络通信错误"""
+    pass
+
+
+class TimeoutError(SmartPoolException):
+    """操作超时错误"""
+    pass

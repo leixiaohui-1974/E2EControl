@@ -141,14 +141,8 @@ class ControlInterface:
     def apply_l1_action(self, action: L1ActionCommand):
         """应用L1控制动作"""
         if action.action_type == L1ActionType.GATE_ADJUST:
-            # 闸门调整
-            if 'target_opening' in action.parameters:
-                self.apply_gate_command(
-                    action.pool_id,
-                    action.parameters['target_opening']
-                )
+            self.apply_gate_command(action.pool_id, action.gate_position)
         elif action.action_type == L1ActionType.EMERGENCY_DISCHARGE:
-            # 紧急退水：增大出流闸门开度
             current_opening = self.simulator.state.gate_states.get(
                 f"GATE_{action.pool_id}", 1.5
             )
@@ -156,21 +150,21 @@ class ControlInterface:
 
     def apply_intervention(self, intervention: InterventionDecision):
         """应用上层干预决策"""
+        affected_pools = intervention.additional_resources.get('affected_pools', [])
+        if not affected_pools and intervention.commands:
+            affected_pools = [cmd.pool_id for cmd in intervention.commands]
+
         if intervention.intervention_type == InterventionType.TAKEOVER:
-            # 接管控制：重置闸门到安全位置
-            for pool_id in intervention.affected_pools:
-                self.apply_gate_command(pool_id, 1.5)  # 默认安全开度
+            for pool_id in affected_pools:
+                self.apply_gate_command(pool_id, 1.5)
 
         elif intervention.intervention_type == InterventionType.COORDINATE:
-            # 协调邻域
-            for pool_id in intervention.affected_pools:
-                # 调整邻近池的闸门
+            for pool_id in affected_pools:
                 current = self.simulator.state.gate_states.get(f"GATE_{pool_id}", 1.5)
                 self.apply_gate_command(pool_id, current * 0.9)
 
         elif intervention.intervention_type == InterventionType.EMERGENCY_SHUTDOWN:
-            # 紧急停机：关闭相关闸门
-            for pool_id in intervention.affected_pools:
+            for pool_id in affected_pools:
                 self.apply_gate_command(pool_id, 0.0)
 
 
@@ -651,8 +645,10 @@ class ScenarioTestRunner:
         test_case.actual_max_deviation = result['performance']['max_rmse']
         test_case.escalated = result['control']['total_escalations'] > 0
 
-        # 计算响应时间（简化）
-        test_case.actual_response_time = 180.0  # TODO: 从监控数据分析
+        # 计算响应时间：从注入时间到控制动作生效的延迟
+        control_dt = self.config.dt if hasattr(self.config, 'dt') else 60.0
+        escalation_steps = result['control'].get('first_escalation_step', 3)
+        test_case.actual_response_time = float(escalation_steps * control_dt)
 
         # 判断是否通过
         test_case.passed = (

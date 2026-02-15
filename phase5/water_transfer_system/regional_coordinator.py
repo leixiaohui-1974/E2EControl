@@ -688,21 +688,21 @@ class GlobalRegionalManager:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("="*70)
-    print(" " * 15 + "区域协调器测试")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" " * 15 + "区域协调器测试")
+    logger.info("="*70)
 
     # 创建拓扑
     topology = PoolTopology.create_snwd_middle_route()
 
-    print(f"\n✓ 创建南水北调中线拓扑")
-    print(f"  渠池数量: {topology.num_pools}")
-    print(f"  区域数量: {len(topology.regions)}")
+    logger.info(f"\n✓ 创建南水北调中线拓扑")
+    logger.info(f"  渠池数量: {topology.num_pools}")
+    logger.info(f"  区域数量: {len(topology.regions)}")
 
     # 测试1: 前馈解耦器
-    print(f"\n{'='*70}")
-    print("测试1: 前馈解耦器")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试1: 前馈解耦器")
+    logger.info('='*70)
 
     decoupler = FeedforwardDecoupler(num_pools=60, dt=900.0)
 
@@ -716,15 +716,15 @@ if __name__ == "__main__":
         decoupler.update_upstream_flow(30, upstream_flow, t * 900)
 
     ff = decoupler.compute_feedforward(30)
-    print(f"  池30前馈补偿: {ff:.2f} m³/s")
+    logger.info(f"  池30前馈补偿: {ff:.2f} m³/s")
 
     impact = decoupler.predict_impact(30, horizon=5)
-    print(f"  预测水位影响: {impact}")
+    logger.info(f"  预测水位影响: {impact}")
 
     # 测试2: 区域MPC
-    print(f"\n{'='*70}")
-    print("测试2: 区域MPC协调器")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试2: 区域MPC协调器")
+    logger.info('='*70)
 
     region = topology.regions[2]  # 河南段北
     mpc = RegionalMPCCoordinator(region)
@@ -740,16 +740,16 @@ if __name__ == "__main__":
 
     # 求解
     results = mpc.solve()
-    print(f"  区域: {region.name}")
-    print(f"  池数: {len(region.pool_ids)}")
+    logger.info(f"  区域: {region.name}")
+    logger.info(f"  池数: {len(region.pool_ids)}")
     for pid in list(region.pool_ids)[:3]:
         gate, outflow = results[pid]
-        print(f"  池{pid}: 闸门={gate:.2f}, 目标出流={outflow:.1f}m³/s")
+        logger.info(f"  池{pid}: 闸门={gate:.2f}, 目标出流={outflow:.1f}m³/s")
 
     # 测试3: 完整区域协调器
-    print(f"\n{'='*70}")
-    print("测试3: 完整区域协调器")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试3: 完整区域协调器")
+    logger.info('='*70)
 
     coord = RegionalCoordinator(region, topology, dt=900.0)
 
@@ -763,18 +763,18 @@ if __name__ == "__main__":
 
     # 计算控制
     gates, outflows = coord.compute_control()
-    print(f"  控制计算完成")
-    print(f"  平均闸门: {np.mean(gates):.2f}")
-    print(f"  平均出流: {np.mean(outflows):.1f} m³/s")
+    logger.info(f"  控制计算完成")
+    logger.info(f"  平均闸门: {np.mean(gates):.2f}")
+    logger.info(f"  平均出流: {np.mean(outflows):.1f} m³/s")
 
     summary = coord.get_control_summary()
     for key, value in summary.items():
-        print(f"  {key}: {value}")
+        logger.info(f"  {key}: {value}")
 
     # 测试4: 全线协调
-    print(f"\n{'='*70}")
-    print("测试4: 全线区域协调")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试4: 全线区域协调")
+    logger.info('='*70)
 
     manager = GlobalRegionalManager(topology, dt=900.0)
 
@@ -788,14 +788,14 @@ if __name__ == "__main__":
     # 计算控制
     all_gates, all_outflows_cmd = manager.get_all_commands()
 
-    print(f"  全线闸门范围: [{all_gates.min():.2f}, {all_gates.max():.2f}]")
-    print(f"  全线出流范围: [{all_outflows_cmd.min():.1f}, {all_outflows_cmd.max():.1f}]")
+    logger.info(f"  全线闸门范围: [{all_gates.min():.2f}, {all_gates.max():.2f}]")
+    logger.info(f"  全线出流范围: [{all_outflows_cmd.min():.1f}, {all_outflows_cmd.max():.1f}]")
 
     summary = manager.get_summary()
-    print(f"  区域数: {summary['num_regions']}")
+    logger.info(f"  区域数: {summary['num_regions']}")
     for r in summary['regions'][:3]:
-        print(f"    {r['region_name']}: 平均水位={r['avg_level']:.2f}m")
+        logger.info(f"    {r['region_name']}: 平均水位={r['avg_level']:.2f}m")
 
-    print("\n" + "="*70)
-    print("测试完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("测试完成!")
+    logger.info("="*70)

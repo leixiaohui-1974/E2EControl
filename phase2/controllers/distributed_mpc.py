@@ -6,6 +6,9 @@
 import numpy as np
 import cvxpy as cp
 from typing import List, Dict, Tuple
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class LocalMPC:
@@ -136,7 +139,7 @@ class LocalMPC:
                 return q_in_prev, q_out_forecast[0] if q_out_forecast else 5.0
                 
         except Exception as e:
-            print(f"池{self.pool_id} MPC求解失败: {e}")
+            logger.info("池%d MPC求解失败: %s", self.pool_id, e)
             return q_in_prev, q_out_forecast[0] if q_out_forecast else 5.0
 
 
@@ -226,7 +229,7 @@ class DistributedMPCController:
             q_out_change = max(abs(q_out_solutions[i] - q_out_old[i]) for i in range(self.num_pools))
             
             if max(q_in_change, q_out_change) < self.tolerance:
-                print(f"ADMM收敛于第{iter+1}次迭代")
+                logger.info("ADMM收敛于第%d次迭代", iter + 1)
                 break
         
         # 返回结果
@@ -235,9 +238,9 @@ class DistributedMPCController:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*60)
-    print("分布式MPC控制器测试")
-    print("="*60)
+    logger.info("="*60)
+    logger.info("分布式MPC控制器测试")
+    logger.info("="*60)
     
     # 创建3池系统的分布式MPC
     controller = DistributedMPCController(num_pools=3, horizon=5)
@@ -248,11 +251,11 @@ if __name__ == "__main__":
     q_out_forecasts = [[5.0]*5, [5.0]*5, [5.0]*5]
     
     # 求解
-    print("\n求解分布式MPC...")
+    logger.info("\n求解分布式MPC...")
     solutions = controller.solve(current_levels, q_in_prevs, q_out_forecasts)
     
-    print("\n最优控制:")
+    logger.info("\n最优控制:")
     for i, (q_in, q_out) in enumerate(solutions):
-        print(f"  池{i}: 入流={q_in:.2f} m³/s, 出流={q_out:.2f} m³/s")
+        logger.info(f"  池{i}: 入流={q_in:.2f} m³/s, 出流={q_out:.2f} m³/s")
     
-    print("\n" + "="*60)
+    logger.info("\n" + "="*60)

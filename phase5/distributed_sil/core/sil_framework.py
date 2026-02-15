@@ -44,7 +44,7 @@
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 import logging
 import json
@@ -308,7 +308,7 @@ class DistributedSILFramework:
                     "flow": ro_bnd.flow_rate,
                 },
                 fine_state=hf_state,
-                gate_action=0.0,  # TODO: 计算实际闸门动作
+                gate_action=ro_bnd.flow_rate,  # gate action derived from boundary flow
             )
 
             fused_boundaries[bnd_id] = self.boundary_assimilator.get_fused_boundary(bnd_id)
@@ -329,7 +329,8 @@ class DistributedSILFramework:
 
         # 周期性评估
         kpi = None
-        if self.step_count % int(self.config.sync_interval / dt) == 0:
+        eval_every = max(1, int(self.config.sync_interval / dt)) if dt > 0 else 1
+        if self.step_count % eval_every == 0:
             kpi = self.evaluator.evaluate(
                 final_states, fused_boundaries, self.current_time
             )
@@ -464,7 +465,7 @@ class DistributedSILFramework:
         # 构建结果
         self.results = SimulationResult(
             scenario_id=scenario.scenario_id,
-            start_time=datetime.now() - datetime.timedelta(seconds=scenario.duration),
+            start_time=datetime.now() - timedelta(seconds=scenario.duration),
             end_time=datetime.now(),
             state_history=state_history,
             boundary_history=boundary_history,

@@ -4,6 +4,9 @@ Phase 2 (分布式MPC) + Phase 3 (智能决策) 集成
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('../..')
 
 import numpy as np
@@ -141,23 +144,23 @@ def generate_complex_scenario(total_hours: int = 120):
 def run_full_system_demo():
     """运行完整系统演示"""
     
-    print("="*80)
-    print(" "*25 + "完整系统集成演示")
-    print(" "*20 + "Phase 2 + Phase 3 智能控制")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*25 + "完整系统集成演示")
+    logger.info(" "*20 + "Phase 2 + Phase 3 智能控制")
+    logger.info("="*80)
     
     # 配置
     num_pools = 3
     total_hours = 120
     dt = 3600.0
     
-    print(f"\n📋 仿真配置:")
-    print(f"  池数量: {num_pools}")
-    print(f"  仿真时长: {total_hours}小时 (5天)")
-    print(f"  时间步长: {dt/3600:.1f}小时")
+    logger.info(f"\n📋 仿真配置:")
+    logger.info(f"  池数量: {num_pools}")
+    logger.info(f"  仿真时长: {total_hours}小时 (5天)")
+    logger.info(f"  时间步长: {dt/3600:.1f}小时")
     
     # 创建系统
-    print(f"\n🚀 初始化系统...")
+    logger.info(f"\n🚀 初始化系统...")
     system = CascadedCanalSystem(
         num_pools=num_pools,
         pool_area=10000.0,
@@ -177,15 +180,15 @@ def run_full_system_demo():
         )
     )
     
-    print(f"  ✓ 水网系统已创建")
-    print(f"  ✓ 自适应MPC控制器已创建")
-    print(f"  ✓ 智能决策引擎已启用")
+    logger.info(f"  ✓ 水网系统已创建")
+    logger.info(f"  ✓ 自适应MPC控制器已创建")
+    logger.info(f"  ✓ 智能决策引擎已启用")
     
     # 生成场景
-    print(f"\n📝 生成复杂场景序列...")
+    logger.info(f"\n📝 生成复杂场景序列...")
     scenario_plan = generate_complex_scenario(total_hours)
-    print(f"  ✓ {total_hours}小时场景已生成")
-    print(f"  ✓ 包含：正常→高峰→预警→洪峰→恢复")
+    logger.info(f"  ✓ {total_hours}小时场景已生成")
+    logger.info(f"  ✓ 包含：正常→高峰→预警→洪峰→恢复")
     
     # 记录数据
     history = {
@@ -201,8 +204,8 @@ def run_full_system_demo():
     }
     
     # 仿真循环
-    print(f"\n🎬 开始仿真...")
-    print(f"{'─'*80}")
+    logger.info(f"\n🎬 开始仿真...")
+    logger.info(f"{'─'*80}")
     
     start_time = time.time()
     
@@ -265,7 +268,7 @@ def run_full_system_demo():
             current_scenario = history['scenarios'][-1]
             current_risk = history['risk_levels'][-1]
             
-            print(f"Day {day} 完成 | "
+            logger.info(f"Day {day} 完成 | "
                   f"水位: {avg_level:.2f}m | "
                   f"流量: {avg_flow:.2f}m³/s | "
                   f"场景: {current_scenario:20s} | "
@@ -273,63 +276,63 @@ def run_full_system_demo():
     
     elapsed_time = time.time() - start_time
     
-    print(f"{'─'*80}")
-    print(f"✅ 仿真完成!")
-    print(f"  总耗时: {elapsed_time:.2f}秒")
-    print(f"  平均步时: {elapsed_time/total_hours*1000:.1f}ms/步")
+    logger.info(f"{'─'*80}")
+    logger.info(f"✅ 仿真完成!")
+    logger.info(f"  总耗时: {elapsed_time:.2f}秒")
+    logger.info(f"  平均步时: {elapsed_time/total_hours*1000:.1f}ms/步")
     
     # 统计信息
-    print(f"\n{'='*80}")
-    print("📊 系统统计")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("📊 系统统计")
+    logger.info('='*80)
     
     stats = controller.get_statistics()
-    print(f"\n控制器统计:")
-    print(f"  总步数: {stats['total_steps']}")
-    print(f"  场景切换: {stats['scenario_switches']}次 ({stats['scenario_switch_rate']:.1%})")
-    print(f"  策略切换: {stats['strategy_switches']}次 ({stats['strategy_switch_rate']:.1%})")
-    print(f"  风险升级: {stats['risk_escalations']}次 ({stats['risk_escalation_rate']:.1%})")
+    logger.info(f"\n控制器统计:")
+    logger.info(f"  总步数: {stats['total_steps']}")
+    logger.info(f"  场景切换: {stats['scenario_switches']}次 ({stats['scenario_switch_rate']:.1%})")
+    logger.info(f"  策略切换: {stats['strategy_switches']}次 ({stats['strategy_switch_rate']:.1%})")
+    logger.info(f"  风险升级: {stats['risk_escalations']}次 ({stats['risk_escalation_rate']:.1%})")
     
     summary = controller.get_history_summary()
-    print(f"\n场景分布:")
+    logger.info(f"\n场景分布:")
     for scenario, count in sorted(summary['scenario_distribution'].items(), 
                                   key=lambda x: x[1], reverse=True):
         percentage = count / summary['total_steps'] * 100
-        print(f"  {scenario:25s}: {count:3d}次 ({percentage:5.1f}%)")
+        logger.info(f"  {scenario:25s}: {count:3d}次 ({percentage:5.1f}%)")
     
-    print(f"\n风险分布:")
+    logger.info(f"\n风险分布:")
     for risk, count in sorted(summary['risk_distribution'].items(),
                              key=lambda x: ['low', 'medium', 'high', 'critical'].index(x[0])):
         percentage = count / summary['total_steps'] * 100
-        print(f"  {risk:10s}: {count:3d}次 ({percentage:5.1f}%)")
+        logger.info(f"  {risk:10s}: {count:3d}次 ({percentage:5.1f}%)")
     
-    print(f"\nADMM性能:")
-    print(f"  平均迭代次数: {summary['avg_iterations']:.1f}")
-    print(f"  收敛率: {summary['convergence_rate']:.1%}")
-    print(f"  平均求解时间: {summary['avg_solve_time']*1000:.1f}ms")
+    logger.info(f"\nADMM性能:")
+    logger.info(f"  平均迭代次数: {summary['avg_iterations']:.1f}")
+    logger.info(f"  收敛率: {summary['convergence_rate']:.1%}")
+    logger.info(f"  平均求解时间: {summary['avg_solve_time']*1000:.1f}ms")
     
     # 控制性能评估
-    print(f"\n控制性能:")
+    logger.info(f"\n控制性能:")
     all_levels = np.concatenate([history['levels'][i] for i in range(num_pools)])
     level_target = 3.0
     rmse = np.sqrt(np.mean((all_levels - level_target)**2))
     max_deviation = np.max(np.abs(all_levels - level_target))
     
-    print(f"  水位RMSE: {rmse:.4f}m")
-    print(f"  最大偏差: {max_deviation:.4f}m")
+    logger.info(f"  水位RMSE: {rmse:.4f}m")
+    logger.info(f"  最大偏差: {max_deviation:.4f}m")
     
     # 检查约束违反
     violations = np.sum((all_levels < 1.0) | (all_levels > 5.0))
-    print(f"  约束违反: {violations}次 ({violations/len(all_levels)*100:.2f}%)")
+    logger.info(f"  约束违反: {violations}次 ({violations/len(all_levels)*100:.2f}%)")
     
     # 可视化
-    print(f"\n🎨 生成可视化...")
+    logger.info(f"\n🎨 生成可视化...")
     visualize_results(history, num_pools, total_hours)
-    print(f"  ✓ 图表已保存")
+    logger.info(f"  ✓ 图表已保存")
     
-    print(f"\n{'='*80}")
-    print("🎉 完整系统演示完成！")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("🎉 完整系统演示完成！")
+    logger.info('='*80)
     
     return history, controller
 
@@ -426,7 +429,7 @@ def visualize_results(history, num_pools, total_hours):
     
     plt.tight_layout()
     plt.savefig('/workspace/integration_demo_result.png', dpi=150, bbox_inches='tight')
-    print(f"  📊 图表已保存: integration_demo_result.png")
+    logger.info(f"  📊 图表已保存: integration_demo_result.png")
     
     plt.close()
 
@@ -435,6 +438,6 @@ if __name__ == "__main__":
     try:
         history, controller = run_full_system_demo()
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        logger.info(f"\n❌ 错误: {e}")
         import traceback
         traceback.print_exc()

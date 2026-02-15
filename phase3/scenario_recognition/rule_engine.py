@@ -8,6 +8,9 @@ from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 from collections import deque
 from scenario_types import ScenarioDefinition, SCENARIO_LIBRARY, ScenarioCategory
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -345,18 +348,18 @@ class RuleEngine:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*25 + "规则引擎演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*25 + "规则引擎演示")
+    logger.info("="*70)
     
     # 创建规则引擎
     engine = RuleEngine()
-    print(f"\n规则库: {len(engine.rules)}条规则")
+    logger.info(f"\n规则库: {len(engine.rules)}条规则")
     
     # 测试场景1: 高峰需求
-    print("\n" + "-"*70)
-    print("场景1: 高峰需求")
-    print("-"*70)
+    logger.info("\n" + "-"*70)
+    logger.info("场景1: 高峰需求")
+    logger.info("-"*70)
     
     state1 = SystemState(
         time=8,  # 8点
@@ -367,16 +370,16 @@ if __name__ == "__main__":
     )
     
     matches = engine.recognize(state1)
-    print(f"识别结果: {len(matches)}个匹配")
+    logger.info(f"识别结果: {len(matches)}个匹配")
     for scenario_id, conf in matches[:3]:
         scenario = SCENARIO_LIBRARY.get(scenario_id)
         if scenario:
-            print(f"  - {scenario.name}: {conf:.2%}")
+            logger.info(f"  - {scenario.name}: {conf:.2%}")
     
     # 测试场景2: 洪峰期
-    print("\n" + "-"*70)
-    print("场景2: 洪峰期")
-    print("-"*70)
+    logger.info("\n" + "-"*70)
+    logger.info("场景2: 洪峰期")
+    logger.info("-"*70)
     
     state2 = SystemState(
         time=100,
@@ -387,16 +390,16 @@ if __name__ == "__main__":
     )
     
     matches = engine.recognize(state2)
-    print(f"识别结果: {len(matches)}个匹配")
+    logger.info(f"识别结果: {len(matches)}个匹配")
     for scenario_id, conf in matches[:3]:
         scenario = SCENARIO_LIBRARY.get(scenario_id)
         if scenario:
-            print(f"  - {scenario.name}: {conf:.2%}")
+            logger.info(f"  - {scenario.name}: {conf:.2%}")
     
     # 测试场景3: 设备故障
-    print("\n" + "-"*70)
-    print("场景3: 设备故障")
-    print("-"*70)
+    logger.info("\n" + "-"*70)
+    logger.info("场景3: 设备故障")
+    logger.info("-"*70)
     
     state3 = SystemState(
         time=200,
@@ -409,10 +412,10 @@ if __name__ == "__main__":
     best_scenario, conf = engine.get_best_scenario(state3)
     scenario = SCENARIO_LIBRARY.get(best_scenario)
     if scenario:
-        print(f"最佳匹配: {scenario.name} (置信度: {conf:.2%})")
-        print(f"描述: {scenario.description}")
-        print(f"优先级: {scenario.control_priority}")
+        logger.info(f"最佳匹配: {scenario.name} (置信度: {conf:.2%})")
+        logger.info(f"描述: {scenario.description}")
+        logger.info(f"优先级: {scenario.control_priority}")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

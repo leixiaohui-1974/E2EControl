@@ -3,19 +3,24 @@
 使用SQLite存储仿真数据
 """
 
+import os
 import sqlite3
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from datetime import datetime
 import json
-from pathlib import Path
 from logger import get_logger
 from exceptions import DatabaseError
+
+# Default database path - can be overridden via E2E_DB_PATH env var
+DEFAULT_DB_PATH: str = os.environ.get(
+    "E2E_DB_PATH", "simulation_data.db"
+)
 
 
 class SimulationDatabase:
     """仿真数据库"""
-    
-    def __init__(self, db_path: str = "simulation_data.db"):
+
+    def __init__(self, db_path: str = DEFAULT_DB_PATH):
         """
         初始化数据库
         
@@ -95,11 +100,18 @@ class SimulationDatabase:
             """)
             
             self.conn.commit()
-            self.logger.info(f"数据库初始化完成: {self.db_path}")
+            self.logger.info("数据库初始化完成: %s", self.db_path)
             
         except sqlite3.Error as e:
             raise DatabaseError(f"数据库初始化失败: {e}")
-    
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
+
     def create_simulation(self, total_hours: int, dt: float, area: float,
                          config: Dict, notes: str = "") -> int:
         """
@@ -131,15 +143,15 @@ class SimulationDatabase:
             self.conn.commit()
             
             sim_id = cursor.lastrowid
-            self.logger.info(f"创建仿真会话: ID={sim_id}")
+            self.logger.info("创建仿真会话: ID=%d", sim_id)
             return sim_id
             
         except sqlite3.Error as e:
             raise DatabaseError(f"创建仿真会话失败: {e}")
     
-    def save_state(self, simulation_id: int, time_step: int, 
+    def save_state(self, simulation_id: int, time_step: int,
                    level: float, q_in: float, q_out: float,
-                   target_level: float, instruction: str, config: Dict):
+                   target_level: float, instruction: str, config: Dict) -> None:
         """
         保存状态数据
         
@@ -177,10 +189,10 @@ class SimulationDatabase:
                 self.conn.commit()
                 
         except sqlite3.Error as e:
-            self.logger.error(f"保存状态失败: {e}")
+            self.logger.error("保存状态失败: %s", e)
     
-    def save_alert(self, simulation_id: int, time_step: int, 
-                   level: str, alert_type: str, message: str, data: Dict):
+    def save_alert(self, simulation_id: int, time_step: int,
+                   level: str, alert_type: str, message: str, data: Dict) -> None:
         """
         保存告警记录
         
@@ -210,10 +222,10 @@ class SimulationDatabase:
             self.conn.commit()
             
         except sqlite3.Error as e:
-            self.logger.error(f"保存告警失败: {e}")
+            self.logger.error("保存告警失败: %s", e)
     
-    def save_metric(self, simulation_id: int, metric_name: str, 
-                   metric_value: float, unit: str = ""):
+    def save_metric(self, simulation_id: int, metric_name: str,
+                   metric_value: float, unit: str = "") -> None:
         """
         保存性能指标
         
@@ -232,9 +244,9 @@ class SimulationDatabase:
             self.conn.commit()
             
         except sqlite3.Error as e:
-            self.logger.error(f"保存指标失败: {e}")
+            self.logger.error("保存指标失败: %s", e)
     
-    def finish_simulation(self, simulation_id: int):
+    def finish_simulation(self, simulation_id: int) -> None:
         """
         完成仿真会话
         
@@ -250,10 +262,10 @@ class SimulationDatabase:
             """, (datetime.now(), simulation_id))
             self.conn.commit()
             
-            self.logger.info(f"仿真会话完成: ID={simulation_id}")
+            self.logger.info("仿真会话完成: ID=%d", simulation_id)
             
         except sqlite3.Error as e:
-            self.logger.error(f"完成仿真失败: {e}")
+            self.logger.error("完成仿真失败: %s", e)
     
     def get_simulation_history(self, simulation_id: int) -> List[Dict]:
         """
@@ -275,7 +287,7 @@ class SimulationDatabase:
             return [dict(row) for row in rows]
             
         except sqlite3.Error as e:
-            self.logger.error(f"获取历史数据失败: {e}")
+            self.logger.error("获取历史数据失败: %s", e)
             return []
     
     def get_simulation_alerts(self, simulation_id: int) -> List[Dict]:
@@ -298,7 +310,7 @@ class SimulationDatabase:
             return [dict(row) for row in rows]
             
         except sqlite3.Error as e:
-            self.logger.error(f"获取告警记录失败: {e}")
+            self.logger.error("获取告警记录失败: %s", e)
             return []
     
     def get_recent_simulations(self, limit: int = 10) -> List[Dict]:
@@ -323,10 +335,10 @@ class SimulationDatabase:
             return [dict(row) for row in rows]
             
         except sqlite3.Error as e:
-            self.logger.error(f"获取仿真列表失败: {e}")
+            self.logger.error("获取仿真列表失败: %s", e)
             return []
     
-    def close(self):
+    def close(self) -> None:
         """关闭数据库连接"""
         if self.conn:
             self.conn.close()

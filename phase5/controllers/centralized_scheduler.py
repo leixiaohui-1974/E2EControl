@@ -17,6 +17,9 @@ from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SchedulingMode(Enum):
@@ -483,7 +486,8 @@ class CentralizedScheduler:
 
         try:
             problem.solve(solver=cp.ECOS, verbose=False)
-        except:
+        except Exception as exc:
+            logger.debug("ECOS solver failed, falling back to SCS: %s", exc)
             problem.solve(solver=cp.SCS, verbose=False)
 
         # 提取结果
@@ -615,9 +619,9 @@ class CentralizedScheduler:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*15 + "L3 集中调度器演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*15 + "L3 集中调度器演示")
+    logger.info("="*70)
 
     # 创建拓扑
     topology = NetworkTopology.create_cascade(
@@ -635,14 +639,14 @@ if __name__ == "__main__":
     )
     scheduler = CentralizedScheduler(topology, config)
 
-    print(f"\n✓ 调度器已初始化")
-    print(f"  池数量: {topology.num_pools}")
-    print(f"  规划时域: {config.planning_horizon} 小时")
+    logger.info(f"\n✓ 调度器已初始化")
+    logger.info(f"  池数量: {topology.num_pools}")
+    logger.info(f"  规划时域: {config.planning_horizon} 小时")
 
     # 测试正常模式
-    print(f"\n{'='*70}")
-    print("测试1: 正常运行模式")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试1: 正常运行模式")
+    logger.info('='*70)
 
     current_volumes = [30000, 30000, 30000]  # m³
     forecast = SchedulingForecast(
@@ -654,20 +658,20 @@ if __name__ == "__main__":
 
     result = scheduler.schedule(current_volumes, forecast)
 
-    print(f"\n结果:")
-    print(f"  成功: {result.success}")
-    print(f"  模式: {result.mode.value}")
-    print(f"  求解时间: {result.solve_time*1000:.1f} ms")
-    print(f"  目标值: {result.objective_value:.2f}")
-    print(f"\n参考水位轨迹 (前6小时):")
+    logger.info(f"\n结果:")
+    logger.info(f"  成功: {result.success}")
+    logger.info(f"  模式: {result.mode.value}")
+    logger.info(f"  求解时间: {result.solve_time*1000:.1f} ms")
+    logger.info(f"  目标值: {result.objective_value:.2f}")
+    logger.info(f"\n参考水位轨迹 (前6小时):")
     for i in range(3):
         levels = result.reference_levels[i, :6]
-        print(f"  池{i}: {', '.join([f'{l:.2f}' for l in levels])} m")
+        logger.info(f"  池{i}: {', '.join([f'{l:.2f}' for l in levels])} m")
 
     # 测试预泄模式
-    print(f"\n{'='*70}")
-    print("测试2: 暴雨预警 -> 预泄模式")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试2: 暴雨预警 -> 预泄模式")
+    logger.info('='*70)
 
     forecast_rain = SchedulingForecast(
         horizon=24,
@@ -683,25 +687,25 @@ if __name__ == "__main__":
 
     result_rain = scheduler.schedule(current_volumes, forecast_rain)
 
-    print(f"\n结果:")
-    print(f"  成功: {result_rain.success}")
-    print(f"  模式: {result_rain.mode.value}")
-    print(f"\n建议:")
+    logger.info(f"\n结果:")
+    logger.info(f"  成功: {result_rain.success}")
+    logger.info(f"  模式: {result_rain.mode.value}")
+    logger.info(f"\n建议:")
     for rec in result_rain.recommendations:
-        print(f"  - {rec}")
-    print(f"\n预泄后目标水位 (6小时后):")
+        logger.info(f"  - {rec}")
+    logger.info(f"\n预泄后目标水位 (6小时后):")
     for i in range(3):
-        print(f"  池{i}: {result_rain.reference_levels[i, 5]:.2f} m")
+        logger.info(f"  池{i}: {result_rain.reference_levels[i, 5]:.2f} m")
 
     # 统计
-    print(f"\n{'='*70}")
-    print("统计信息")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("统计信息")
+    logger.info('='*70)
     stats = scheduler.get_statistics()
-    print(f"  总调度次数: {stats['total_schedules']}")
-    print(f"  模式切换: {stats['mode_changes']}")
-    print(f"  预泄触发: {stats['pre_release_triggers']}")
+    logger.info(f"  总调度次数: {stats['total_schedules']}")
+    logger.info(f"  模式切换: {stats['mode_changes']}")
+    logger.info(f"  预泄触发: {stats['pre_release_triggers']}")
 
-    print("\n" + "="*70)
-    print("演示完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成!")
+    logger.info("="*70)

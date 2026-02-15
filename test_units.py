@@ -11,7 +11,8 @@ class TestBrain(unittest.TestCase):
     def test_default_scenario(self):
         config = self.brain.interpret("保持水位平稳，正常供水。")
         self.assertEqual(config['Z_ref'], 3.0)
-        self.assertEqual(config['W_level'], 10.0)
+        # "平稳" keyword multiplies W_level by 1.5: 10.0 * 1.5 = 15.0
+        self.assertEqual(config['W_level'], 15.0)
 
     def test_flood_warning(self):
         config = self.brain.interpret("收到暴雨预警，立刻降低水位腾出库容！安全第一！")

@@ -971,60 +971,60 @@ class ScenarioValidator:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "场景生成器测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "场景生成器测试")
+    logger.info("=" * 70)
 
     generator = ScenarioGenerator(seed=42)
 
     # 统计可能的场景数
     counts = generator.count_possible_scenarios()
-    print("\n可能的场景数量:")
+    logger.info("\n可能的场景数量:")
     for key, value in counts.items():
-        print(f"  {key}: {value:,}")
+        logger.info(f"  {key}: {value:,}")
 
     # 生成单事件
-    print(f"\n{'=' * 70}")
-    print("测试1: 生成单事件")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试1: 生成单事件")
+    logger.info('=' * 70)
 
     event = generator.generate_single_event()
-    print(f"  事件ID: {event.event_id}")
-    print(f"  类型: {event.scenario_type.value}")
-    print(f"  位置: 池{event.location}")
-    print(f"  严重程度: {event.severity.value}")
-    print(f"  季节: {event.season.value}")
-    print(f"  天气: {event.weather.value}")
+    logger.info(f"  事件ID: {event.event_id}")
+    logger.info(f"  类型: {event.scenario_type.value}")
+    logger.info(f"  位置: 池{event.location}")
+    logger.info(f"  严重程度: {event.severity.value}")
+    logger.info(f"  季节: {event.season.value}")
+    logger.info(f"  天气: {event.weather.value}")
 
     # 生成双事件场景
-    print(f"\n{'=' * 70}")
-    print("测试2: 生成双事件场景")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试2: 生成双事件场景")
+    logger.info('=' * 70)
 
     dual = generator.generate_dual_event_scenario()
-    print(f"  场景ID: {dual.scenario_id}")
-    print(f"  事件数: {len(dual.events)}")
-    print(f"  复杂度: {dual.complexity}")
-    print(f"  风险等级: {dual.risk_level:.2f}")
+    logger.info(f"  场景ID: {dual.scenario_id}")
+    logger.info(f"  事件数: {len(dual.events)}")
+    logger.info(f"  复杂度: {dual.complexity}")
+    logger.info(f"  风险等级: {dual.risk_level:.2f}")
     for e in dual.events:
-        print(f"    - {e.scenario_type.value} @ 池{e.location}")
+        logger.info(f"    - {e.scenario_type.value} @ 池{e.location}")
 
     # 生成级联场景
-    print(f"\n{'=' * 70}")
-    print("测试3: 生成级联场景")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试3: 生成级联场景")
+    logger.info('=' * 70)
 
     cascade = generator.generate_cascading_scenario(cascade_count=4)
-    print(f"  场景ID: {cascade.scenario_id}")
-    print(f"  事件数: {len(cascade.events)}")
-    print(f"  复杂度: {cascade.complexity}")
+    logger.info(f"  场景ID: {cascade.scenario_id}")
+    logger.info(f"  事件数: {len(cascade.events)}")
+    logger.info(f"  复杂度: {cascade.complexity}")
     for i, e in enumerate(cascade.events):
-        print(f"    {i+1}. {e.scenario_type.value} @ 池{e.location} (t={e.timestamp:.0f}s)")
+        logger.info(f"    {i+1}. {e.scenario_type.value} @ 池{e.location} (t={e.timestamp:.0f}s)")
 
     # 批量生成
-    print(f"\n{'=' * 70}")
-    print("测试4: 批量生成100个场景")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试4: 批量生成100个场景")
+    logger.info('=' * 70)
 
     batch = generator.generate_batch(100)
 
@@ -1033,19 +1033,19 @@ if __name__ == "__main__":
     dual_count = sum(1 for s in batch if len(s.events) == 2)
     multi_count = sum(1 for s in batch if len(s.events) > 2)
 
-    print(f"  单事件场景: {single_count}")
-    print(f"  双事件场景: {dual_count}")
-    print(f"  多事件场景: {multi_count}")
+    logger.info(f"  单事件场景: {single_count}")
+    logger.info(f"  双事件场景: {dual_count}")
+    logger.info(f"  多事件场景: {multi_count}")
 
     # 复杂度分布
     complexities = [s.complexity for s in batch]
-    print(f"  平均复杂度: {np.mean(complexities):.2f}")
-    print(f"  最高复杂度: {max(complexities)}")
+    logger.info(f"  平均复杂度: {np.mean(complexities):.2f}")
+    logger.info(f"  最高复杂度: {max(complexities)}")
 
     # 验证
-    print(f"\n{'=' * 70}")
-    print("测试5: 场景验证")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试5: 场景验证")
+    logger.info('=' * 70)
 
     validator = ScenarioValidator()
     valid_count = 0
@@ -1054,8 +1054,8 @@ if __name__ == "__main__":
         if valid:
             valid_count += 1
 
-    print(f"  验证通过: {valid_count}/{len(batch)}")
+    logger.info(f"  验证通过: {valid_count}/{len(batch)}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

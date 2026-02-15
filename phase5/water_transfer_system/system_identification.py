@@ -190,14 +190,14 @@ class RecursiveLeastSquares:
         Returns:
             (更新后的参数, 预测误差)
         """
-        phi = np.atleast_1d(phi).reshape(-1, 1)
+        phi = np.atleast_1d(phi).flatten().reshape(-1, 1)
 
         # 预测
-        y_hat = float(phi.T @ self.theta)
+        y_hat = (phi.T @ self.theta).item()
         error = y - y_hat
 
         # 增益计算
-        denom = self.lambda_ + float(phi.T @ self.P @ phi)
+        denom = self.lambda_ + (phi.T @ self.P @ phi).item()
         K = self.P @ phi / denom
 
         # 参数更新
@@ -740,9 +740,9 @@ class BatchSystemIdentifier:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("="*70)
-    print(" " * 15 + "系统辨识模块测试")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" " * 15 + "系统辨识模块测试")
+    logger.info("="*70)
 
     # 生成模拟数据
     np.random.seed(42)
@@ -754,9 +754,9 @@ if __name__ == "__main__":
     true_A_s = 150000  # 15万m²
     delay_steps = int(true_tau / dt)
 
-    print(f"\n真实参数:")
-    print(f"  滞后时间: {true_tau/3600:.1f} 小时 ({delay_steps} 步)")
-    print(f"  蓄水面积: {true_A_s} m²")
+    logger.info(f"\n真实参数:")
+    logger.info(f"  滞后时间: {true_tau/3600:.1f} 小时 ({delay_steps} 步)")
+    logger.info(f"  蓄水面积: {true_A_s} m²")
 
     # 生成数据
     q_in = 100 + 20 * np.sin(2 * np.pi * np.arange(n_samples) / 48)  # 12小时周期
@@ -778,43 +778,43 @@ if __name__ == "__main__":
     # 创建辨识器
     identifier = SystemIdentifier(dt=dt)
 
-    print(f"\n{'='*70}")
-    print("测试1: 互相关分析 (滞后时间辨识)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试1: 互相关分析 (滞后时间辨识)")
+    logger.info('='*70)
 
     for i in range(n_samples):
         identifier.add_sample(0, q_in[i], q_out[i], z[i], i * dt)
 
     tau_est, corr = identifier.identify_delay(0)
-    print(f"  估计滞后: {tau_est/3600:.2f} 小时 (真实: {true_tau/3600:.1f}h)")
-    print(f"  相关系数: {corr:.3f}")
-    print(f"  误差: {abs(tau_est - true_tau)/true_tau * 100:.1f}%")
+    logger.info(f"  估计滞后: {tau_est/3600:.2f} 小时 (真实: {true_tau/3600:.1f}h)")
+    logger.info(f"  相关系数: {corr:.3f}")
+    logger.info(f"  误差: {abs(tau_est - true_tau)/true_tau * 100:.1f}%")
 
-    print(f"\n{'='*70}")
-    print("测试2: RLS (蓄水面积辨识)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试2: RLS (蓄水面积辨识)")
+    logger.info('='*70)
 
     A_s_est, conf = identifier.identify_area(0, tau_est)
-    print(f"  估计面积: {A_s_est:.0f} m² (真实: {true_A_s}m²)")
-    print(f"  置信度: {conf:.3f}")
-    print(f"  误差: {abs(A_s_est - true_A_s)/true_A_s * 100:.1f}%")
+    logger.info(f"  估计面积: {A_s_est:.0f} m² (真实: {true_A_s}m²)")
+    logger.info(f"  置信度: {conf:.3f}")
+    logger.info(f"  误差: {abs(A_s_est - true_A_s)/true_A_s * 100:.1f}%")
 
-    print(f"\n{'='*70}")
-    print("测试3: 完整辨识")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试3: 完整辨识")
+    logger.info('='*70)
 
     result = identifier.identify_idz_parameters(0)
-    print(f"  滞后时间: {result.tau/3600:.2f} h")
-    print(f"  蓄水面积: {result.A_s:.0f} m²")
-    print(f"  置信度: {result.confidence:.3f}")
-    print(f"  R²: {result.r_squared:.4f}")
-    print(f"  RMSE: {result.rmse:.4f} m")
-    print(f"  使用样本: {result.samples_used}")
-    print(f"  方法: {result.method}")
+    logger.info(f"  滞后时间: {result.tau/3600:.2f} h")
+    logger.info(f"  蓄水面积: {result.A_s:.0f} m²")
+    logger.info(f"  置信度: {result.confidence:.3f}")
+    logger.info(f"  R²: {result.r_squared:.4f}")
+    logger.info(f"  RMSE: {result.rmse:.4f} m")
+    logger.info(f"  使用样本: {result.samples_used}")
+    logger.info(f"  方法: {result.method}")
 
-    print(f"\n{'='*70}")
-    print("测试4: 在线更新")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试4: 在线更新")
+    logger.info('='*70)
 
     # 在线更新几步
     for i in range(5):
@@ -824,8 +824,8 @@ if __name__ == "__main__":
 
         z_est, theta_est = identifier.online_update(0, new_q_in, new_q_out, new_z)
         A_s_online = 1.0 / theta_est if abs(theta_est) > 1e-10 else float('inf')
-        print(f"  步骤{i}: Z_est={z_est:.3f}m, A_s_est={A_s_online:.0f}m²")
+        logger.info(f"  步骤{i}: Z_est={z_est:.3f}m, A_s_est={A_s_online:.0f}m²")
 
-    print("\n" + "="*70)
-    print("测试完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("测试完成!")
+    logger.info("="*70)

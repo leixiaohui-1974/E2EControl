@@ -442,9 +442,9 @@ class ScenarioValidator:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("场景验证器测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("场景验证器测试")
+    logger.info("=" * 70)
 
     # 创建模拟控制器
     class MockController:
@@ -467,10 +467,10 @@ if __name__ == "__main__":
     scenario = COMPLETE_SCENARIO_MATRIX["NORMAL_001"]
 
     result = validator.validate_scenario(scenario)
-    print(f"\n场景: {result.scenario_name}")
-    print(f"状态: {result.status.value}")
-    print(f"指标:")
+    logger.info(f"\n场景: {result.scenario_name}")
+    logger.info(f"状态: {result.status.value}")
+    logger.info(f"指标:")
     for m in result.metrics:
-        print(f"  {m.name}: {m.value:.3f} ({'通过' if m.passed else '未通过'})")
+        logger.info(f"  {m.name}: {m.value:.3f} ({'通过' if m.passed else '未通过'})")
 
-    print("\n" + "=" * 70)
+    logger.info("\n" + "=" * 70)

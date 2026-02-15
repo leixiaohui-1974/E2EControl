@@ -134,7 +134,7 @@ class TestControlInterface:
             command_id="CMD001",
             pool_id=3,
             action_type=L1ActionType.GATE_ADJUST,
-            parameters={'target_opening': 2.5},
+            gate_position=2.5,
         )
         interface.apply_l1_action(action)
 
@@ -147,10 +147,10 @@ class TestControlInterface:
 
         intervention = InterventionDecision(
             decision_id="INT001",
-            pool_id=5,
+            escalation_event_id="ESC001",
+            target_layer=1,
             intervention_type=InterventionType.TAKEOVER,
-            reason="控制失效",
-            affected_pools=[4, 5, 6],
+            additional_resources={'affected_pools': [4, 5, 6]},
         )
         interface.apply_intervention(intervention)
 
@@ -165,10 +165,10 @@ class TestControlInterface:
 
         intervention = InterventionDecision(
             decision_id="INT001",
-            pool_id=5,
+            escalation_event_id="ESC001",
+            target_layer=1,
             intervention_type=InterventionType.EMERGENCY_SHUTDOWN,
-            reason="紧急停机",
-            affected_pools=[5],
+            additional_resources={'affected_pools': [5]},
         )
         interface.apply_intervention(intervention)
 

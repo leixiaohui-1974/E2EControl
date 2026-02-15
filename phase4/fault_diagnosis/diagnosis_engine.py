@@ -8,6 +8,9 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class FaultType(Enum):
@@ -59,7 +62,7 @@ class DiagnosisEngine:
         self.knowledge_base = self._init_knowledge_base()
         self.diagnosis_history = []
         
-        print("[DiagnosisEngine] 故障诊断引擎初始化完成")
+        logger.info("[DiagnosisEngine] 故障诊断引擎初始化完成")
     
     def _init_diagnosis_rules(self) -> Dict:
         """初始化诊断规则库"""
@@ -349,7 +352,7 @@ class DiagnosisEngine:
     def clear_history(self):
         """清空诊断历史"""
         self.diagnosis_history = []
-        print("[DiagnosisEngine] 诊断历史已清空")
+        logger.info("[DiagnosisEngine] 诊断历史已清空")
 
 
 # 便捷函数
@@ -360,15 +363,15 @@ def quick_diagnose(anomaly: Dict) -> Optional[DiagnosisResult]:
 
 
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "故障诊断引擎测试")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "故障诊断引擎测试")
+    logger.info("="*80)
     
     # 创建诊断引擎
     engine = DiagnosisEngine()
     
     # 测试案例1：传感器漂移
-    print("\n测试1: 传感器漂移")
+    logger.info("\n测试1: 传感器漂移")
     anomaly1 = {
         'detector': '3-sigma',
         'value': 8.0,
@@ -377,15 +380,15 @@ if __name__ == "__main__":
     }
     result1 = engine.diagnose(anomaly1)
     if result1:
-        print(f"  故障类型: {result1.fault_type}")
-        print(f"  故障组件: {result1.fault_component}")
-        print(f"  严重程度: {result1.severity}")
-        print(f"  置信度: {result1.confidence:.2f}")
-        print(f"  根本原因: {result1.root_cause}")
-        print(f"  推荐措施: {', '.join(result1.recommended_actions[:2])}")
+        logger.info(f"  故障类型: {result1.fault_type}")
+        logger.info(f"  故障组件: {result1.fault_component}")
+        logger.info(f"  严重程度: {result1.severity}")
+        logger.info(f"  置信度: {result1.confidence:.2f}")
+        logger.info(f"  根本原因: {result1.root_cause}")
+        logger.info(f"  推荐措施: {', '.join(result1.recommended_actions[:2])}")
     
     # 测试案例2：执行器故障
-    print("\n测试2: 执行器响应延迟")
+    logger.info("\n测试2: 执行器响应延迟")
     anomaly2 = {
         'detector': 'actuator_monitor',
         'value': 0.5,
@@ -394,16 +397,16 @@ if __name__ == "__main__":
     }
     result2 = engine.diagnose(anomaly2)
     if result2:
-        print(f"  故障类型: {result2.fault_type}")
-        print(f"  严重程度: {result2.severity}")
-        print(f"  置信度: {result2.confidence:.2f}")
+        logger.info(f"  故障类型: {result2.fault_type}")
+        logger.info(f"  严重程度: {result2.severity}")
+        logger.info(f"  置信度: {result2.confidence:.2f}")
     
     # 统计信息
-    print("\n诊断统计:")
+    logger.info("\n诊断统计:")
     stats = engine.get_statistics()
-    print(f"  总诊断次数: {stats['total_diagnoses']}")
-    print(f"  平均置信度: {stats['average_confidence']:.2f}")
+    logger.info(f"  总诊断次数: {stats['total_diagnoses']}")
+    logger.info(f"  平均置信度: {stats['average_confidence']:.2f}")
     
-    print("\n" + "="*80)
-    print("✅ 故障诊断引擎测试完成")
-    print("="*80)
+    logger.info("\n" + "="*80)
+    logger.info("✅ 故障诊断引擎测试完成")
+    logger.info("="*80)

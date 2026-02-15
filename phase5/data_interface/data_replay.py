@@ -13,9 +13,24 @@ from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable, Union, Iterator
+import re
 import sqlite3
 
 logger = logging.getLogger(__name__)
+
+# SQL identifier validation pattern: only alphanumeric and underscores
+_SQL_IDENT_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def _validate_sql_identifier(name: str) -> str:
+    """Validate and return a safe SQL identifier.
+
+    Raises ValueError if *name* contains characters that are not
+    allowed in a plain SQL identifier (letters, digits, underscores).
+    """
+    if not _SQL_IDENT_RE.match(name):
+        raise ValueError(f"Invalid SQL identifier: {name!r}")
+    return name
 
 
 class TimeScaleMode(Enum):
@@ -373,7 +388,10 @@ class DataReplayEngine:
         if not source.path or not os.path.exists(source.path):
             raise FileNotFoundError(f"SQLite database not found: {source.path}")
 
-        conn = sqlite3.connect(source.path)
+        try:
+            conn = sqlite3.connect(source.path, timeout=10.0)
+        except sqlite3.OperationalError as exc:
+            raise OSError(f"Cannot open database: {source.path}") from exc
         conn.row_factory = sqlite3.Row
 
         try:
@@ -382,10 +400,17 @@ class DataReplayEngine:
             if source.query:
                 cursor.execute(source.query)
             else:
-                # Build default query
+                # Build default query with validated identifiers
                 columns = [source.timestamp_column] + source.value_columns
-                table_name = source.name.replace('.', '_')
-                query = f"SELECT {', '.join(columns)} FROM {table_name} ORDER BY {source.timestamp_column}"
+                safe_cols = [_validate_sql_identifier(c) for c in columns]
+                safe_table = _validate_sql_identifier(
+                    source.name.replace('.', '_')
+                )
+                safe_order = _validate_sql_identifier(source.timestamp_column)
+                query = (
+                    f"SELECT {', '.join(safe_cols)} "
+                    f"FROM {safe_table} ORDER BY {safe_order}"
+                )
                 cursor.execute(query)
 
             for row in cursor.fetchall():

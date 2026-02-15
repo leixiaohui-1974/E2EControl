@@ -476,9 +476,9 @@ class MultiAgentCoordinator:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("Multi-Agent Coordinator Test")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("Multi-Agent Coordinator Test")
+    logger.info("=" * 70)
 
     # 创建协调器
     coordinator = MultiAgentCoordinator(num_gates=11, num_pools=10)
@@ -493,20 +493,20 @@ if __name__ == "__main__":
     }
 
     # 协调决策
-    print("\n运行协调决策...")
+    logger.info("\n运行协调决策...")
     actions = coordinator.coordinate(state)
 
-    print(f"\n协调结果:")
+    logger.info(f"\n协调结果:")
     for agent_id, action in sorted(actions.items()):
-        print(f"  闸门 {agent_id}: {action:.3f}")
+        logger.info(f"  闸门 {agent_id}: {action:.3f}")
 
     # 获取报告
     report = coordinator.get_coordination_report()
-    print(f"\n协调报告:")
-    print(f"  智能体数量: {report['num_agents']}")
-    print(f"  总轮次: {report['stats']['total_rounds']}")
-    print(f"  共识状态: {report['consensus_status']}")
+    logger.info(f"\n协调报告:")
+    logger.info(f"  智能体数量: {report['num_agents']}")
+    logger.info(f"  总轮次: {report['stats']['total_rounds']}")
+    logger.info(f"  共识状态: {report['consensus_status']}")
 
-    print("\n" + "=" * 70)
-    print("Test completed!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("Test completed!")
+    logger.info("=" * 70)

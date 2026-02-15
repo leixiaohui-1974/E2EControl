@@ -772,9 +772,9 @@ class MultiLevelController:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("Multi-Level Controller Test")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("Multi-Level Controller Test")
+    logger.info("=" * 70)
 
     # 创建控制器
     controller = MultiLevelController(num_gates=11, num_pools=10)
@@ -788,30 +788,30 @@ if __name__ == "__main__":
         'targets': np.ones(10) * 4.0
     }
 
-    print("\n测试各等级控制:")
+    logger.info("\n测试各等级控制:")
     for level in AutonomyLevel:
-        print(f"\n--- {level.name} ---")
+        logger.info(f"\n--- {level.name} ---")
         controller.set_level(level, immediate=True)
         result = controller.compute_action(state)
-        print(f"  Source: {result['source']}")
-        print(f"  Confidence: {result.get('confidence', 'N/A')}")
+        logger.info(f"  Source: {result['source']}")
+        logger.info(f"  Confidence: {result.get('confidence', 'N/A')}")
         if result['action'] is not None:
             action = result['action']
             if isinstance(action, np.ndarray):
-                print(f"  Action shape: {action.shape}")
+                logger.info(f"  Action shape: {action.shape}")
             else:
-                print(f"  Action: {action}")
+                logger.info(f"  Action: {action}")
 
     # 打印能力描述
-    print("\n\n等级能力对比:")
-    print("-" * 70)
+    logger.info("\n\n等级能力对比:")
+    logger.info("-" * 70)
     for level, cap in LEVEL_CAPABILITIES.items():
-        print(f"\n{level.name}:")
-        print(f"  描述: {cap.description}")
-        print(f"  功能: {', '.join(cap.features)}")
-        print(f"  人工角色: {cap.human_role}")
-        print(f"  系统角色: {cap.system_role}")
+        logger.info(f"\n{level.name}:")
+        logger.info(f"  描述: {cap.description}")
+        logger.info(f"  功能: {', '.join(cap.features)}")
+        logger.info(f"  人工角色: {cap.human_role}")
+        logger.info(f"  系统角色: {cap.system_role}")
 
-    print("\n" + "=" * 70)
-    print("Test completed!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("Test completed!")
+    logger.info("=" * 70)

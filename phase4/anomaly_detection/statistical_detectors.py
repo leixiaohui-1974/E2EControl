@@ -3,17 +3,21 @@
 包括：3-sigma、CUSUM、EWMA等经典统计方法
 """
 
+import logging
+
 import numpy as np
 from typing import Optional
 
+logger = logging.getLogger(__name__)
+
 try:
     from base_detector import (
-        BaseDetector, AnomalyReport, AnomalyType, 
+        BaseDetector, AnomalyReport, AnomalyType,
         SeverityLevel, calculate_severity
     )
 except ImportError:
     from .base_detector import (
-        BaseDetector, AnomalyReport, AnomalyType, 
+        BaseDetector, AnomalyReport, AnomalyType,
         SeverityLevel, calculate_severity
     )
 
@@ -361,9 +365,9 @@ class RateOfChangeDetector(BaseDetector):
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*20 + "统计方法检测器演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "统计方法检测器演示")
+    logger.info("="*70)
     
     # 生成测试数据
     np.random.seed(42)
@@ -386,15 +390,15 @@ if __name__ == "__main__":
     ]
     
     # 训练
-    print("\n训练检测器...")
+    logger.info("\n训练检测器...")
     for detector in detectors:
         detector.fit(normal_data)
-        print(f"  ✓ {detector.name} 已训练")
+        logger.info(f"  ✓ {detector.name} 已训练")
     
     # 检测
-    print("\n" + "-"*70)
-    print("运行异常检测...")
-    print("-"*70)
+    logger.info("\n" + "-"*70)
+    logger.info("运行异常检测...")
+    logger.info("-"*70)
     
     anomaly_count = {d.name: 0 for d in detectors}
     
@@ -404,24 +408,24 @@ if __name__ == "__main__":
             if report:
                 anomaly_count[detector.name] += 1
                 if anomaly_count[detector.name] <= 3:  # 只打印前3个
-                    print(f"\n[{t}] {detector.name} 检测到异常:")
-                    print(f"  值: {report.value:.2f}")
-                    print(f"  类型: {report.anomaly_type.value}")
-                    print(f"  严重程度: {report.severity.name}")
-                    print(f"  描述: {report.description}")
+                    logger.info(f"\n[{t}] {detector.name} 检测到异常:")
+                    logger.info(f"  值: {report.value:.2f}")
+                    logger.info(f"  类型: {report.anomaly_type.value}")
+                    logger.info(f"  严重程度: {report.severity.name}")
+                    logger.info(f"  描述: {report.description}")
     
     # 统计
-    print("\n" + "="*70)
-    print("检测统计")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("检测统计")
+    logger.info("="*70)
     
     for detector in detectors:
         stats = detector.get_statistics()
-        print(f"\n{detector.name}:")
-        print(f"  总检测次数: {stats['total_count']}")
-        print(f"  异常次数: {stats['anomaly_count']}")
-        print(f"  异常率: {stats['anomaly_rate']:.2%}")
+        logger.info(f"\n{detector.name}:")
+        logger.info(f"  总检测次数: {stats['total_count']}")
+        logger.info(f"  异常次数: {stats['anomaly_count']}")
+        logger.info(f"  异常率: {stats['anomaly_rate']:.2%}")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

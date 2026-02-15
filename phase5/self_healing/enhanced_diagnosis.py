@@ -15,6 +15,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ExtendedFaultType(Enum):
@@ -203,7 +206,7 @@ class EnhancedDiagnosisEngine:
             'compound_detections': 0
         }
 
-        print("[EnhancedDiagnosisEngine] 增强诊断引擎初始化完成")
+        logger.info("[EnhancedDiagnosisEngine] 增强诊断引擎初始化完成")
 
     def _init_pattern_library(self):
         """初始化故障模式库"""

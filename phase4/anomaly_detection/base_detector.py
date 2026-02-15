@@ -9,6 +9,9 @@ from typing import List, Dict, Optional, Tuple
 from enum import Enum
 import numpy as np
 from collections import deque
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AnomalyType(Enum):
@@ -330,24 +333,24 @@ def adaptive_threshold(data: np.ndarray, base_threshold: float,
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*20 + "异常检测基础框架演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "异常检测基础框架演示")
+    logger.info("="*70)
     
     # 展示异常类型
-    print("\n支持的异常类型:")
+    logger.info("\n支持的异常类型:")
     for anomaly_type in AnomalyType:
-        print(f"  • {anomaly_type.value}")
+        logger.info(f"  • {anomaly_type.value}")
     
     # 展示严重程度
-    print("\n严重程度等级:")
+    logger.info("\n严重程度等级:")
     for severity in SeverityLevel:
-        print(f"  • {severity.name}: {severity.value}")
+        logger.info(f"  • {severity.name}: {severity.value}")
     
     # 创建示例报告
-    print("\n" + "-"*70)
-    print("异常报告示例:")
-    print("-"*70)
+    logger.info("\n" + "-"*70)
+    logger.info("异常报告示例:")
+    logger.info("-"*70)
     
     report = AnomalyReport(
         timestamp=100,
@@ -362,17 +365,17 @@ if __name__ == "__main__":
         deviation=3.5
     )
     
-    print(f"时间戳: {report.timestamp}")
-    print(f"变量: {report.variable_name}")
-    print(f"当前值: {report.value}")
-    print(f"异常类型: {report.anomaly_type.value}")
-    print(f"严重程度: {report.severity.name}")
-    print(f"置信度: {report.confidence:.2%}")
-    print(f"描述: {report.description}")
-    print(f"阈值: {report.threshold}")
-    print(f"期望值: {report.expected_value}")
-    print(f"偏差: {report.deviation}")
+    logger.info(f"时间戳: {report.timestamp}")
+    logger.info(f"变量: {report.variable_name}")
+    logger.info(f"当前值: {report.value}")
+    logger.info(f"异常类型: {report.anomaly_type.value}")
+    logger.info(f"严重程度: {report.severity.name}")
+    logger.info(f"置信度: {report.confidence:.2%}")
+    logger.info(f"描述: {report.description}")
+    logger.info(f"阈值: {report.threshold}")
+    logger.info(f"期望值: {report.expected_value}")
+    logger.info(f"偏差: {report.deviation}")
     
-    print("\n" + "="*70)
-    print("基础框架加载完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("基础框架加载完成！")
+    logger.info("="*70)

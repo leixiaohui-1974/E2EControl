@@ -15,6 +15,9 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Dict, List, Optional, Tuple, Any
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # ==============================================================================
@@ -659,42 +662,42 @@ class ControlPlan:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("="*70)
-    print(" " * 15 + "核心数据结构测试")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" " * 15 + "核心数据结构测试")
+    logger.info("="*70)
 
     # 创建南水北调中线拓扑
     topology = PoolTopology.create_snwd_middle_route()
 
-    print(f"\n✓ 创建南水北调中线拓扑")
-    print(f"  渠池数量: {topology.num_pools}")
-    print(f"  总长度: {topology.total_length} km")
-    print(f"  区域数量: {len(topology.regions)}")
-    print(f"  特殊建筑物: {len(topology.special_structures)}")
+    logger.info(f"\n✓ 创建南水北调中线拓扑")
+    logger.info(f"  渠池数量: {topology.num_pools}")
+    logger.info(f"  总长度: {topology.total_length} km")
+    logger.info(f"  区域数量: {len(topology.regions)}")
+    logger.info(f"  特殊建筑物: {len(topology.special_structures)}")
 
     # 显示区域信息
-    print(f"\n区域划分:")
+    logger.info(f"\n区域划分:")
     for region in topology.regions:
-        print(f"  {region.name}: {region.num_pools} 个渠池, "
+        logger.info(f"  {region.name}: {region.num_pools} 个渠池, "
               f"{region.chainage_start:.0f}-{region.chainage_end:.0f} km")
 
     # 显示特殊建筑物
-    print(f"\n特殊建筑物:")
+    logger.info(f"\n特殊建筑物:")
     for structure in topology.special_structures:
-        print(f"  {structure.name} ({structure.structure_type.value}): "
+        logger.info(f"  {structure.name} ({structure.structure_type.value}): "
               f"K{structure.chainage:.0f}, 最大流量 {structure.max_flow} m³/s")
 
     # 测试渠池配置
     pool = topology.pools[30]  # 中间位置
-    print(f"\n渠池 {pool.pool_id} 配置:")
-    print(f"  名称: {pool.name}")
-    print(f"  桩号: K{pool.chainage_start:.0f}-K{pool.chainage_end:.0f}")
-    print(f"  底宽: {pool.bottom_width:.1f} m")
-    print(f"  设计流量: {pool.design_flow:.0f} m³/s")
-    print(f"  水面面积: {pool.surface_area/1e6:.2f} km²")
+    logger.info(f"\n渠池 {pool.pool_id} 配置:")
+    logger.info(f"  名称: {pool.name}")
+    logger.info(f"  桩号: K{pool.chainage_start:.0f}-K{pool.chainage_end:.0f}")
+    logger.info(f"  底宽: {pool.bottom_width:.1f} m")
+    logger.info(f"  设计流量: {pool.design_flow:.0f} m³/s")
+    logger.info(f"  水面面积: {pool.surface_area/1e6:.2f} km²")
 
     # 测试控制指令
-    print(f"\n控制指令测试:")
+    logger.info(f"\n控制指令测试:")
     directive = ControlDirective(
         pool_id=30,
         role=PoolRole.ISOLATE,
@@ -704,11 +707,11 @@ if __name__ == "__main__":
         source_scenario=ScenarioType.S3_POLLUTION,
         remarks="污染隔离指令",
     )
-    print(f"  角色: {directive.role.value}")
-    print(f"  水位偏移: {directive.target_bias} m")
-    print(f"  流量权重: {directive.get_q_weight()}")
-    print(f"  最大出流约束: {directive.get_constraint('Q_out_max')}")
+    logger.info(f"  角色: {directive.role.value}")
+    logger.info(f"  水位偏移: {directive.target_bias} m")
+    logger.info(f"  流量权重: {directive.get_q_weight()}")
+    logger.info(f"  最大出流约束: {directive.get_constraint('Q_out_max')}")
 
-    print("\n" + "="*70)
-    print("测试完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("测试完成!")
+    logger.info("="*70)

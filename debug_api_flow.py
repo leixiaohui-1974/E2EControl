@@ -11,7 +11,7 @@ def log(msg):
 def test_frontend():
     log("Testing Frontend Serving...")
     try:
-        res = requests.get(f"{BASE_URL}/")
+        res = requests.get(f"{BASE_URL}/", timeout=10)
         log(f"Index Page Status: {res.status_code}")
         if res.status_code == 200:
             log("Frontend is accessible.")
@@ -30,27 +30,27 @@ def test_single_pool_flow():
         "system_type": "single"
     }
     try:
-        res = requests.post(f"{BASE_URL}/simulation/run", json=payload)
+        res = requests.post(f"{BASE_URL}/simulation/run", json=payload, timeout=30)
         log(f"Run response: {res.status_code} - {res.text}")
         if res.status_code != 202:
             log("FAILED: Could not start simulation")
             return
-        
+
         data = res.json()
         sim_id = data.get('simulation_id')
         log(f"Simulation ID: {sim_id}")
-        
+
         # 2. Poll History
         for i in range(5):
             time.sleep(1)
-            res_hist = requests.get(f"{BASE_URL}/simulation/{sim_id}/history")
+            res_hist = requests.get(f"{BASE_URL}/simulation/{sim_id}/history", timeout=10)
             log(f"Poll {i+1}: History Status {res_hist.status_code}")
-            
+
             if res_hist.status_code == 200:
                 data = res_hist.json()
                 log(f"  > Status: {data.get('status')}")
                 log(f"  > Data Points: {data.get('count')}")
-                
+
                 if data.get('count', 0) > 0:
                     history = data.get('history', {})
                     levels = history.get('level', [])
@@ -59,10 +59,10 @@ def test_single_pool_flow():
                     log("  > WARNING: History is empty!")
             else:
                 log(f"  > Error: {res_hist.text}")
-                
+
         # 3. Stop
         log("Stopping simulation...")
-        requests.post(f"{BASE_URL}/simulation/{sim_id}/stop")
+        requests.post(f"{BASE_URL}/simulation/{sim_id}/stop", timeout=10)
         
     except Exception as e:
         log(f"EXCEPTION: {e}")
@@ -77,27 +77,27 @@ def test_cascaded_flow():
         "system_type": "cascaded"
     }
     try:
-        res = requests.post(f"{BASE_URL}/simulation/run", json=payload)
+        res = requests.post(f"{BASE_URL}/simulation/run", json=payload, timeout=30)
         log(f"Run response: {res.status_code} - {res.text}")
         if res.status_code != 202:
             log("FAILED: Could not start simulation")
             return
-        
+
         data = res.json()
         sim_id = data.get('simulation_id')
         log(f"Simulation ID: {sim_id}")
-        
+
         # 2. Poll History
         for i in range(5):
             time.sleep(1)
-            res_hist = requests.get(f"{BASE_URL}/simulation/{sim_id}/history")
+            res_hist = requests.get(f"{BASE_URL}/simulation/{sim_id}/history", timeout=10)
             log(f"Poll {i+1}: History Status {res_hist.status_code}")
-            
+
             if res_hist.status_code == 200:
                 data = res_hist.json()
                 log(f"  > Status: {data.get('status')}")
                 log(f"  > Data Points: {data.get('count')}")
-                
+
                 if data.get('count', 0) > 0:
                     history = data.get('history', {})
                     levels = history.get('levels', [])
@@ -108,10 +108,10 @@ def test_cascaded_flow():
                     log("  > WARNING: History is empty!")
             else:
                 log(f"  > Error: {res_hist.text}")
-                
+
         # 3. Stop
         log("Stopping simulation...")
-        requests.post(f"{BASE_URL}/simulation/{sim_id}/stop")
+        requests.post(f"{BASE_URL}/simulation/{sim_id}/stop", timeout=10)
 
     except Exception as e:
         log(f"EXCEPTION: {e}")

@@ -3,11 +3,14 @@
 使用NetworkX建立水网图结构，支持复杂拓扑关系
 """
 
+import logging
 import networkx as nx
 from typing import Dict, List, Tuple, Optional, Set
 from enum import Enum
 import matplotlib.pyplot as plt
 from collections import deque
+
+logger = logging.getLogger(__name__)
 
 
 class NodeType(Enum):
@@ -296,8 +299,8 @@ class WaterNetworkTopology:
             cycles = list(nx.simple_cycles(self.graph))
             if cycles:
                 errors.append(f"存在环路: {cycles}")
-        except:
-            pass
+        except Exception as exc:
+            logger.debug("Cycle detection failed: %s", exc)
         
         # 检查渠池是否有上下游连接
         for pool_id in self.get_pools():
@@ -375,11 +378,11 @@ class WaterNetworkTopology:
         
         if save_path:
             plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            plt.close()
             print(f"拓扑图已保存: {save_path}")
         else:
             plt.show()
-        
-        plt.close()
+            plt.close()
     
     def export_to_dict(self) -> Dict:
         """导出为字典格式"""

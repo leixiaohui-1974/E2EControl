@@ -132,7 +132,7 @@ def test_mpc_solver():
             if 0 <= u_in <= 20:  # 合理范围
                 success_count += 1
                 print(f"    ✓ {desc} (Z={level}m) -> u_in={u_in:.2f} m³/s")
-        except:
+        except Exception:
             pass
     
     success_rate = success_count / len(test_cases)
@@ -332,7 +332,7 @@ def test_stress_conditions():
                 config=config
             )
             success_count += 1
-        except:
+        except Exception:
             pass
     
     elapsed = time.time() - start

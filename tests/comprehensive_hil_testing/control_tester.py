@@ -273,7 +273,7 @@ class ControlTester:
                         q_out_forecast=[scenario.initial_outflow] * scenario.mpc_horizon,
                         config=config
                     )
-                except:
+                except Exception:
                     u_optimal = scenario.initial_inflow
 
                 new_level = pool.step(u_optimal, scenario.initial_outflow)

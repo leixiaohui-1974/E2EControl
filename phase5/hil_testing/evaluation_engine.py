@@ -9,6 +9,9 @@ from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 from datetime import datetime
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TestStatus(Enum):
@@ -258,12 +261,72 @@ class PassCriteria:
         # 更新来自context的值
         eval_context.update(context)
 
-        # 安全评估
+        # 安全评估 - 使用 AST 安全解析替代 eval()
         try:
-            return eval(condition, {"__builtins__": {}}, eval_context)
-        except:
-            # 如果eval失败，尝试简单的字符串匹配
+            return self._safe_eval(condition, eval_context)
+        except Exception:
+            # 如果解析失败，尝试简单的字符串匹配
             return self._simple_check(condition, eval_context)
+
+    @staticmethod
+    def _safe_eval(condition: str, context: Dict) -> bool:
+        """Safe expression evaluator using AST parsing.
+
+        Only allows comparisons, boolean ops, and attribute access
+        on known context variables. No function calls or code
+        execution.
+        """
+        import ast
+        import operator
+
+        _ops = {
+            ast.Lt: operator.lt,
+            ast.LtE: operator.le,
+            ast.Gt: operator.gt,
+            ast.GtE: operator.ge,
+            ast.Eq: operator.eq,
+            ast.NotEq: operator.ne,
+        }
+        _bool_ops = {
+            ast.And: all,
+            ast.Or: any,
+        }
+
+        def _eval_node(node):
+            if isinstance(node, ast.Expression):
+                return _eval_node(node.body)
+            if isinstance(node, ast.BoolOp):
+                func = _bool_ops.get(type(node.op))
+                if func is None:
+                    raise ValueError(f"Unsupported bool op: {type(node.op)}")
+                return func(_eval_node(v) for v in node.values)
+            if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+                return not _eval_node(node.operand)
+            if isinstance(node, ast.Compare):
+                left = _eval_node(node.left)
+                for op_node, comparator in zip(node.ops, node.comparators):
+                    func = _ops.get(type(op_node))
+                    if func is None:
+                        raise ValueError(f"Unsupported op: {type(op_node)}")
+                    right = _eval_node(comparator)
+                    if not func(left, right):
+                        return False
+                    left = right
+                return True
+            if isinstance(node, ast.Name):
+                if node.id not in context:
+                    raise ValueError(f"Unknown variable: {node.id}")
+                return context[node.id]
+            if isinstance(node, ast.Constant):
+                return node.value
+            if isinstance(node, ast.NameConstant):  # Python 3.7 compat
+                return node.value
+            if isinstance(node, ast.Num):  # Python 3.7 compat
+                return node.n
+            raise ValueError(f"Unsupported AST node: {type(node).__name__}")
+
+        tree = ast.parse(condition, mode='eval')
+        return bool(_eval_node(tree))
 
     def _simple_check(self, condition: str, context: Dict) -> bool:
         """简单条件检查"""
@@ -638,9 +701,9 @@ if __name__ == "__main__":
 
     result = engine.evaluate("S1_01", time_series, criteria, context)
 
-    print(f"测试状态: {result.status.value}")
-    print(f"综合得分: {result.overall_score():.1f}")
-    print(f"安全性得分: {result.safety_metrics.calculate_score():.1f}")
-    print(f"控制性能得分: {result.control_metrics.calculate_score():.1f}")
-    print(f"通过标准: {result.criteria_results}")
-    print(f"\n统计信息: {engine.get_statistics()}")
+    logger.info(f"测试状态: {result.status.value}")
+    logger.info(f"综合得分: {result.overall_score():.1f}")
+    logger.info(f"安全性得分: {result.safety_metrics.calculate_score():.1f}")
+    logger.info(f"控制性能得分: {result.control_metrics.calculate_score():.1f}")
+    logger.info(f"通过标准: {result.criteria_results}")
+    logger.info(f"\n统计信息: {engine.get_statistics()}")

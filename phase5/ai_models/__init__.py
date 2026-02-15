@@ -35,44 +35,60 @@ AI Models for Generative Water Network World Model
 - 支持从传统模型到神经模型的平滑过渡
 """
 
-from .neural_physics_engine import (
-    NeuralPhysicsEngine,
-    LSTMSurrogateModel,
-    PINNLoss,
-)
+import warnings as _warnings
 
-from .scenario_vae import (
-    ScenarioVAE,
-    ConditionalScenarioVAE,
-    ScenarioLatentSpace,
-)
+# These modules require PyTorch. Make them available when torch is installed
+# but degrade gracefully (with a warning) when it is not.
+try:
+    from .neural_physics_engine import (
+        NeuralPhysicsEngine,
+        LSTMSurrogateModel,
+        PINNLoss,
+    )
 
-from .water_canal_env import (
-    WaterCanalEnv,
-    OneGateTwoPoolsEnv,
-)
+    from .scenario_vae import (
+        ScenarioVAE,
+        ConditionalScenarioVAE,
+        ScenarioLatentSpace,
+    )
 
-from .deep_scenario_encoder import (
-    DeepScenarioEncoder,
-    ContrastiveLoss,
-    ScenarioVectorDB,
-)
+    from .water_canal_env import (
+        WaterCanalEnv,
+        OneGateTwoPoolsEnv,
+    )
 
-# HydroGraphNet 集成模块
-from .hydrographnet import (
-    # KAN Layers
-    KANLinear,
-    KolmogorovArnoldNetwork,
-    FourierKAN,
-    ChebyshevKAN,
-    # Physics Loss
-    GlobalMassConservationLoss,
-    WaterBalanceLoss,
-    HydroPhysicsLoss,
-    # Micro World Adapter
-    MicroWorldAdapter,
-    GraphBuilder,
-)
+    from .deep_scenario_encoder import (
+        DeepScenarioEncoder,
+        ContrastiveLoss,
+        ScenarioVectorDB,
+    )
+
+    # HydroGraphNet 集成模块
+    from .hydrographnet import (
+        # KAN Layers
+        KANLinear,
+        KolmogorovArnoldNetwork,
+        FourierKAN,
+        ChebyshevKAN,
+        # Physics Loss
+        GlobalMassConservationLoss,
+        WaterBalanceLoss,
+        HydroPhysicsLoss,
+        # Micro World Adapter
+        MicroWorldAdapter,
+        GraphBuilder,
+    )
+
+    _TORCH_AVAILABLE = True
+
+except ImportError:
+    _TORCH_AVAILABLE = False
+    _warnings.warn(
+        "PyTorch is not installed. AI model components are unavailable. "
+        "Install torch to enable them.",
+        ImportWarning,
+        stacklevel=2,
+    )
 
 __version__ = "1.0.0"
 __author__ = "E2EControl Team"

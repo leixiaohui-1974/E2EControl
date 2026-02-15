@@ -1167,30 +1167,30 @@ class AdaptiveMPCSystem:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "自适应MPC系统测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "自适应MPC系统测试")
+    logger.info("=" * 70)
 
     # 创建系统
     system = AdaptiveMPCSystem(num_pools=60, horizon=10)
 
     # 测试1: 常规运行
-    print(f"\n{'=' * 70}")
-    print("测试1: 常规运行识别")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试1: 常规运行识别")
+    logger.info('=' * 70)
 
     levels = np.ones(60) * 4.0 + np.random.randn(60) * 0.1
     flows = np.ones(60) * 300.0 + np.random.randn(60) * 10
 
     Q_in, Q_out, detection = system.update(levels, flows)
-    print(f"  检测场景: {detection.detected_type.value}")
-    print(f"  置信度: {detection.confidence:.2f}")
-    print(f"  严重程度: {detection.severity.value}")
+    logger.info(f"  检测场景: {detection.detected_type.value}")
+    logger.info(f"  置信度: {detection.confidence:.2f}")
+    logger.info(f"  严重程度: {detection.severity.value}")
 
     # 测试2: 污染场景
-    print(f"\n{'=' * 70}")
-    print("测试2: 污染场景识别")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试2: 污染场景识别")
+    logger.info('=' * 70)
 
     from .scenario_generator import ScenarioGenerator, ExtendedScenarioEvent
 
@@ -1205,30 +1205,30 @@ if __name__ == "__main__":
 
     # 获取池30的配置
     controller_30 = system.mpc_manager.controllers[30]
-    print(f"  池30角色: {controller_30.current_role.value}")
-    print(f"  池30 Q_max: {controller_30.active_constraints.Q_max}")
-    print(f"  池30 W_flow: {controller_30.active_weights.W_flow}")
+    logger.info(f"  池30角色: {controller_30.current_role.value}")
+    logger.info(f"  池30 Q_max: {controller_30.active_constraints.Q_max}")
+    logger.info(f"  池30 W_flow: {controller_30.active_weights.W_flow}")
 
     # 测试3: 复合场景
-    print(f"\n{'=' * 70}")
-    print("测试3: 复合场景处理")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("测试3: 复合场景处理")
+    logger.info('=' * 70)
 
     composite = generator.generate_dual_event_scenario()
     system.apply_composite_scenario(composite)
 
-    print(f"  场景ID: {composite.scenario_id}")
-    print(f"  事件数: {len(composite.events)}")
-    print(f"  当前场景: {system.current_scenario.detected_type.value}")
+    logger.info(f"  场景ID: {composite.scenario_id}")
+    logger.info(f"  事件数: {len(composite.events)}")
+    logger.info(f"  当前场景: {system.current_scenario.detected_type.value}")
 
     # 统计
     stats = system.get_statistics()
-    print(f"\n{'=' * 70}")
-    print("性能统计")
-    print('=' * 70)
+    logger.info(f"\n{'=' * 70}")
+    logger.info("性能统计")
+    logger.info('=' * 70)
     for key, value in stats.items():
-        print(f"  {key}: {value}")
+        logger.info(f"  {key}: {value}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

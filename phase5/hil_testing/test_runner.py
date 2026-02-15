@@ -322,7 +322,7 @@ class SimulationEnvironment:
             # However, reset() re-inits physics? No, it doesn't.
             # We might need to reset physics state in reset().
             
-            self.physics.step(u_in, u_out, disturbance=0.0)
+            self.physics.step(u_in, u_out)
             new_level = self.physics.get_level()
             
             self.water_levels[pool_id] = new_level
@@ -830,30 +830,30 @@ def main():
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    print("=" * 60)
-    print("HIL测试执行器 - 演示")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("HIL测试执行器 - 演示")
+    logger.info("=" * 60)
 
     # 创建测试执行器
     runner = HILTestRunner()
 
     # 执行快速验证
-    print("\n1. 执行快速验证...")
+    logger.info("\n1. 执行快速验证...")
     validation = runner.run_quick_validation()
 
     for component, status in validation.items():
         if component != 'error':
-            print(f"   {component}: {'✓' if status else '✗'}")
+            logger.info(f"   {component}: {'✓' if status else '✗'}")
 
     if validation.get('overall'):
-        print("\n快速验证通过！框架工作正常。")
+        logger.info("\n快速验证通过！框架工作正常。")
     else:
-        print("\n快速验证失败，请检查错误。")
+        logger.info("\n快速验证失败，请检查错误。")
         if 'error' in validation:
-            print(f"   错误: {validation['error']}")
+            logger.info(f"   错误: {validation['error']}")
 
     # 创建示例场景
-    print("\n2. 创建测试场景...")
+    logger.info("\n2. 创建测试场景...")
     scenarios = []
 
     # L1级场景
@@ -880,43 +880,43 @@ def main():
     )
     scenarios.append(s2)
 
-    print(f"   创建了 {len(scenarios)} 个测试场景")
+    logger.info(f"   创建了 {len(scenarios)} 个测试场景")
 
     # 创建测试套件
-    print("\n3. 创建测试套件...")
+    logger.info("\n3. 创建测试套件...")
     suite = runner.create_test_suite(
         name="基础功能验证",
         scenarios=scenarios,
         description="验证L1-L2级基础自主控制能力"
     )
-    print(f"   测试套件: {suite.name}")
-    print(f"   测试用例数: {suite.total_count}")
+    logger.info(f"   测试套件: {suite.name}")
+    logger.info(f"   测试用例数: {suite.total_count}")
 
     # 运行测试
-    print("\n4. 执行测试...")
+    logger.info("\n4. 执行测试...")
 
     def progress_callback(current, total, test_case):
-        print(f"   执行中: [{current}/{total}] {test_case.scenario.name}")
+        logger.info(f"   执行中: [{current}/{total}] {test_case.scenario.name}")
 
     runner.run_suite(suite, progress_callback)
 
     # 显示结果
-    print("\n5. 测试结果汇总:")
+    logger.info("\n5. 测试结果汇总:")
     summary = runner.get_summary()
-    print(f"   总测试数: {summary['total_cases']}")
-    print(f"   通过: {summary['passed']}")
-    print(f"   失败: {summary['failed']}")
-    print(f"   错误: {summary['errors']}")
-    print(f"   通过率: {summary['pass_rate']:.1%}")
+    logger.info(f"   总测试数: {summary['total_cases']}")
+    logger.info(f"   通过: {summary['passed']}")
+    logger.info(f"   失败: {summary['failed']}")
+    logger.info(f"   错误: {summary['errors']}")
+    logger.info(f"   通过率: {summary['pass_rate']:.1%}")
 
     # 导出结果
-    print("\n6. 导出测试结果...")
+    logger.info("\n6. 导出测试结果...")
     result_file = runner.export_results()
-    print(f"   结果文件: {result_file}")
+    logger.info(f"   结果文件: {result_file}")
 
-    print("\n" + "=" * 60)
-    print("HIL测试执行完成！")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("HIL测试执行完成！")
+    logger.info("=" * 60)
 
 
 if __name__ == '__main__':

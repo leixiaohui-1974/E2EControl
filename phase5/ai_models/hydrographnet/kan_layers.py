@@ -22,6 +22,9 @@ import torch.nn as nn
 import numpy as np
 from typing import Optional, Tuple, List
 import math
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # ==============================================================================
@@ -419,32 +422,32 @@ class KANEncoder(nn.Module):
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "KAN 层测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "KAN 层测试")
+    logger.info("=" * 70)
 
     # 测试基础 KANLinear
-    print("\n1. KANLinear 测试")
-    print("-" * 50)
+    logger.info("\n1. KANLinear 测试")
+    logger.info("-" * 50)
 
     kan_linear = KANLinear(input_dim=10, output_dim=32, num_harmonics=5)
     x = torch.randn(8, 10)
     y = kan_linear(x)
-    print(f"  输入形状: {x.shape}")
-    print(f"  输出形状: {y.shape}")
-    print(f"  参数数量: {sum(p.numel() for p in kan_linear.parameters())}")
+    logger.info(f"  输入形状: {x.shape}")
+    logger.info(f"  输出形状: {y.shape}")
+    logger.info(f"  参数数量: {sum(p.numel() for p in kan_linear.parameters())}")
 
     # 测试 KolmogorovArnoldNetwork
-    print("\n2. KolmogorovArnoldNetwork 测试")
-    print("-" * 50)
+    logger.info("\n2. KolmogorovArnoldNetwork 测试")
+    logger.info("-" * 50)
 
     kan = KolmogorovArnoldNetwork(input_dim=10, output_dim=64, num_harmonics=5)
     y = kan(x)
-    print(f"  输出形状: {y.shape}")
+    logger.info(f"  输出形状: {y.shape}")
 
     # 测试 FourierKAN
-    print("\n3. FourierKAN (多层) 测试")
-    print("-" * 50)
+    logger.info("\n3. FourierKAN (多层) 测试")
+    logger.info("-" * 50)
 
     fourier_kan = FourierKAN(
         input_dim=10,
@@ -453,28 +456,28 @@ if __name__ == "__main__":
         num_harmonics=5
     )
     y = fourier_kan(x)
-    print(f"  输出形状: {y.shape}")
-    print(f"  参数数量: {sum(p.numel() for p in fourier_kan.parameters())}")
+    logger.info(f"  输出形状: {y.shape}")
+    logger.info(f"  参数数量: {sum(p.numel() for p in fourier_kan.parameters())}")
 
     # 测试 ChebyshevKAN
-    print("\n4. ChebyshevKAN 测试")
-    print("-" * 50)
+    logger.info("\n4. ChebyshevKAN 测试")
+    logger.info("-" * 50)
 
     cheby_kan = ChebyshevKAN(input_dim=10, output_dim=32, degree=5)
     y = cheby_kan(x)
-    print(f"  输出形状: {y.shape}")
+    logger.info(f"  输出形状: {y.shape}")
 
     # 测试 KANEncoder
-    print("\n5. KANEncoder 测试")
-    print("-" * 50)
+    logger.info("\n5. KANEncoder 测试")
+    logger.info("-" * 50)
 
     encoder = KANEncoder(input_dim=10, hidden_dim=64, output_dim=32)
     embedding = encoder(x)
-    print(f"  嵌入形状: {embedding.shape}")
+    logger.info(f"  嵌入形状: {embedding.shape}")
 
     # 与标准 MLP 对比
-    print("\n6. 与标准 MLP 对比")
-    print("-" * 50)
+    logger.info("\n6. 与标准 MLP 对比")
+    logger.info("-" * 50)
 
     mlp = nn.Sequential(
         nn.Linear(10, 64),
@@ -485,10 +488,10 @@ if __name__ == "__main__":
     kan_params = sum(p.numel() for p in kan_linear.parameters())
     mlp_params = sum(p.numel() for p in mlp.parameters())
 
-    print(f"  KAN 参数: {kan_params}")
-    print(f"  MLP 参数: {mlp_params}")
-    print(f"  KAN/MLP 比例: {kan_params/mlp_params:.2f}x")
+    logger.info(f"  KAN 参数: {kan_params}")
+    logger.info(f"  MLP 参数: {mlp_params}")
+    logger.info(f"  KAN/MLP 比例: {kan_params/mlp_params:.2f}x")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

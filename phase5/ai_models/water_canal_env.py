@@ -429,7 +429,7 @@ class OneGateTwoPoolsEnv(gym.Env):
     def render(self):
         """渲染环境"""
         if self.render_mode == 'human':
-            print(f"Step {self.current_step}: "
+            logger.info(f"Step {self.current_step}: "
                   f"Level_up={self.upstream_pool.current_level:.2f}m, "
                   f"Level_down={self.downstream_pool.current_level:.2f}m, "
                   f"Gate={self.gate_opening:.2f}")
@@ -621,16 +621,16 @@ class MultiGateEnv:
 
 def test_random_agent(env, num_episodes: int = 3, max_steps: int = 100):
     """使用Random Agent测试环境"""
-    print("\n" + "=" * 70)
-    print("Random Agent 测试")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("Random Agent 测试")
+    logger.info("=" * 70)
 
     for episode in range(num_episodes):
         obs, info = env.reset()
         total_reward = 0.0
 
-        print(f"\nEpisode {episode + 1}")
-        print("-" * 50)
+        logger.info(f"\nEpisode {episode + 1}")
+        logger.info("-" * 50)
 
         for step in range(max_steps):
             # 随机动作
@@ -641,7 +641,7 @@ def test_random_agent(env, num_episodes: int = 3, max_steps: int = 100):
             total_reward += reward
 
             if step % 20 == 0:
-                print(f"  Step {step:3d}: "
+                logger.info(f"  Step {step:3d}: "
                       f"Level_up={info['level_upstream']:.2f}m, "
                       f"Level_down={info['level_downstream']:.2f}m, "
                       f"Gate={info['gate_opening']:.2f}, "
@@ -650,8 +650,8 @@ def test_random_agent(env, num_episodes: int = 3, max_steps: int = 100):
             if terminated or truncated:
                 break
 
-        print(f"\n  Total Reward: {total_reward:.2f}")
-        print(f"  Steps: {step + 1}")
+        logger.info(f"\n  Total Reward: {total_reward:.2f}")
+        logger.info(f"  Steps: {step + 1}")
 
     return True
 
@@ -661,9 +661,9 @@ def test_random_agent(env, num_episodes: int = 3, max_steps: int = 100):
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "水渠RL环境测试")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "水渠RL环境测试")
+    logger.info("=" * 70)
 
     # 创建配置
     config = WaterCanalEnvConfig(
@@ -676,46 +676,46 @@ if __name__ == "__main__":
     # 创建环境
     env = OneGateTwoPoolsEnv(config)
 
-    print(f"\n环境信息:")
-    print(f"  观测空间: {env.observation_space}")
-    print(f"  动作空间: {env.action_space}")
-    print(f"  每episode最大步数: {env.max_steps}")
+    logger.info(f"\n环境信息:")
+    logger.info(f"  观测空间: {env.observation_space}")
+    logger.info(f"  动作空间: {env.action_space}")
+    logger.info(f"  每episode最大步数: {env.max_steps}")
 
     # 测试reset
-    print(f"\n测试 reset()...")
+    logger.info(f"\n测试 reset()...")
     obs, info = env.reset()
-    print(f"  观测形状: {obs.shape}")
-    print(f"  初始信息: {info}")
+    logger.info(f"  观测形状: {obs.shape}")
+    logger.info(f"  初始信息: {info}")
 
     # 测试step
-    print(f"\n测试 step()...")
+    logger.info(f"\n测试 step()...")
     action = np.array([0.05])
     obs, reward, terminated, truncated, info = env.step(action)
-    print(f"  动作: {action}")
-    print(f"  奖励: {reward:.4f}")
-    print(f"  终止: {terminated}")
-    print(f"  截断: {truncated}")
+    logger.info(f"  动作: {action}")
+    logger.info(f"  奖励: {reward:.4f}")
+    logger.info(f"  终止: {terminated}")
+    logger.info(f"  截断: {truncated}")
 
     # Random Agent测试
     test_random_agent(env, num_episodes=2, max_steps=50)
 
     # 测试多闸门环境
-    print("\n" + "=" * 70)
-    print("多闸门环境测试")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("多闸门环境测试")
+    logger.info("=" * 70)
 
     multi_env = MultiGateEnv(num_gates=3, config=config)
     observations, infos = multi_env.reset()
 
-    print(f"\n  Agent数量: {len(multi_env.agents)}")
-    print(f"  Agents: {multi_env.agents}")
+    logger.info(f"\n  Agent数量: {len(multi_env.agents)}")
+    logger.info(f"  Agents: {multi_env.agents}")
 
     # 执行一步
     actions = {agent: np.array([0.01]) for agent in multi_env.agents}
     observations, rewards, terms, truncs, infos = multi_env.step(actions)
 
-    print(f"\n  奖励: {rewards}")
+    logger.info(f"\n  奖励: {rewards}")
 
-    print("\n" + "=" * 70)
-    print("测试完成!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("测试完成!")
+    logger.info("=" * 70)

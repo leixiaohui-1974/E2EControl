@@ -4,6 +4,9 @@ Degraded Mode Management
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 from enum import Enum
@@ -351,17 +354,17 @@ class DegradedModeManager:
 
 # 演示
 if __name__ == "__main__":
-    print("="*80)
-    print(" "*20 + "降级运行模式演示")
-    print("="*80)
+    logger.info("="*80)
+    logger.info(" "*20 + "降级运行模式演示")
+    logger.info("="*80)
     
     # 创建降级模式管理器
     manager = DegradedModeManager()
     
-    print(f"\n初始状态:")
+    logger.info(f"\n初始状态:")
     status = manager.get_status()
-    print(f"  当前模式: {status['current_mode']}")
-    print(f"  系统健康: {status['overall_health']:.2%}")
+    logger.info(f"  当前模式: {status['current_mode']}")
+    logger.info(f"  系统健康: {status['overall_health']:.2%}")
     
     # 模拟健康度逐渐下降
     scenarios = [
@@ -373,9 +376,9 @@ if __name__ == "__main__":
     ]
     
     for health, description in scenarios:
-        print(f"\n{'='*80}")
-        print(f"场景: {description}")
-        print('='*80)
+        logger.info(f"\n{'='*80}")
+        logger.info(f"场景: {description}")
+        logger.info('='*80)
         
         # 更新健康指标（简化：统一更新所有指标）
         manager.update_system_health({
@@ -390,25 +393,25 @@ if __name__ == "__main__":
         result = manager.auto_adjust()
         
         if result['mode_changed']:
-            print(f"\n✓ {result['message']}")
-            print(f"  原因: {result['reason']}")
+            logger.info(f"\n✓ {result['message']}")
+            logger.info(f"  原因: {result['reason']}")
             
             config = result['config']
-            print(f"\n新模式配置:")
-            print(f"  控制精度: {config.control_precision:.2%}")
-            print(f"  安全裕度: {config.safety_margin}")
-            print(f"  最大流量变化: {config.max_flow_change} m³/s")
-            print(f"  优化: {'启用' if config.enable_optimization else '禁用'}")
-            print(f"  前馈: {'启用' if config.enable_feedforward else '禁用'}")
-            print(f"  协调: {'启用' if config.enable_coordination else '禁用'}")
-            print(f"  描述: {config.description}")
+            logger.info(f"\n新模式配置:")
+            logger.info(f"  控制精度: {config.control_precision:.2%}")
+            logger.info(f"  安全裕度: {config.safety_margin}")
+            logger.info(f"  最大流量变化: {config.max_flow_change} m³/s")
+            logger.info(f"  优化: {'启用' if config.enable_optimization else '禁用'}")
+            logger.info(f"  前馈: {'启用' if config.enable_feedforward else '禁用'}")
+            logger.info(f"  协调: {'启用' if config.enable_coordination else '禁用'}")
+            logger.info(f"  描述: {config.description}")
         else:
-            print(f"\n  {result['message']}")
+            logger.info(f"\n  {result['message']}")
     
     # 恢复场景
-    print(f"\n{'='*80}")
-    print("场景: 故障修复，系统恢复")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("场景: 故障修复，系统恢复")
+    logger.info('='*80)
     
     manager.update_system_health({
         'sensor_availability': 0.98,
@@ -419,17 +422,17 @@ if __name__ == "__main__":
     })
     
     result = manager.auto_adjust()
-    print(f"\n✓ {result['message']}")
+    logger.info(f"\n✓ {result['message']}")
     
     # 最终状态
-    print(f"\n{'='*80}")
-    print("最终状态")
-    print('='*80)
+    logger.info(f"\n{'='*80}")
+    logger.info("最终状态")
+    logger.info('='*80)
     
     status = manager.get_status()
-    print(f"  当前模式: {status['current_mode']}")
-    print(f"  系统健康: {status['overall_health']:.2%}")
-    print(f"  模式切换次数: {status['mode_switches']}")
+    logger.info(f"  当前模式: {status['current_mode']}")
+    logger.info(f"  系统健康: {status['overall_health']:.2%}")
+    logger.info(f"  模式切换次数: {status['mode_switches']}")
     
-    print("\n✅ 演示完成！")
-    print("="*80)
+    logger.info("\n✅ 演示完成！")
+    logger.info("="*80)

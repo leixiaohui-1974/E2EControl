@@ -737,20 +737,20 @@ class GlobalOrchestrator:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("="*70)
-    print(" " * 15 + "全局编排器测试")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" " * 15 + "全局编排器测试")
+    logger.info("="*70)
 
     # 创建编排器
     orchestrator = GlobalOrchestrator()
 
-    print(f"\n✓ 全局编排器初始化")
-    print(f"  渠池数量: {orchestrator.topology.num_pools}")
+    logger.info(f"\n✓ 全局编排器初始化")
+    logger.info(f"  渠池数量: {orchestrator.topology.num_pools}")
 
     # 测试1: 常规场景
-    print(f"\n{'='*70}")
-    print("测试1: 常规运行场景 (S1)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试1: 常规运行场景 (S1)")
+    logger.info('='*70)
 
     event = ScenarioEvent(
         event_id="E001",
@@ -761,14 +761,14 @@ if __name__ == "__main__":
     )
 
     plan = orchestrator.process_event(event)
-    print(f"  计划ID: {plan.plan_id}")
-    print(f"  指令数: {plan.num_directives}")
-    print(f"  示例指令: 池30 -> {plan.get_directive(30).role.value}")
+    logger.info(f"  计划ID: {plan.plan_id}")
+    logger.info(f"  指令数: {plan.num_directives}")
+    logger.info(f"  示例指令: 池30 -> {plan.get_directive(30).role.value}")
 
     # 测试2: 污染场景
-    print(f"\n{'='*70}")
-    print("测试2: 突发污染场景 (S3)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试2: 突发污染场景 (S3)")
+    logger.info('='*70)
 
     event = ScenarioEvent(
         event_id="E002",
@@ -780,20 +780,20 @@ if __name__ == "__main__":
     )
 
     plan = orchestrator.process_event(event)
-    print(f"  计划ID: {plan.plan_id}")
-    print(f"  指令数: {plan.num_directives}")
+    logger.info(f"  计划ID: {plan.plan_id}")
+    logger.info(f"  指令数: {plan.num_directives}")
 
     # 显示关键指令
     for pool_id in [28, 29, 30, 31, 32]:
         d = plan.get_directive(pool_id)
         if d:
-            print(f"  池{pool_id}: {d.role.value}, 偏移={d.target_bias:.2f}, "
+            logger.info(f"  池{pool_id}: {d.role.value}, 偏移={d.target_bias:.2f}, "
                   f"优先级={d.priority}")
 
     # 测试3: 洪水场景
-    print(f"\n{'='*70}")
-    print("测试3: 暴雨防洪场景 (S4)")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试3: 暴雨防洪场景 (S4)")
+    logger.info('='*70)
 
     event = ScenarioEvent(
         event_id="E003",
@@ -804,32 +804,32 @@ if __name__ == "__main__":
     )
 
     plan = orchestrator.process_event(event)
-    print(f"  计划ID: {plan.plan_id}")
-    print(f"  指令数: {plan.num_directives}")
+    logger.info(f"  计划ID: {plan.plan_id}")
+    logger.info(f"  指令数: {plan.num_directives}")
 
     d = plan.get_directive(20)
-    print(f"  池20: {d.role.value}, 目标偏移={d.target_bias:.2f}")
+    logger.info(f"  池20: {d.role.value}, 目标偏移={d.target_bias:.2f}")
 
     # 测试4: 场景-角色矩阵
-    print(f"\n{'='*70}")
-    print("测试4: 场景-角色矩阵")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("测试4: 场景-角色矩阵")
+    logger.info('='*70)
 
     for scenario in ScenarioType:
         mapping = ScenarioRoleMatrix.get_mapping(scenario)
-        print(f"  {scenario.value}:")
-        print(f"    中心: {mapping.center_role.value}")
-        print(f"    上游: {mapping.upstream_role.value}")
-        print(f"    下游: {mapping.downstream_role.value}")
+        logger.info(f"  {scenario.value}:")
+        logger.info(f"    中心: {mapping.center_role.value}")
+        logger.info(f"    上游: {mapping.upstream_role.value}")
+        logger.info(f"    下游: {mapping.downstream_role.value}")
 
     # 统计
-    print(f"\n{'='*70}")
-    print("统计信息")
-    print('='*70)
+    logger.info(f"\n{'='*70}")
+    logger.info("统计信息")
+    logger.info('='*70)
     stats = orchestrator.get_statistics()
     for key, value in stats.items():
-        print(f"  {key}: {value}")
+        logger.info(f"  {key}: {value}")
 
-    print("\n" + "="*70)
-    print("测试完成!")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("测试完成!")
+    logger.info("="*70)

@@ -13,6 +13,8 @@ E2E闭环控制器 (End-to-End Closed-Loop Controller)
 感知 -> 场景识别 -> ODD检查 -> 决策规划 -> MAS协调 -> 执行 -> 反馈校正
 """
 
+from __future__ import annotations
+
 import numpy as np
 from typing import Dict, List, Optional, Tuple, Any, Callable
 from dataclasses import dataclass, field
@@ -21,10 +23,12 @@ from enum import Enum
 import logging
 
 # 导入子模块
-from ..odd.operational_domain import OperationalDesignDomain, ODDState
+from ..odd.operational_domain import OperationalDesignDomain
 from ..scenario.scenario_recognizer import ScenarioRecognizer, ScenarioType
 from ..mas.adaptive_coordinator import AdaptiveMASCoordinator, AgentRole
-from ..mbd.model_based_design import ModelBasedDesignManager, DevelopmentPhase
+from ..mbd.model_based_design import (
+    ModelBasedDesignManager, DevelopmentPhase, ValidationLevel, TestCase, TestStatus,
+)
 from ..verification.sil_hil_bridge import SILHILBridge, VerificationMode
 from ..feedback.execution_feedback import ExecutionFeedbackManager, CalibrationMode
 

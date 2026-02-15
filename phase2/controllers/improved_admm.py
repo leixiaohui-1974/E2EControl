@@ -8,6 +8,9 @@ import cvxpy as cp
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -186,7 +189,7 @@ class ImprovedLocalMPC:
             else:
                 return q_in_prev, 5.0, False
         except Exception as e:
-            print(f"池{self.pool_id}求解失败: {e}")
+            logger.info(f"池{self.pool_id}求解失败: {e}")
             return q_in_prev, 5.0, False
     
     def get_output_sequence(self) -> np.ndarray:
@@ -409,9 +412,9 @@ class ImprovedDistributedMPC:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*20 + "改进ADMM分布式MPC演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "改进ADMM分布式MPC演示")
+    logger.info("="*70)
     
     # 创建控制器（启用自适应rho）
     params = ADMMParameters(
@@ -424,25 +427,25 @@ if __name__ == "__main__":
     controller = ImprovedDistributedMPC(num_pools=3, horizon=5, params=params)
     
     # 测试求解
-    print("\n1. 测试求解性能...")
+    logger.info("\n1. 测试求解性能...")
     current_levels = [3.1, 2.9, 3.0]
     q_in_prevs = [5.0, 5.0, 5.0]
     q_out_forecasts = [[5.0]*5, [5.0]*5, [5.0]*5]
     
     solutions, info = controller.solve(current_levels, q_in_prevs, q_out_forecasts)
     
-    print(f"\n   收敛状态: {'✓ 收敛' if info['converged'] else '✗ 未收敛'}")
-    print(f"   迭代次数: {info['iterations']}")
-    print(f"   求解时间: {info['solve_time']*1000:.2f} ms")
-    print(f"   原始残差: {info['primal_residual']:.6f}")
-    print(f"   对偶残差: {info['dual_residual']:.6f}")
-    print(f"   最终rho: {info['final_rho']:.3f}")
+    logger.info(f"\n   收敛状态: {'✓ 收敛' if info['converged'] else '✗ 未收敛'}")
+    logger.info(f"   迭代次数: {info['iterations']}")
+    logger.info(f"   求解时间: {info['solve_time']*1000:.2f} ms")
+    logger.info(f"   原始残差: {info['primal_residual']:.6f}")
+    logger.info(f"   对偶残差: {info['dual_residual']:.6f}")
+    logger.info(f"   最终rho: {info['final_rho']:.3f}")
     
-    print("\n2. 最优控制:")
+    logger.info("\n2. 最优控制:")
     for i, (q_in, q_out) in enumerate(solutions):
-        print(f"   池{i}: 入流={q_in:.2f} m³/s, 出流={q_out:.2f} m³/s")
+        logger.info(f"   池{i}: 入流={q_in:.2f} m³/s, 出流={q_out:.2f} m³/s")
     
-    print("\n3. 收敛历史:")
+    logger.info("\n3. 收敛历史:")
     conv_data = controller.get_convergence_plot_data()
     if conv_data:
         for i, (iter, pr, dr, rho) in enumerate(zip(
@@ -451,8 +454,8 @@ if __name__ == "__main__":
             conv_data['dual_residual'][:5],
             conv_data['rho'][:5]
         )):
-            print(f"   迭代{iter}: pr={pr:.4f}, dr={dr:.4f}, rho={rho:.3f}")
+            logger.info(f"   迭代{iter}: pr={pr:.4f}, dr={dr:.4f}, rho={rho:.3f}")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

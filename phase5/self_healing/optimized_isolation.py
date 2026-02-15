@@ -15,6 +15,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class IsolationAction(Enum):
@@ -134,7 +137,7 @@ class OptimizedIsolationStrategy:
             'average_impact': 0.0
         }
 
-        print("[OptimizedIsolationStrategy] 优化隔离策略初始化完成")
+        logger.info("[OptimizedIsolationStrategy] 优化隔离策略初始化完成")
 
     def _build_dependency_graph(self) -> Dict[str, List[str]]:
         """构建组件依赖图"""

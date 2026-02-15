@@ -113,28 +113,28 @@ class SmartPoolLogger:
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
     
-    def debug(self, message: str, **kwargs):
+    def debug(self, message: str, *args, **kwargs) -> None:
         """调试日志"""
-        self.logger.debug(message, extra={'extra_data': kwargs})
-    
-    def info(self, message: str, **kwargs):
+        self.logger.debug(message, *args, extra={'extra_data': kwargs})
+
+    def info(self, message: str, *args, **kwargs) -> None:
         """信息日志"""
-        self.logger.info(message, extra={'extra_data': kwargs})
-    
-    def warning(self, message: str, **kwargs):
+        self.logger.info(message, *args, extra={'extra_data': kwargs})
+
+    def warning(self, message: str, *args, **kwargs) -> None:
         """警告日志"""
-        self.logger.warning(message, extra={'extra_data': kwargs})
-    
-    def error(self, message: str, **kwargs):
+        self.logger.warning(message, *args, extra={'extra_data': kwargs})
+
+    def error(self, message: str, *args, **kwargs) -> None:
         """错误日志"""
-        self.logger.error(message, extra={'extra_data': kwargs})
-    
-    def critical(self, message: str, **kwargs):
+        self.logger.error(message, *args, extra={'extra_data': kwargs})
+
+    def critical(self, message: str, *args, **kwargs) -> None:
         """严重错误日志"""
-        self.logger.critical(message, extra={'extra_data': kwargs})
+        self.logger.critical(message, *args, extra={'extra_data': kwargs})
     
-    def log_control_action(self, time_step: int, level: float, q_in: float, 
-                          q_out: float, config: dict):
+    def log_control_action(self, time_step: int, level: float, q_in: float,
+                          q_out: float, config: dict) -> None:
         """
         记录控制动作
         
@@ -154,7 +154,7 @@ class SmartPoolLogger:
             target_level=config.get('Z_ref', 0)
         )
     
-    def log_scenario_change(self, time_step: int, instruction: str, config: dict):
+    def log_scenario_change(self, time_step: int, instruction: str, config: dict) -> None:
         """
         记录场景切换
         
@@ -173,7 +173,7 @@ class SmartPoolLogger:
         )
     
     def log_optimization_result(self, status: str, cost: Optional[float] = None,
-                               solve_time: Optional[float] = None):
+                               solve_time: Optional[float] = None) -> None:
         """
         记录优化结果
         
@@ -207,7 +207,7 @@ class SmartPoolLogger:
                 status=status
             )
     
-    def log_alert(self, alert_type: str, message: str, level: float = None):
+    def log_alert(self, alert_type: str, message: str, level: float = None) -> None:
         """
         记录告警
         
@@ -235,7 +235,7 @@ def get_logger() -> SmartPoolLogger:
     return _logger_instance
 
 
-def setup_logging(config: dict):
+def setup_logging(config: dict) -> None:
     """
     从配置设置日志
     

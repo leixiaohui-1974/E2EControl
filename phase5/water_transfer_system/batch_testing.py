@@ -760,7 +760,7 @@ def run_quick_test(count: int = 100) -> BatchTestResult:
     Returns:
         批量测试结果
     """
-    print(f"开始快速测试 ({count}个场景)...")
+    logger.info(f"开始快速测试 ({count}个场景)...")
 
     # 创建测试套件
     suite = TestSuite("quick_test")
@@ -771,12 +771,12 @@ def run_quick_test(count: int = 100) -> BatchTestResult:
 
     def progress(current, total):
         if current % 10 == 0 or current == total:
-            print(f"  进度: {current}/{total} ({current/total*100:.0f}%)")
+            logger.info(f"  进度: {current}/{total} ({current/total*100:.0f}%)")
 
     result = executor.execute_batch(suite.scenarios, progress)
 
     # 生成报告
-    print(ReportGenerator.generate_summary(result))
+    logger.info(ReportGenerator.generate_summary(result))
 
     return result
 
@@ -791,7 +791,7 @@ def run_comprehensive_test(count: int = 1000) -> BatchTestResult:
     Returns:
         批量测试结果
     """
-    print(f"开始综合测试 ({count}个场景)...")
+    logger.info(f"开始综合测试 ({count}个场景)...")
 
     # 创建测试套件
     suite = TestSuite("comprehensive_test")
@@ -807,19 +807,19 @@ def run_comprehensive_test(count: int = 1000) -> BatchTestResult:
     suite.generate_stress_suite(stress_count)
     suite.generate_regression_suite()
 
-    print(f"套件统计: {suite.get_statistics()}")
+    logger.info(f"套件统计: {suite.get_statistics()}")
 
     # 执行测试
     executor = BatchTestExecutor(simulation_steps=30, timeout_per_test=45)
 
     def progress(current, total):
         if current % 50 == 0 or current == total:
-            print(f"  进度: {current}/{total} ({current/total*100:.0f}%)")
+            logger.info(f"  进度: {current}/{total} ({current/total*100:.0f}%)")
 
     result = executor.execute_batch(suite.scenarios, progress)
 
     # 生成报告
-    print(ReportGenerator.generate_summary(result))
+    logger.info(ReportGenerator.generate_summary(result))
 
     return result
 
@@ -831,27 +831,27 @@ def run_exhaustive_test() -> BatchTestResult:
     Returns:
         批量测试结果
     """
-    print("开始穷举测试...")
+    logger.info("开始穷举测试...")
 
     suite = TestSuite("exhaustive_test")
     suite.generate_exhaustive_basic_suite()
 
-    print(f"生成场景数: {len(suite.scenarios)}")
+    logger.info(f"生成场景数: {len(suite.scenarios)}")
 
     # 验证
     valid, errors = suite.validate_all()
-    print(f"有效场景: {valid}/{len(suite.scenarios)}")
+    logger.info(f"有效场景: {valid}/{len(suite.scenarios)}")
 
     # 执行测试
     executor = BatchTestExecutor(simulation_steps=20, timeout_per_test=30)
 
     def progress(current, total):
         if current % 20 == 0 or current == total:
-            print(f"  进度: {current}/{total} ({current/total*100:.0f}%)")
+            logger.info(f"  进度: {current}/{total} ({current/total*100:.0f}%)")
 
     result = executor.execute_batch(suite.scenarios, progress)
 
-    print(ReportGenerator.generate_summary(result))
+    logger.info(ReportGenerator.generate_summary(result))
 
     return result
 
@@ -861,13 +861,13 @@ def run_exhaustive_test() -> BatchTestResult:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print(" " * 15 + "批量测试框架")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info(" " * 15 + "批量测试框架")
+    logger.info("=" * 70)
 
     # 运行快速测试
     result = run_quick_test(50)
 
-    print("\nJSON报告预览:")
+    logger.info("\nJSON报告预览:")
     json_report = ReportGenerator.generate_json_report(result)
-    print(json_report[:500] + "...")
+    logger.info(json_report[:500] + "...")

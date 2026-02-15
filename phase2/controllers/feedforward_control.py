@@ -7,6 +7,9 @@ import numpy as np
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 from collections import deque
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -362,15 +365,15 @@ class IntegratedFeedforwardMPC:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*20 + "前馈补偿控制器演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "前馈补偿控制器演示")
+    logger.info("="*70)
     
     # 创建控制器
     ff_mpc = IntegratedFeedforwardMPC(pool_id=0, horizon=10)
     
     # 模拟场景
-    print("\n1. 模拟需求突变场景...")
+    logger.info("\n1. 模拟需求突变场景...")
     
     # 训练需求预测器
     for t in range(72):
@@ -387,7 +390,7 @@ if __name__ == "__main__":
     current_time = 72
     current_state = {'level': 3.0, 'q_in': 5.0, 'q_out': 5.0}
     
-    print("\n2. 前馈补偿效果测试...")
+    logger.info("\n2. 前馈补偿效果测试...")
     for step in range(10):
         # 反馈控制（这里用简单P控制模拟）
         level_error = current_state['level'] - 3.0
@@ -398,22 +401,22 @@ if __name__ == "__main__":
             current_state, feedback, current_time + step
         )
         
-        print(f"\n   步骤 {step + 1}:")
-        print(f"     反馈控制: {debug['feedback']:.2f}")
-        print(f"     前馈补偿: {debug['feedforward']:.2f}")
-        print(f"     总控制量: {debug['total']:.2f}")
+        logger.info(f"\n   步骤 {step + 1}:")
+        logger.info(f"     反馈控制: {debug['feedback']:.2f}")
+        logger.info(f"     前馈补偿: {debug['feedforward']:.2f}")
+        logger.info(f"     总控制量: {debug['total']:.2f}")
         
         if step == 0:
-            print(f"     需求预测: {debug['demand_forecast'][:5]}")
+            logger.info(f"     需求预测: {debug['demand_forecast'][:5]}")
         
         # 更新状态（简化）
         current_state['q_in'] = total_control
         current_state['level'] += (total_control - current_state['q_out']) * 0.0001
     
-    print("\n3. 前馈增益...")
+    logger.info("\n3. 前馈增益...")
     for key, gain in debug['gains'].items():
-        print(f"   {key}: {gain:.3f}")
+        logger.info(f"   {key}: {gain:.3f}")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

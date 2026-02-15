@@ -69,6 +69,7 @@ Thumbs.db
 # Project Specific
 simulation_data.db
 smart_pool.log
+test_results.txt
 
 # Docker
 .env

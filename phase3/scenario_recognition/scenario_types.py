@@ -6,6 +6,9 @@
 from enum import Enum
 from dataclasses import dataclass
 from typing import List, Dict, Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ScenarioCategory(Enum):
@@ -341,27 +344,27 @@ def get_scenario_names() -> List[str]:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*60)
-    print("场景库统计")
-    print("="*60)
+    logger.info("="*60)
+    logger.info("场景库统计")
+    logger.info("="*60)
     
-    print(f"\n总场景数: {len(SCENARIO_LIBRARY)}")
+    logger.info(f"\n总场景数: {len(SCENARIO_LIBRARY)}")
     
     for category in ScenarioCategory:
         scenarios = get_scenarios_by_category(category)
-        print(f"\n{category.value}: {len(scenarios)}个")
+        logger.info(f"\n{category.value}: {len(scenarios)}个")
         for s in scenarios:
-            print(f"  - {s.name}: {s.description}")
+            logger.info(f"  - {s.name}: {s.description}")
     
-    print("\n" + "="*60)
-    print("场景示例")
-    print("="*60)
+    logger.info("\n" + "="*60)
+    logger.info("场景示例")
+    logger.info("="*60)
     
     scenario = get_scenario("peak_demand")
     if scenario:
-        print(f"\n场景: {scenario.name}")
-        print(f"描述: {scenario.description}")
-        print(f"水位范围: {scenario.level_range}")
-        print(f"流量范围: {scenario.flow_range}")
-        print(f"优先级: {scenario.control_priority}")
-        print(f"关键词: {', '.join(scenario.keywords)}")
+        logger.info(f"\n场景: {scenario.name}")
+        logger.info(f"描述: {scenario.description}")
+        logger.info(f"水位范围: {scenario.level_range}")
+        logger.info(f"流量范围: {scenario.flow_range}")
+        logger.info(f"优先级: {scenario.control_priority}")
+        logger.info(f"关键词: {', '.join(scenario.keywords)}")

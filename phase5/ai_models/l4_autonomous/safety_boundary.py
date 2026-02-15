@@ -649,15 +649,15 @@ class SafetyBoundary:
 # ==============================================================================
 
 if __name__ == "__main__":
-    print("=" * 70)
-    print("Safety Boundary Module Test")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("Safety Boundary Module Test")
+    logger.info("=" * 70)
 
     # 创建安全边界
     safety = SafetyBoundary(num_gates=11, num_pools=10)
 
     # 正常状态测试
-    print("\n1. 测试正常状态:")
+    logger.info("\n1. 测试正常状态:")
     normal_state = {
         'levels': np.random.uniform(3.5, 4.5, 10).tolist(),
         'inflows': np.random.uniform(250, 350, 10).tolist(),
@@ -667,39 +667,39 @@ if __name__ == "__main__":
     action = np.random.uniform(0.7, 0.9, 11)
 
     filtered_action, info = safety.check_and_filter_action(action, normal_state)
-    print(f"  安全等级: {info['safety_level']}")
-    print(f"  动作修改: {info['modified']}")
+    logger.info(f"  安全等级: {info['safety_level']}")
+    logger.info(f"  动作修改: {info['modified']}")
 
     # 异常状态测试
-    print("\n2. 测试异常状态 (水位过低):")
+    logger.info("\n2. 测试异常状态 (水位过低):")
     abnormal_state = normal_state.copy()
     abnormal_state['levels'] = [1.3, 1.4, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0]
 
     filtered_action, info = safety.check_and_filter_action(action, abnormal_state)
-    print(f"  安全等级: {info['safety_level']}")
-    print(f"  动作修改: {info['modified']}")
-    print(f"  事件: {info['events'][:3]}...")
+    logger.info(f"  安全等级: {info['safety_level']}")
+    logger.info(f"  动作修改: {info['modified']}")
+    logger.info(f"  事件: {info['events'][:3]}...")
 
     # 人工接管测试
-    print("\n3. 测试人工接管:")
+    logger.info("\n3. 测试人工接管:")
     safety.override.request_override(OverrideReason.MANUAL_REQUEST, "测试接管")
     safety.override.set_manual_command(0, 0.5)
     safety.override.set_manual_command(1, 0.6)
 
     filtered_action, info = safety.check_and_filter_action(action, normal_state)
-    print(f"  接管激活: {info['override_active']}")
-    print(f"  闸门0开度: {filtered_action[0]:.2f}")
-    print(f"  闸门1开度: {filtered_action[1]:.2f}")
+    logger.info(f"  接管激活: {info['override_active']}")
+    logger.info(f"  闸门0开度: {filtered_action[0]:.2f}")
+    logger.info(f"  闸门1开度: {filtered_action[1]:.2f}")
 
     # 释放接管
     safety.override.release_override("test_operator")
 
     # 获取状态
     status = safety.get_safety_status()
-    print(f"\n4. 安全状态:")
-    print(f"  当前等级: {status['current_level']}")
-    print(f"  接管状态: {status['override_status']}")
+    logger.info(f"\n4. 安全状态:")
+    logger.info(f"  当前等级: {status['current_level']}")
+    logger.info(f"  接管状态: {status['override_status']}")
 
-    print("\n" + "=" * 70)
-    print("Test completed!")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("Test completed!")
+    logger.info("=" * 70)

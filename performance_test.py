@@ -5,6 +5,7 @@ Performance Testing Script
 测试系统各模块的性能指标
 """
 
+import os
 import time
 import numpy as np
 import sys
@@ -60,7 +61,7 @@ for _ in range(n_tests):
         )
         elapsed = (time.time() - start) * 1000  # 转换为毫秒
         times.append(elapsed)
-    except:
+    except Exception:
         pass
 
 if times:
@@ -89,7 +90,7 @@ n_steps = 1000
 start = time.time()
 
 for _ in range(n_steps):
-    pool.step(q_in_command=5.0, q_out=4.5, disturbance=np.random.randn()*0.1)
+    pool.step(q_in_command=5.0 + np.random.randn()*0.1, q_out=4.5)
 
 elapsed = time.time() - start
 step_time = elapsed / n_steps * 1000
@@ -171,7 +172,7 @@ start = time.time()
 for i in range(n_iterations):
     # 1. 获取状态
     current_level = 3.0 + np.random.randn()*0.3
-    
+
     # 2. MPC求解
     try:
         u_in = solver.solve(
@@ -180,16 +181,16 @@ for i in range(n_iterations):
             q_out_forecast=[3.0]*10,
             config=config
         )
-    except:
+    except Exception:
         u_in = 0.0
     
     # 3. 物理更新
-    pool.step(u_in, u_in*0.9, 0.0)
-    
+    pool.step(u_in, u_in*0.9)
+
     # 4. 异常检测（如果可用）
     try:
         detector.detect(current_level)
-    except:
+    except Exception:
         pass
 
 elapsed = time.time() - start

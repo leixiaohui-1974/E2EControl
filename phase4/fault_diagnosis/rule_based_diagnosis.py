@@ -3,6 +3,9 @@
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 from typing import List, Dict, Optional
@@ -221,14 +224,14 @@ class RuleBasedDiagnosisSystem:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*20 + "故障诊断系统演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*20 + "故障诊断系统演示")
+    logger.info("="*70)
     
     # 创建诊断系统
     diagnosis_system = RuleBasedDiagnosisSystem()
     
-    print(f"\n规则库: {len(diagnosis_system.rules)}条规则")
+    logger.info(f"\n规则库: {len(diagnosis_system.rules)}条规则")
     
     # 测试场景
     test_cases = [
@@ -258,31 +261,31 @@ if __name__ == "__main__":
     ]
     
     for test in test_cases:
-        print(f"\n{'='*70}")
-        print(f"测试场景: {test['name']}")
-        print('='*70)
+        logger.info(f"\n{'='*70}")
+        logger.info(f"测试场景: {test['name']}")
+        logger.info('='*70)
         
-        print(f"\n症状:")
+        logger.info(f"\n症状:")
         for symptom, present in test['symptoms'].items():
             if present:
-                print(f"  • {symptom}")
+                logger.info(f"  • {symptom}")
         
         reports = diagnosis_system.diagnose(test['symptoms'])
         
         if reports:
-            print(f"\n诊断结果 (共{len(reports)}个):")
+            logger.info(f"\n诊断结果 (共{len(reports)}个):")
             for i, report in enumerate(reports[:3], 1):
-                print(f"\n{i}. {report.matched_rules[0]}")
-                print(f"   故障类型: {report.fault_type.value}")
-                print(f"   故障位置: {report.fault_location}")
-                print(f"   置信度: {report.confidence:.2%}")
-                print(f"   根本原因: {report.root_cause}")
-                print(f"   建议措施:")
+                logger.info(f"\n{i}. {report.matched_rules[0]}")
+                logger.info(f"   故障类型: {report.fault_type.value}")
+                logger.info(f"   故障位置: {report.fault_location}")
+                logger.info(f"   置信度: {report.confidence:.2%}")
+                logger.info(f"   根本原因: {report.root_cause}")
+                logger.info(f"   建议措施:")
                 for rec in report.recommendations[:3]:
-                    print(f"     • {rec}")
+                    logger.info(f"     • {rec}")
         else:
-            print("\n未能诊断出故障")
+            logger.info("\n未能诊断出故障")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

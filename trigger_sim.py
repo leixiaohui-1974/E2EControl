@@ -12,7 +12,7 @@ headers = {
 }
 
 try:
-    response = requests.post(url, json=payload, headers=headers)
+    response = requests.post(url, json=payload, headers=headers, timeout=30)
     print(response.text)
     
     data = response.json()
@@ -23,7 +23,7 @@ try:
         # Poll status
         status_url = f"http://localhost:5000/simulation/{sim_id}/status"
         while True:
-            res = requests.get(status_url)
+            res = requests.get(status_url, timeout=10)
             status_data = res.json()
             print(f"Status: {status_data.get('status')}")
             if status_data.get('status') in ['completed', 'failed']:
@@ -33,7 +33,7 @@ try:
         # Get History
         if status_data.get('status') == 'completed':
             hist_url = f"http://localhost:5000/simulation/{sim_id}/history"
-            hist_res = requests.get(hist_url)
+            hist_res = requests.get(hist_url, timeout=10)
             hist_data = hist_res.json()
             print("History retrieved successfully.")
             

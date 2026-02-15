@@ -4,6 +4,9 @@
 """
 
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 sys.path.append('..')
 
 from typing import Dict, List, Tuple, Optional
@@ -282,9 +285,9 @@ class DecisionEngine:
 
 # 示例使用
 if __name__ == "__main__":
-    print("="*70)
-    print(" "*25 + "决策引擎演示")
-    print("="*70)
+    logger.info("="*70)
+    logger.info(" "*25 + "决策引擎演示")
+    logger.info("="*70)
     
     # 创建决策引擎
     engine = DecisionEngine()
@@ -323,41 +326,41 @@ if __name__ == "__main__":
     ]
     
     for i, test in enumerate(test_scenarios, 1):
-        print(f"\n{'='*70}")
-        print(f"场景 {i}: {test['name']}")
-        print('='*70)
+        logger.info(f"\n{'='*70}")
+        logger.info(f"场景 {i}: {test['name']}")
+        logger.info('='*70)
         
         decision = engine.make_decision(test['state'])
         
-        print(f"\n📋 场景识别:")
-        print(f"  识别结果: {decision.scenario.scenario_name}")
-        print(f"  置信度: {decision.scenario.confidence:.2%}")
-        print(f"  优先级: {decision.scenario.priority}")
+        logger.info(f"\n📋 场景识别:")
+        logger.info(f"  识别结果: {decision.scenario.scenario_name}")
+        logger.info(f"  置信度: {decision.scenario.confidence:.2%}")
+        logger.info(f"  优先级: {decision.scenario.priority}")
         
-        print(f"\n🎯 策略选择:")
-        print(f"  策略: {decision.strategy.name}")
-        print(f"  MPC时域: {decision.mpc_config['horizon']}步")
-        print(f"  更新频率: {decision.mpc_config['dt']/60:.0f}分钟")
+        logger.info(f"\n🎯 策略选择:")
+        logger.info(f"  策略: {decision.strategy.name}")
+        logger.info(f"  MPC时域: {decision.mpc_config['horizon']}步")
+        logger.info(f"  更新频率: {decision.mpc_config['dt']/60:.0f}分钟")
         
-        print(f"\n⚠️ 风险评估:")
-        print(f"  风险等级: {decision.risk_level}")
+        logger.info(f"\n⚠️ 风险评估:")
+        logger.info(f"  风险等级: {decision.risk_level}")
         if decision.risk_factors:
-            print(f"  风险因素:")
+            logger.info(f"  风险因素:")
             for factor in decision.risk_factors:
-                print(f"    • {factor}")
+                logger.info(f"    • {factor}")
         
-        print(f"\n🚀 立即行动:")
+        logger.info(f"\n🚀 立即行动:")
         for action in decision.immediate_actions[:5]:
-            print(f"  {action}")
+            logger.info(f"  {action}")
         
-        print(f"\n🔍 监控要点:")
+        logger.info(f"\n🔍 监控要点:")
         for point in decision.monitoring_points[:5]:
-            print(f"  {point}")
+            logger.info(f"  {point}")
         
-        print(f"\n💡 决策推理:")
+        logger.info(f"\n💡 决策推理:")
         for reason in decision.reasoning:
-            print(f"  {reason}")
+            logger.info(f"  {reason}")
     
-    print("\n" + "="*70)
-    print("演示完成！")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("演示完成！")
+    logger.info("="*70)

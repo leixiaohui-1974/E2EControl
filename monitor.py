@@ -9,6 +9,9 @@ from datetime import datetime
 from enum import Enum
 from logger import get_logger
 from config_manager import get_config
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AlertLevel(Enum):
@@ -186,21 +189,21 @@ class MonitoringSystem:
         
         if alert.level == AlertLevel.WARNING:
             self.stats['warning_count'] += 1
-            self.logger.warning(f"⚠️  {alert.message}", **alert.data)
+            self.logger.warning("WARNING: %s", alert.message)
         elif alert.level == AlertLevel.CRITICAL:
             self.stats['critical_count'] += 1
-            self.logger.error(f"🚨 {alert.message}", **alert.data)
+            self.logger.error("CRITICAL: %s", alert.message)
         else:
-            self.logger.info(f"ℹ️  {alert.message}", **alert.data)
+            self.logger.info("INFO: %s", alert.message)
         
         # 调用回调函数
         for callback in self.alert_callbacks:
             try:
                 callback(alert)
             except Exception as e:
-                self.logger.error(f"告警回调执行失败: {e}")
+                self.logger.error("告警回调执行失败: %s", e)
     
-    def register_callback(self, callback: Callable[[Alert], None]):
+    def register_callback(self, callback: Callable[[Alert], None]) -> None:
         """
         注册告警回调
         
@@ -208,7 +211,7 @@ class MonitoringSystem:
             callback: 回调函数
         """
         self.alert_callbacks.append(callback)
-        self.logger.info(f"注册告警回调: {callback.__name__}")
+        self.logger.info("注册告警回调: %s", callback.__name__)
     
     def get_alerts(self, level: Optional[AlertLevel] = None, 
                    limit: Optional[int] = None) -> List[Alert]:
@@ -241,7 +244,7 @@ class MonitoringSystem:
         """
         return self.stats.copy()
     
-    def clear_alerts(self):
+    def clear_alerts(self) -> None:
         """清除告警历史"""
         self.alerts.clear()
         self.logger.info("告警历史已清除")
@@ -283,10 +286,10 @@ if __name__ == "__main__":
         (40, 3.0, 30.0, 5.0, {'Z_ref': 3.0}),  # 流量过大
     ]
     
-    print("\n=== 监控系统测试 ===\n")
+    logger.info("\n=== 监控系统测试 ===\n")
     for t, level, q_in, q_out, config in test_cases:
-        print(f"时间步 {t}h: 水位={level}m, 入流={q_in}m³/s")
+        logger.info("时间步 %dh: 水位=%.1fm, 入流=%.1fm³/s", t, level, q_in)
         alerts = monitor.check_state(t, level, q_in, q_out, config)
-        print(f"触发 {len(alerts)} 个告警\n")
+        logger.info("触发 %d 个告警", len(alerts))
     
-    print(monitor.generate_report())
+    logger.info(monitor.generate_report())
