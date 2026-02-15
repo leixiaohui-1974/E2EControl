@@ -5,6 +5,7 @@ Performance Testing Script
 测试系统各模块的性能指标
 """
 
+import os
 import time
 import numpy as np
 import sys

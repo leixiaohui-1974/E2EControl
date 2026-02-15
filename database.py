@@ -149,9 +149,9 @@ class SimulationDatabase:
         except sqlite3.Error as e:
             raise DatabaseError(f"创建仿真会话失败: {e}")
     
-    def save_state(self, simulation_id: int, time_step: int, 
+    def save_state(self, simulation_id: int, time_step: int,
                    level: float, q_in: float, q_out: float,
-                   target_level: float, instruction: str, config: Dict):
+                   target_level: float, instruction: str, config: Dict) -> None:
         """
         保存状态数据
         
@@ -191,8 +191,8 @@ class SimulationDatabase:
         except sqlite3.Error as e:
             self.logger.error("保存状态失败: %s", e)
     
-    def save_alert(self, simulation_id: int, time_step: int, 
-                   level: str, alert_type: str, message: str, data: Dict):
+    def save_alert(self, simulation_id: int, time_step: int,
+                   level: str, alert_type: str, message: str, data: Dict) -> None:
         """
         保存告警记录
         
@@ -224,8 +224,8 @@ class SimulationDatabase:
         except sqlite3.Error as e:
             self.logger.error("保存告警失败: %s", e)
     
-    def save_metric(self, simulation_id: int, metric_name: str, 
-                   metric_value: float, unit: str = ""):
+    def save_metric(self, simulation_id: int, metric_name: str,
+                   metric_value: float, unit: str = "") -> None:
         """
         保存性能指标
         
@@ -246,7 +246,7 @@ class SimulationDatabase:
         except sqlite3.Error as e:
             self.logger.error("保存指标失败: %s", e)
     
-    def finish_simulation(self, simulation_id: int):
+    def finish_simulation(self, simulation_id: int) -> None:
         """
         完成仿真会话
         
@@ -338,7 +338,7 @@ class SimulationDatabase:
             self.logger.error("获取仿真列表失败: %s", e)
             return []
     
-    def close(self):
+    def close(self) -> None:
         """关闭数据库连接"""
         if self.conn:
             self.conn.close()

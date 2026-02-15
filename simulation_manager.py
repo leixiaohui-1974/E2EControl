@@ -72,6 +72,17 @@ class SimulationManager:
             'config': [],
         }
 
+    def __enter__(self) -> SimulationManager:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
+        self.close()
+        return False
+
+    def close(self) -> None:
+        """Release resources held by the simulation manager."""
+        self.history.clear()
+
     def run_simulation(self) -> Dict[str, List[Any]]:
         """Execute the simulation loop.
 

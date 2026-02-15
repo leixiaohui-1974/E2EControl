@@ -203,7 +203,7 @@ class MonitoringSystem:
             except Exception as e:
                 self.logger.error("告警回调执行失败: %s", e)
     
-    def register_callback(self, callback: Callable[[Alert], None]):
+    def register_callback(self, callback: Callable[[Alert], None]) -> None:
         """
         注册告警回调
         
@@ -244,7 +244,7 @@ class MonitoringSystem:
         """
         return self.stats.copy()
     
-    def clear_alerts(self):
+    def clear_alerts(self) -> None:
         """清除告警历史"""
         self.alerts.clear()
         self.logger.info("告警历史已清除")
