@@ -64,7 +64,11 @@ def api_info() -> Tuple[Response, int]:
 
 @app.route('/config')
 def get_config_endpoint() -> Tuple[Response, int]:
-    return jsonify({'success': True, 'config': config_manager.config}), 200
+    try:
+        return jsonify({'success': True, 'config': config_manager.config}), 200
+    except Exception as exc:
+        logger.error("Failed to get config: %s", exc, exc_info=True)
+        return jsonify({'success': False, 'error': 'Failed to load config'}), 500
 
 
 @app.route('/interpret', methods=['POST'])
@@ -87,7 +91,11 @@ def interpret_instruction_endpoint() -> Tuple[Response, int]:
             'error': f'Instruction too long (max {MAX_INSTRUCTION_LENGTH} chars)',
         }), 400
 
-    config_result = brain.interpret(instruction)
+    try:
+        config_result = brain.interpret(instruction)
+    except Exception as exc:
+        logger.error("Interpret failed: %s", exc, exc_info=True)
+        return jsonify({'success': False, 'error': 'Interpretation failed'}), 500
 
     return jsonify({
         'success': True,
@@ -115,54 +123,66 @@ def run_simulation_endpoint() -> Tuple[Response, int]:
             'error': f'Instruction too long (max {MAX_INSTRUCTION_LENGTH} chars)',
         }), 400
 
-    sim_id = str(uuid.uuid4())
+    try:
+        sim_id = str(uuid.uuid4())
 
-    with sim_lock:
-        simulations[sim_id] = {
-            'status': 'starting',
-            'start_time': datetime.now().isoformat(),
-        }
+        with sim_lock:
+            simulations[sim_id] = {
+                'status': 'starting',
+                'start_time': datetime.now().isoformat(),
+            }
 
-    thread = threading.Thread(
-        target=_run_simulation_worker,
-        args=(sim_id, instruction),
-        daemon=True,
-    )
-    with sim_lock:
-        simulations[sim_id]['thread'] = thread
-    thread.start()
+        thread = threading.Thread(
+            target=_run_simulation_worker,
+            args=(sim_id, instruction),
+            daemon=True,
+        )
+        with sim_lock:
+            simulations[sim_id]['thread'] = thread
+        thread.start()
 
-    return jsonify({
-        'success': True,
-        'simulation_id': sim_id,
-        'status': 'running',
-    }), 202
+        return jsonify({
+            'success': True,
+            'simulation_id': sim_id,
+            'status': 'running',
+        }), 202
+    except Exception as exc:
+        logger.error("Failed to start simulation: %s", exc, exc_info=True)
+        return jsonify({'success': False, 'error': 'Failed to start simulation'}), 500
 
 
 @app.route('/simulation/<sim_id>/history')
 def get_simulation_history_endpoint(sim_id: str) -> Tuple[Response, int]:
-    with sim_lock:
-        sim = simulations.get(sim_id)
-    if not sim:
-        return jsonify({'success': False, 'error': 'Simulation not found'}), 404
+    try:
+        with sim_lock:
+            sim = simulations.get(sim_id)
+        if not sim:
+            return jsonify({'success': False, 'error': 'Simulation not found'}), 404
 
-    response_data = {k: v for k, v in sim.items() if k != 'thread'}
-    return jsonify(response_data), 200
+        response_data = {k: v for k, v in sim.items() if k != 'thread'}
+        return jsonify(response_data), 200
+    except Exception as exc:
+        logger.error("Failed to get history for %s: %s", sim_id, exc, exc_info=True)
+        return jsonify({'success': False, 'error': 'Failed to retrieve history'}), 500
 
 
 @app.route('/simulations')
 def list_simulations_endpoint() -> Tuple[Response, int]:
-    with sim_lock:
-        sim_list = [
-            {
-                'id': sid,
-                'start_time': s.get('start_time'),
-                'status': s.get('status'),
-                'total_hours': len(s.get('history', {}).get('time', [])),
-            }
-            for sid, s in simulations.items()
-        ]
-    return jsonify({'success': True, 'simulations': sim_list}), 200
+    try:
+        with sim_lock:
+            sim_list = [
+                {
+                    'id': sid,
+                    'start_time': s.get('start_time'),
+                    'status': s.get('status'),
+                    'total_hours': len(s.get('history', {}).get('time', [])),
+                }
+                for sid, s in simulations.items()
+            ]
+        return jsonify({'success': True, 'simulations': sim_list}), 200
+    except Exception as exc:
+        logger.error("Failed to list simulations: %s", exc, exc_info=True)
+        return jsonify({'success': False, 'error': 'Failed to list simulations'}), 500
 
 
 @app.route('/health')

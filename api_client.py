@@ -3,11 +3,15 @@ Python API 客户端
 方便的API调用封装
 """
 
+import logging
 import requests
 import time
 import json
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+
+
+logger = logging.getLogger(__name__)
 
 
 class SmartPoolAPIClient:
@@ -86,7 +90,8 @@ class SmartPoolAPIClient:
         try:
             result = self.health_check()
             return result.get('status') == 'healthy'
-        except Exception:
+        except Exception as exc:
+            logger.debug("Health check failed: %s", exc)
             return False
     
     def get_config(self) -> Dict:

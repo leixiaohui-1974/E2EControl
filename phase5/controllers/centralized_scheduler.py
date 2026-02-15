@@ -486,7 +486,8 @@ class CentralizedScheduler:
 
         try:
             problem.solve(solver=cp.ECOS, verbose=False)
-        except Exception:
+        except Exception as exc:
+            logger.debug("ECOS solver failed, falling back to SCS: %s", exc)
             problem.solve(solver=cp.SCS, verbose=False)
 
         # 提取结果

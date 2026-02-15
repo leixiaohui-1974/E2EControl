@@ -15,7 +15,7 @@ from exceptions import ConfigurationError
 from logger import get_logger, setup_logging
 from monitor import MonitoringSystem, AlertLevel
 from database import SimulationDatabase
-from exceptions import *
+from exceptions import SemanticError
 
 
 class TestConfigManager(unittest.TestCase):

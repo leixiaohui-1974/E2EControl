@@ -276,7 +276,8 @@ class IntegratedWaterNetworkSystem:
                 q_out_forecast = [3.0] * controller.N
                 u_in = controller.solve(Z, self.q_prev[i], q_out_forecast, config)
                 self.q_prev[i] = u_in
-            except Exception:
+            except Exception as exc:
+                logger.debug("MPC solve failed for pool %d: %s", i, exc)
                 u_in = 0.0
             
             u_out = u_in * 0.9

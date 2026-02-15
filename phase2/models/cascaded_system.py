@@ -253,8 +253,8 @@ if __name__ == "__main__":
     logger.info("="*60)
     logger.info("级联渠道系统仿真示例")
     logger.info("="*60)
-    logger.info(f"渠池数量: {system.num_pools}")
-    logger.info(f"闸门数量: {len(system.gates)}")
+    logger.info("渠池数量: %d", system.num_pools)
+    logger.info("闸门数量: %d", len(system.gates))
     logger.info()
     
     # 运行10步仿真
@@ -268,11 +268,11 @@ if __name__ == "__main__":
         
         # 打印状态
         if t % 2 == 0:
-            logger.info(f"\n时间步 {t}:")
+            logger.info("时间步 %d:", t)
             for i, pool_state in enumerate(state['pools']):
-                logger.info(f"  池{i}: 水位={pool_state['level']:.3f}m, "
-                      f"入流={pool_state['inflow']:.2f}m³/s, "
-                      f"出流={pool_state['outflow']:.2f}m³/s")
+                logger.info("  池%d: 水位=%.3fm, 入流=%.2fm³/s, 出流=%.2fm³/s",
+                            i, pool_state['level'], pool_state['inflow'],
+                            pool_state['outflow'])
     
     logger.info("\n" + "="*60)
     logger.info("仿真完成！")

@@ -195,7 +195,7 @@ class MultiObjectiveMPC:
             else:
                 return q_in_prev, demand_forecast[0], {}
         except Exception as e:
-            logger.info(f"优化失败: {e}")
+            logger.info("优化失败: %s", e)
             return q_in_prev, demand_forecast[0], {}
     
     def _solve_pareto(self, current_level: float, q_in_prev: float,
@@ -311,15 +311,15 @@ if __name__ == "__main__":
     logger.info("\n1. 加权求和模式...")
     q_in, q_out, costs = controller.solve(current_level, q_in_prev, demand, 
                                           mode='weighted_sum')
-    logger.info(f"   最优控制: 入流={q_in:.2f}, 出流={q_out:.2f}")
-    logger.info(f"   目标成本:")
+    logger.info("   最优控制: 入流=%.2f, 出流=%.2f", q_in, q_out)
+    logger.info("   目标成本:")
     for obj, cost in costs.items():
-        logger.info(f"     {obj.value}: {cost:.4f}")
+        logger.info("     %s: %.4f", obj.value, cost)
     
     logger.info("\n2. Pareto优化模式...")
     q_in, q_out, costs = controller.solve(current_level, q_in_prev, demand,
                                           mode='pareto')
-    logger.info(f"   Pareto最优: 入流={q_in:.2f}, 出流={q_out:.2f}")
+    logger.info("   Pareto最优: 入流=%.2f, 出流=%.2f", q_in, q_out)
     
     logger.info("\n3. 自适应权重模式...")
     for i in range(5):
@@ -327,13 +327,13 @@ if __name__ == "__main__":
                                               mode='adaptive')
         current_level += (q_in - q_out) * controller.dt / controller.area
         q_in_prev = q_in
-        logger.info(f"   步骤{i+1}: 入流={q_in:.2f}, 水位={current_level:.3f}")
+        logger.info("   步骤%d: 入流=%.2f, 水位=%.3f", i + 1, q_in, current_level)
     
     logger.info("\n4. 性能指标...")
     metrics = controller.get_performance_metrics()
     for obj_name, stats in metrics.items():
-        logger.info(f"   {obj_name}:")
-        logger.info(f"     均值={stats['mean']:.4f}, 标准差={stats['std']:.4f}")
+        logger.info("   %s:", obj_name)
+        logger.info("     均值=%.4f, 标准差=%.4f", stats['mean'], stats['std'])
     
     logger.info("\n" + "="*70)
     logger.info("演示完成！")

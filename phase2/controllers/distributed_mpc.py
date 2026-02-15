@@ -139,7 +139,7 @@ class LocalMPC:
                 return q_in_prev, q_out_forecast[0] if q_out_forecast else 5.0
                 
         except Exception as e:
-            logger.info(f"池{self.pool_id} MPC求解失败: {e}")
+            logger.info("池%d MPC求解失败: %s", self.pool_id, e)
             return q_in_prev, q_out_forecast[0] if q_out_forecast else 5.0
 
 
@@ -229,7 +229,7 @@ class DistributedMPCController:
             q_out_change = max(abs(q_out_solutions[i] - q_out_old[i]) for i in range(self.num_pools))
             
             if max(q_in_change, q_out_change) < self.tolerance:
-                logger.info(f"ADMM收敛于第{iter+1}次迭代")
+                logger.info("ADMM收敛于第%d次迭代", iter + 1)
                 break
         
         # 返回结果

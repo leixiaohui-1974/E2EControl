@@ -37,7 +37,7 @@ class EnhancedSemanticInterpreter:
         self.scenarios = self.config.get_all_scenarios()
         self.default_config = self.config.get_section('default_control')
         
-        self.logger.info(f"语义解释器初始化完成，加载 {len(self.scenarios)} 个场景")
+        self.logger.info("语义解释器初始化完成，加载 %d 个场景", len(self.scenarios))
     
     def interpret(self, instruction: str) -> Tuple[Dict, float]:
         """
@@ -53,7 +53,7 @@ class EnhancedSemanticInterpreter:
             raise SemanticError("指令不能为空", instruction=instruction)
         
         instruction = instruction.strip()
-        self.logger.debug(f"接收指令: {instruction}")
+        self.logger.debug("接收指令: %s", instruction)
         
         # 1. 尝试精确匹配（历史兼容）
         for scenario in self.scenarios:
