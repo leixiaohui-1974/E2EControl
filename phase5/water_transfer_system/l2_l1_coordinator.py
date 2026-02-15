@@ -656,8 +656,14 @@ class FullLineCoordinatorManager:
             'timestamp': time.time(),
         })
 
-        # TODO: 实现跨区域协调逻辑
-        logger.warning(f"跨区域协调: {coord_type.value}, 区域: {affected_regions}")
+        # Propagate coordination to affected region coordinators
+        for region_id in affected_regions:
+            if region_id in self.coordinators:
+                self.coordinators[region_id].handle_cross_region(
+                    source_region, coord_type,
+                )
+        logger.info("Cross-region coordination: %s, regions: %s",
+                     coord_type.value, affected_regions)
 
     def coordination_step_all(self, dt: float = 60.0) -> Dict[int, Dict]:
         """所有协调器执行一步"""

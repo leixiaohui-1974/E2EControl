@@ -66,13 +66,12 @@ addopts = "-q --tb=short"
 filterwarnings = [
     "ignore::pytest.PytestCollectionWarning",
 ]
-# Exclude non-test files that happen to match test_*.py patterns
-collect_ignore = [
-    "test_results.txt",
-    "run_comprehensive_hil_test.py",
-]
 norecursedirs = [
     "phase5/ai_models",
+    "__pycache__",
+    ".git",
+    "docker",
+    "web",
 ]
 
 [build-system]

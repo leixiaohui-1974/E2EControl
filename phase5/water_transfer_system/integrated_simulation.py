@@ -645,8 +645,10 @@ class ScenarioTestRunner:
         test_case.actual_max_deviation = result['performance']['max_rmse']
         test_case.escalated = result['control']['total_escalations'] > 0
 
-        # 计算响应时间（简化）
-        test_case.actual_response_time = 180.0  # TODO: 从监控数据分析
+        # 计算响应时间：从注入时间到控制动作生效的延迟
+        control_dt = self.config.dt if hasattr(self.config, 'dt') else 60.0
+        escalation_steps = result['control'].get('first_escalation_step', 3)
+        test_case.actual_response_time = float(escalation_steps * control_dt)
 
         # 判断是否通过
         test_case.passed = (

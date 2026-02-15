@@ -470,7 +470,11 @@ class ScenarioVectorDB:
             metadata: 元数据
         """
         embedding = np.array(embedding).flatten()
-        assert embedding.shape[0] == self.embedding_dim
+        if embedding.shape[0] != self.embedding_dim:
+            raise ValueError(
+                f"Embedding dimension mismatch: expected {self.embedding_dim}, "
+                f"got {embedding.shape[0]}"
+            )
 
         self.vectors.append(embedding)
         self.scenario_ids.append(scenario_id)

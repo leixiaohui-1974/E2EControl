@@ -1,7 +1,10 @@
+import logging
 import numpy as np
 from config_manager import ConfigManager
 from simulation_manager import SimulationManager
 from simulation_report import ReportGenerator
+
+logger = logging.getLogger(__name__)
 
 def main():
     # --- 1. Load Configuration ---
@@ -12,7 +15,7 @@ def main():
         script = config_manager.get_scenario_script()
         demand_params = config_manager.get_demand_profile_params()
     except (FileNotFoundError, ValueError) as e:
-        print(f"Error loading configuration: {e}")
+        logger.error("Error loading configuration: %s", e)
         return
 
     # --- 2. Prepare Simulation Inputs ---

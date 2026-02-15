@@ -3,6 +3,7 @@
 使用SQLite存储仿真数据
 """
 
+import os
 import sqlite3
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
@@ -11,11 +12,16 @@ from pathlib import Path
 from logger import get_logger
 from exceptions import DatabaseError
 
+# Default database path - can be overridden via E2E_DB_PATH env var
+DEFAULT_DB_PATH: str = os.environ.get(
+    "E2E_DB_PATH", "simulation_data.db"
+)
+
 
 class SimulationDatabase:
     """仿真数据库"""
-    
-    def __init__(self, db_path: str = "simulation_data.db"):
+
+    def __init__(self, db_path: str = DEFAULT_DB_PATH):
         """
         初始化数据库
         

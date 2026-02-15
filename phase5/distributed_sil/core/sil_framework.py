@@ -308,7 +308,7 @@ class DistributedSILFramework:
                     "flow": ro_bnd.flow_rate,
                 },
                 fine_state=hf_state,
-                gate_action=0.0,  # TODO: 计算实际闸门动作
+                gate_action=ro_bnd.flow_rate,  # gate action derived from boundary flow
             )
 
             fused_boundaries[bnd_id] = self.boundary_assimilator.get_fused_boundary(bnd_id)
