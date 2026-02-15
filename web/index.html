@@ -1,271 +1,369 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Pool Agent | Digital Twin</title>
+    <title>E2EControl | Intelligent Water Network Control System</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
-
 <body>
-    <div class="app-container">
+    <div class="app">
         <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <h2>🌊 Smart Pool</h2>
-                <p>Digital Twin Control</p>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <svg class="brand-icon" viewBox="0 0 32 32" fill="none">
+                        <rect width="32" height="32" rx="8" fill="var(--accent)"/>
+                        <path d="M8 20c2-4 4-6 8-6s6 2 8 6" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M8 14c2-4 4-6 8-6s6 2 8 6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+                        <circle cx="16" cy="22" r="2" fill="#fff"/>
+                    </svg>
+                    <div>
+                        <h1 class="brand-name">E2EControl</h1>
+                        <span class="brand-tag">Water Network Intelligence</span>
+                    </div>
+                </div>
             </div>
 
-            <nav class="nav-menu">
-                <a href="#" class="nav-link active" data-view="view-dashboard">
-                    <span class="icon">📊</span> Dashboard
+            <nav class="nav">
+                <div class="nav-section-label">Main</div>
+                <a href="#" class="nav-item active" data-view="view-dashboard">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                    <span>Dashboard</span>
                 </a>
-                <a href="#" class="nav-link" data-view="view-simulation">
-                    <span class="icon">🎮</span> Simulation
+                <a href="#" class="nav-item" data-view="view-simulation">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+                    <span>Simulation</span>
                 </a>
-                <a href="#" class="nav-link" data-view="view-monitoring">
-                    <span class="icon">📈</span> Advanced Monitoring
+                <a href="#" class="nav-item" data-view="view-monitoring">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
+                    <span>Monitoring</span>
                 </a>
-                <a href="#" class="nav-link" data-view="view-history">
-                    <span class="icon">📜</span> History
+                <div class="nav-section-label">Data</div>
+                <a href="#" class="nav-item" data-view="view-history">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                    <span>History</span>
                 </a>
-                <a href="#" class="nav-link" data-view="view-config">
-                    <span class="icon">⚙️</span> Settings
+                <a href="#" class="nav-item" data-view="view-config">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+                    <span>Settings</span>
                 </a>
             </nav>
 
-            <div class="system-status">
-                <div class="status-item">
-                    <span class="label">API Status</span>
-                    <span class="value online">Online</span>
+            <div class="sidebar-footer">
+                <div class="system-indicator">
+                    <span class="indicator-dot" id="api-dot"></span>
+                    <span class="indicator-label" id="api-label">Connecting...</span>
                 </div>
-                <div class="status-item">
-                    <span class="label">Version</span>
-                    <span class="value">2.1</span>
+                <div class="sidebar-meta">
+                    <span>v3.0</span>
+                    <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+                        <svg class="icon-sun" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
+                        <svg class="icon-moon" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+                    </button>
                 </div>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="top-bar">
-                <div class="page-title">
-                    <h1 id="page-title">Dashboard</h1>
+        <!-- Main -->
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                    </button>
+                    <h2 class="page-title" id="page-title">Dashboard</h2>
                 </div>
-                <div class="user-profile">
-                    <div class="avatar">AD</div>
-                    <span>Admin User</span>
+                <div class="topbar-right">
+                    <div class="clock" id="clock"></div>
+                    <button class="lang-toggle" id="lang-toggle" title="Switch language">EN</button>
                 </div>
             </header>
 
-            <!-- Dashboard View -->
-            <div id="view-dashboard" class="view-section active">
-                <div class="stats-grid">
-                    <div class="card stat-card">
-                        <h3>Water Level</h3>
-                        <div class="stat-value" id="current-level">-- m</div>
-                        <p class="stat-desc">Target: <span id="target-level">--</span> m</p>
-                    </div>
-                    <div class="card stat-card">
-                        <h3>Flow Rate</h3>
-                        <div class="stat-value" id="current-flow">-- m³/s</div>
-                        <p class="stat-desc">Inflow: <span id="inflow-rate">--</span></p>
-                    </div>
-                    <div class="card stat-card">
-                        <h3>System Status</h3>
-                        <div class="stat-value" id="sys-status">Normal</div>
-                        <p class="stat-desc">Alerts: <span id="alert-count">0</span></p>
-                    </div>
-                </div>
-
-                <div class="main-chart-container">
-                    <div class="card chart-card">
-                        <h3>Real-time Monitoring</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="mainChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Simulation View -->
-            <div id="view-simulation" class="view-section">
-                <div class="simulation-controls">
-                    <div class="card input-card">
-                        <h3>Natural Language Control</h3>
-                        <p>Describe how you want to control the water system.</p>
-                        <div class="input-group">
-                            <textarea id="instruction-input"
-                                placeholder="e.g., 'Heavy rain warning received, lower water level immediately!'"></textarea>
-                            <button id="interpret-btn" class="btn-primary">Analyze Instruction</button>
-                        </div>
-
-                        <div id="interpretation-result" class="result-box hidden">
-                            <h4>Analysis Result</h4>
-                            <div class="result-item">
-                                <span class="label">Confidence:</span>
-                                <span class="value" id="conf-score">--</span>
+            <div class="content">
+                <!-- ======================== DASHBOARD ======================== -->
+                <section id="view-dashboard" class="view active">
+                    <!-- KPI Row -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-blue">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 17a4.5 4.5 0 01-1.44-8.765 4.5 4.5 0 018.302-3.046 3.5 3.5 0 014.504 4.272A4 4 0 0115 17H5.5zm3.75-2.75a.75.75 0 001.5 0V9.66l1.95 2.1a.75.75 0 101.1-1.02l-3.25-3.5a.75.75 0 00-1.1 0l-3.25 3.5a.75.75 0 101.1 1.02l1.95-2.1v4.59z" clip-rule="evenodd"/></svg>
                             </div>
-                            <div class="result-item">
-                                <span class="label">Scenario:</span>
-                                <span class="value" id="scenario-name">--</span>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Water Level</span>
+                                <span class="kpi-value" id="kpi-level">--</span>
+                                <span class="kpi-unit">m</span>
                             </div>
-                            <div class="result-item">
-                                <span class="label">Config Preview:</span>
-                                <pre id="config-preview" class="code-preview">--</pre>
+                            <span class="kpi-sub">Target: <b id="kpi-target">3.00</b> m</span>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-green">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Flow Rate</span>
+                                <span class="kpi-value" id="kpi-flow">--</span>
+                                <span class="kpi-unit">m&sup3;/s</span>
+                            </div>
+                            <span class="kpi-sub">Inflow: <b id="kpi-inflow">--</b></span>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-emerald">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">System Status</span>
+                                <span class="kpi-value status-ok" id="kpi-status">Normal</span>
+                            </div>
+                            <span class="kpi-sub">Alerts: <b id="kpi-alerts">0</b></span>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-amber">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Health Score</span>
+                                <span class="kpi-value" id="kpi-health">--%</span>
+                            </div>
+                            <span class="kpi-sub">Uptime: <b id="kpi-uptime">--</b></span>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="chart-grid">
+                        <div class="panel panel-wide">
+                            <div class="panel-header">
+                                <h3>Real-time Water Levels</h3>
+                                <div class="panel-actions">
+                                    <select id="chart-range" class="select-sm">
+                                        <option value="all">All Data</option>
+                                        <option value="50">Last 50</option>
+                                        <option value="100">Last 100</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-header"><h3>Pool Levels (Current)</h3></div>
+                            <div class="chart-wrap chart-wrap-sm"><canvas id="topologyChart"></canvas></div>
+                            <div class="pool-legend" id="pool-legend"></div>
+                        </div>
+                    </div>
+
+                    <!-- System Topology SVG -->
+                    <div class="panel">
+                        <div class="panel-header"><h3>System Topology</h3></div>
+                        <div class="topology-svg" id="topology-svg">
+                            <svg viewBox="0 0 800 160" class="topo">
+                                <defs>
+                                    <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.7"/>
+                                        <stop offset="100%" stop-color="var(--accent)" stop-opacity="0.2"/>
+                                    </linearGradient>
+                                </defs>
+                                <!-- Pool 1 -->
+                                <g class="topo-pool" transform="translate(60,20)">
+                                    <rect x="0" y="0" width="120" height="100" rx="8" class="topo-tank"/>
+                                    <rect x="4" y="40" width="112" height="56" rx="4" fill="url(#waterGrad)" class="topo-water" id="topo-water-0"/>
+                                    <text x="60" y="75" class="topo-label" id="topo-lbl-0">--</text>
+                                    <text x="60" y="125" class="topo-name">Pool 1</text>
+                                </g>
+                                <!-- Arrow 1→2 -->
+                                <g transform="translate(195,55)">
+                                    <line x1="0" y1="15" x2="90" y2="15" class="topo-pipe"/>
+                                    <polygon points="85,8 100,15 85,22" class="topo-arrow"/>
+                                    <text x="45" y="8" class="topo-flow" id="topo-flow-0">-- m³/s</text>
+                                </g>
+                                <!-- Pool 2 -->
+                                <g class="topo-pool" transform="translate(300,20)">
+                                    <rect x="0" y="0" width="120" height="100" rx="8" class="topo-tank"/>
+                                    <rect x="4" y="40" width="112" height="56" rx="4" fill="url(#waterGrad)" class="topo-water" id="topo-water-1"/>
+                                    <text x="60" y="75" class="topo-label" id="topo-lbl-1">--</text>
+                                    <text x="60" y="125" class="topo-name">Pool 2</text>
+                                </g>
+                                <!-- Arrow 2→3 -->
+                                <g transform="translate(435,55)">
+                                    <line x1="0" y1="15" x2="90" y2="15" class="topo-pipe"/>
+                                    <polygon points="85,8 100,15 85,22" class="topo-arrow"/>
+                                    <text x="45" y="8" class="topo-flow" id="topo-flow-1">-- m³/s</text>
+                                </g>
+                                <!-- Pool 3 -->
+                                <g class="topo-pool" transform="translate(540,20)">
+                                    <rect x="0" y="0" width="120" height="100" rx="8" class="topo-tank"/>
+                                    <rect x="4" y="40" width="112" height="56" rx="4" fill="url(#waterGrad)" class="topo-water" id="topo-water-2"/>
+                                    <text x="60" y="75" class="topo-label" id="topo-lbl-2">--</text>
+                                    <text x="60" y="125" class="topo-name">Pool 3</text>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================== SIMULATION ======================== -->
+                <section id="view-simulation" class="view">
+                    <div class="sim-layout">
+                        <div class="panel">
+                            <div class="panel-header"><h3>Natural Language Control</h3></div>
+                            <p class="panel-desc">Describe how you want to control the water network using natural language.</p>
+                            <div class="form-group">
+                                <textarea id="instruction-input" class="textarea" rows="3"
+                                    placeholder="e.g., Heavy rain warning! Lower water level immediately to make room for flood control."></textarea>
+                            </div>
+                            <div class="btn-row">
+                                <button id="interpret-btn" class="btn btn-primary">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+                                    Analyze
+                                </button>
+                                <button id="run-sim-btn" class="btn btn-success">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/></svg>
+                                    Run Simulation
+                                </button>
+                                <button id="stop-sim-btn" class="btn btn-danger" disabled>
+                                    <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd"/></svg>
+                                    Stop
+                                </button>
+                            </div>
+                            <div id="sim-progress" class="progress-wrap hidden">
+                                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                                <span class="progress-text" id="progress-text">Initializing...</span>
+                            </div>
+                            <div id="interpretation-result" class="result-panel hidden">
+                                <div class="result-row"><span class="result-label">Confidence</span><span class="result-value badge" id="conf-score">--</span></div>
+                                <div class="result-row"><span class="result-label">Scenario</span><span class="result-value" id="scenario-name">--</span></div>
+                                <pre class="code-block" id="config-preview"></pre>
                             </div>
                         </div>
 
-                        <div class="action-buttons" style="margin-top: 20px;">
-                            <button id="run-sim-btn" class="btn-success">Run Simulation</button>
-                            <button id="stop-sim-btn" class="btn-danger" disabled>Stop</button>
-                        </div>
-
-                        <div id="sim-progress" class="progress-bar hidden" style="margin-top: 15px;">
-                            <div class="progress-track">
-                                <div class="progress-fill"></div>
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h3>Manual Control</h3>
+                                <button class="btn btn-sm btn-ghost" onclick="window.resetOverride()">Reset All</button>
                             </div>
-                            <span class="progress-text">Running Simulation...</span>
-                        </div>
-                    </div>
-
-                    <!-- Topology Visualization -->
-                    <div class="card topology-card" style="margin-bottom: 20px;">
-                        <div class="card-header">
-                            <h3>System Topology (Real-time)</h3>
-                        </div>
-                        <div class="topology-container" style="position: relative; height: 200px; width: 100%;">
-                            <canvas id="topologyChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Manual Control (Interactive) -->
-                    <div class="card control-card" style="margin-bottom: 20px;">
-                        <div class="card-header">
-                            <h3>Manual Control (Interactive)</h3>
-                            <button id="reset-override-btn" class="btn-sm btn-secondary"
-                                onclick="window.resetOverride()">Reset All</button>
-                        </div>
-                        <div class="control-group">
-                            <h4>Inject Events</h4>
-                            <div class="btn-group">
-                                <button class="btn-warning" onclick="window.triggerEvent('flood')">Trigger
-                                    Flood</button>
-                                <button class="btn-warning" onclick="window.triggerEvent('drought')">Trigger
-                                    Drought</button>
+                            <div class="control-section">
+                                <h4 class="control-title">Event Injection</h4>
+                                <div class="btn-row">
+                                    <button class="btn btn-warning btn-sm" onclick="window.triggerEvent('flood')">Flood Event</button>
+                                    <button class="btn btn-warning btn-sm" onclick="window.triggerEvent('drought')">Drought Event</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="control-group" style="margin-top: 15px;">
-                            <h4>Gate Overrides</h4>
-                            <div class="slider-group">
-                                <label>Gate 0: <span id="gate0-val">--</span></label>
-                                <input type="range" min="0" max="20" step="0.5"
-                                    onchange="window.updateGate(0, this.value)">
+                            <div class="control-section">
+                                <h4 class="control-title">Gate Override</h4>
+                                <div class="slider-group">
+                                    <label>Gate 0 <span class="slider-val" id="gate0-val">0.0</span></label>
+                                    <input type="range" min="0" max="20" step="0.5" value="0" class="slider" onchange="window.updateGate(0,this.value)">
+                                </div>
+                                <div class="slider-group">
+                                    <label>Gate 1 <span class="slider-val" id="gate1-val">0.0</span></label>
+                                    <input type="range" min="0" max="20" step="0.5" value="0" class="slider" onchange="window.updateGate(1,this.value)">
+                                </div>
+                                <div class="slider-group">
+                                    <label>Gate 2 <span class="slider-val" id="gate2-val">0.0</span></label>
+                                    <input type="range" min="0" max="20" step="0.5" value="0" class="slider" onchange="window.updateGate(2,this.value)">
+                                </div>
                             </div>
-                            <div class="slider-group">
-                                <label>Gate 1: <span id="gate1-val">--</span></label>
-                                <input type="range" min="0" max="20" step="0.5"
-                                    onchange="window.updateGate(1, this.value)">
-                            </div>
-                            <div class="slider-group">
-                                <label>Gate 2: <span id="gate2-val">--</span></label>
-                                <input type="range" min="0" max="20" step="0.5"
-                                    onchange="window.updateGate(2, this.value)">
+                            <div class="control-section">
+                                <h4 class="control-title">Predefined Scenarios</h4>
+                                <div class="scenario-grid" id="scenario-grid">
+                                    <!-- Populated by JS -->
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- Advanced Monitoring View -->
-            <div id="view-monitoring" class="view-section">
-                <div class="stats-grid">
-                    <div class="card stat-card">
-                        <h3>System Health</h3>
-                        <div class="stat-value" id="health-score">--%</div>
-                        <p class="stat-desc">Overall Status</p>
-                    </div>
-                    <div class="card stat-card">
-                        <h3>Active Anomalies</h3>
-                        <div class="stat-value" id="anomaly-count">0</div>
-                        <p class="stat-desc">Detected Issues</p>
-                    </div>
-                    <div class="card stat-card">
-                        <h3>Self-Healing</h3>
-                        <div class="stat-value" id="healing-status">Active</div>
-                        <p class="stat-desc">Events: <span id="healing-count">0</span></p>
-                    </div>
-                </div>
-
-                <div class="main-chart-container" style="margin-top: 20px;">
-                    <div class="card chart-card">
-                        <h3>Anomaly Detection Score</h3>
-                        <div class="chart-wrapper">
-                            <canvas id="anomalyChart"></canvas>
+                <!-- ======================== MONITORING ======================== -->
+                <section id="view-monitoring" class="view">
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-emerald">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">System Health</span>
+                                <span class="kpi-value" id="mon-health">--%</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-red">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Anomalies</span>
+                                <span class="kpi-value" id="mon-anomalies">0</span>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-blue">
+                                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Self-Healing</span>
+                                <span class="kpi-value" id="mon-heals">0</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="card" style="margin-top: 20px;">
-                    <h3>Fault & Healing Log</h3>
-                    <div class="table-container">
-                        <table id="fault-log-table">
-                            <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>Type</th>
-                                    <th>Component</th>
-                                    <th>Severity</th>
-                                    <th>Action</th>
-                                    <th>Result</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
+                    <div class="chart-grid">
+                        <div class="panel panel-wide">
+                            <div class="panel-header"><h3>Anomaly Detection</h3></div>
+                            <div class="chart-wrap"><canvas id="anomalyChart"></canvas></div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- History View -->
-            <div id="view-history" class="view-section">
-                <div class="card">
-                    <h3>Simulation History</h3>
-                    <div class="table-container">
-                        <table id="history-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Date</th>
-                                    <th>Duration</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
+                    <div class="panel">
+                        <div class="panel-header"><h3>Fault &amp; Healing Log</h3></div>
+                        <div class="table-wrap">
+                            <table class="table" id="fault-log-table">
+                                <thead>
+                                    <tr><th>Time</th><th>Type</th><th>Component</th><th>Severity</th><th>Action</th><th>Result</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="6" class="table-empty">No events recorded</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- Settings View -->
-            <div id="view-config" class="view-section">
-                <div class="card">
-                    <h3>System Configuration</h3>
-                    <pre id="config-display" class="code-preview">Loading...</pre>
-                </div>
+                <!-- ======================== HISTORY ======================== -->
+                <section id="view-history" class="view">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Simulation History</h3>
+                            <button class="btn btn-sm btn-ghost" onclick="loadHistory()">Refresh</button>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="table" id="history-table">
+                                <thead>
+                                    <tr><th>ID</th><th>Started</th><th>Duration</th><th>Status</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="5" class="table-empty">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ======================== SETTINGS ======================== -->
+                <section id="view-config" class="view">
+                    <div class="panel">
+                        <div class="panel-header"><h3>System Configuration</h3></div>
+                        <pre class="code-block" id="config-display">Loading...</pre>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
 
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
     <script src="js/app.js"></script>
 </body>
-
 </html>
