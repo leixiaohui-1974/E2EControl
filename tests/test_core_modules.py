@@ -18,13 +18,10 @@ import unittest
 import numpy as np
 import yaml
 
-# Ensure project root is on path
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-from brain import SemanticInterpreter, DEFAULT_W_LEVEL, DEFAULT_W_SMOOTH, DEFAULT_Z_REF
-from config_manager import ConfigManager, get_config, _StubConfigManager
-from physics.base import CanalPoolSimulator, CascadedCanalSystem
-from exceptions import (
+from hydroe2e.brain import SemanticInterpreter, DEFAULT_W_LEVEL, DEFAULT_W_SMOOTH, DEFAULT_Z_REF
+from hydroe2e.config_manager import ConfigManager, get_config, _StubConfigManager
+from hydroe2e.physics.base import CanalPoolSimulator, CascadedCanalSystem
+from hydroe2e.exceptions import (
     SmartPoolException, ConfigurationError, OptimizationError,
     PhysicsError, SemanticError, ValidationError,
 )
@@ -357,7 +354,7 @@ class TestMonitoringSystem(unittest.TestCase):
     """Tests for monitor.py MonitoringSystem."""
 
     def setUp(self):
-        from monitor import MonitoringSystem
+        from hydroe2e.monitor import MonitoringSystem
         self.monitor = MonitoringSystem()
 
     def test_normal_state_no_alerts(self):
@@ -370,7 +367,7 @@ class TestMonitoringSystem(unittest.TestCase):
         self.assertIn('水位偏高', types)
 
     def test_critical_high_level(self):
-        from monitor import AlertLevel
+        from hydroe2e.monitor import AlertLevel
         alerts = self.monitor.check_state(2, 9.8, 5.0, 5.0, {'Z_ref': 3.0})
         critical = [a for a in alerts if a.level == AlertLevel.CRITICAL]
         self.assertGreater(len(critical), 0)
@@ -426,7 +423,7 @@ class TestSimulationDatabase(unittest.TestCase):
     """Tests for database.py SimulationDatabase."""
 
     def setUp(self):
-        from database import SimulationDatabase
+        from hydroe2e.database import SimulationDatabase
         self.db_file = tempfile.mktemp(suffix='.db')
         self.db = SimulationDatabase(self.db_file)
 
@@ -516,7 +513,7 @@ class TestSimulationManager(unittest.TestCase):
     """Tests for simulation_manager.py."""
 
     def test_run_short_simulation(self):
-        from simulation_manager import SimulationManager
+        from hydroe2e.simulation_manager import SimulationManager
         demands = np.full(30, 5.0)
         script = [(0, '保持水位平稳，正常供水。')]
         sm = SimulationManager(
@@ -529,7 +526,7 @@ class TestSimulationManager(unittest.TestCase):
         self.assertEqual(len(history['q_in']), 5)
 
     def test_scenario_switch(self):
-        from simulation_manager import SimulationManager
+        from hydroe2e.simulation_manager import SimulationManager
         demands = np.full(30, 5.0)
         script = [
             (0, '正常供水'),

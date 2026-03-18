@@ -81,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 EXPOSE ${E2E_WEB_PORT} ${E2E_API_PORT}
 
 # Default command
-CMD ["python", "-m", "phase5.monitoring.unified_system"]
+CMD ["python", "-m", "hydroe2e.phase5.monitoring.unified_system"]

@@ -6,7 +6,7 @@ import tempfile
 
 import pytest
 
-from logger import (
+from hydroe2e.logger import (
     SmartPoolLogger,
     StructuredFormatter,
     get_logger,
@@ -168,7 +168,7 @@ class TestModuleFunctions:
 
     def setup_method(self):
         SmartPoolLogger._instance = None
-        import logger as _mod
+        import hydroe2e.logger as _mod
         _mod._logger_instance = None
 
     def test_get_logger_returns_singleton(self):

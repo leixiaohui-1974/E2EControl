@@ -10,10 +10,6 @@ import os
 import unittest
 import time
 
-# 添加项目根目录到路径
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-
 import numpy as np
 
 
@@ -22,7 +18,7 @@ class TestPhase1BasicMPC(unittest.TestCase):
 
     def test_brain_interpretation(self):
         """测试语义解释"""
-        from brain import SemanticInterpreter
+        from hydroe2e.brain import SemanticInterpreter
 
         interpreter = SemanticInterpreter()
 
@@ -33,7 +29,7 @@ class TestPhase1BasicMPC(unittest.TestCase):
 
     def test_physics_simulation(self):
         """测试物理仿真"""
-        from physics import CanalPoolSimulator
+        from hydroe2e.physics import CanalPoolSimulator
 
         sim = CanalPoolSimulator(
             area=10000.0,
@@ -51,7 +47,7 @@ class TestPhase1BasicMPC(unittest.TestCase):
 
     def test_mpc_solver(self):
         """测试MPC求解器"""
-        from control import UniversalMPCSolver
+        from hydroe2e.control import UniversalMPCSolver
 
         solver = UniversalMPCSolver(
             horizon=10,
@@ -80,9 +76,9 @@ class TestPhase1BasicMPC(unittest.TestCase):
 
     def test_full_phase1_pipeline(self):
         """测试完整Phase 1流水线"""
-        from brain import SemanticInterpreter
-        from physics import CanalPoolSimulator
-        from control import UniversalMPCSolver
+        from hydroe2e.brain import SemanticInterpreter
+        from hydroe2e.physics import CanalPoolSimulator
+        from hydroe2e.control import UniversalMPCSolver
 
         # 初始化组件
         interpreter = SemanticInterpreter()
@@ -127,7 +123,7 @@ class TestPhase2DistributedMPC(unittest.TestCase):
 
     def test_cascaded_system(self):
         """测试级联系统"""
-        from phase2.models.cascaded_system import CascadedCanalSystem
+        from hydroe2e.phase2.models.cascaded_system import CascadedCanalSystem
 
         system = CascadedCanalSystem(num_pools=3, dt=3600.0)
 
@@ -143,7 +139,7 @@ class TestPhase2DistributedMPC(unittest.TestCase):
 
     def test_distributed_mpc(self):
         """测试分布式MPC"""
-        from phase2.controllers.distributed_mpc import DistributedMPCController
+        from hydroe2e.phase2.controllers.distributed_mpc import DistributedMPCController
 
         controller = DistributedMPCController(num_pools=3, horizon=5)
 
@@ -157,7 +153,7 @@ class TestPhase2DistributedMPC(unittest.TestCase):
 
     def test_improved_admm(self):
         """测试改进的ADMM"""
-        from phase2.controllers.improved_admm import ImprovedDistributedMPC, ADMMParameters
+        from hydroe2e.phase2.controllers.improved_admm import ImprovedDistributedMPC, ADMMParameters
 
         params = ADMMParameters(rho=1.0, adaptive_rho=True, max_iterations=10)
         controller = ImprovedDistributedMPC(num_pools=3, horizon=5, params=params)
@@ -174,7 +170,7 @@ class TestPhase2DistributedMPC(unittest.TestCase):
 
     def test_network_topology(self):
         """测试网络拓扑"""
-        from phase2.topology.network_topology import create_simple_cascade, create_complex_network
+        from hydroe2e.phase2.topology.network_topology import create_simple_cascade, create_complex_network
 
         # 简单级联
         simple = create_simple_cascade(num_pools=3)
@@ -191,7 +187,7 @@ class TestPhase3DigitalTwin(unittest.TestCase):
 
     def test_high_fidelity_physics(self):
         """测试高保真物理模型"""
-        from digital_twin.physics.single_channel_fidelity import SingleChannelFidelity, ChannelGeometry
+        from hydroe2e.digital_twin.physics.single_channel_fidelity import SingleChannelFidelity, ChannelGeometry
 
         geometry = ChannelGeometry(
             length=20000.0,  # 20km
@@ -207,8 +203,8 @@ class TestPhase3DigitalTwin(unittest.TestCase):
 
     def test_intelligent_observer(self):
         """测试智能观测器"""
-        from digital_twin.physics.single_channel_fidelity import SingleChannelFidelity, ChannelGeometry
-        from digital_twin.perception.intelligent_observer import IntelligentObserver
+        from hydroe2e.digital_twin.physics.single_channel_fidelity import SingleChannelFidelity, ChannelGeometry
+        from hydroe2e.digital_twin.perception.intelligent_observer import IntelligentObserver
 
         # 先创建物理模型
         geometry = ChannelGeometry(length=20000.0, N=20)
@@ -220,11 +216,11 @@ class TestPhase3DigitalTwin(unittest.TestCase):
     def test_digital_twin_module_structure(self):
         """测试数字孪生模块结构"""
         # 验证模块可以导入
-        import digital_twin
-        import digital_twin.physics
-        import digital_twin.perception
-        import digital_twin.control
-        import digital_twin.scenarios
+        import hydroe2e.digital_twin
+        import hydroe2e.digital_twin.physics
+        import hydroe2e.digital_twin.perception
+        import hydroe2e.digital_twin.control
+        import hydroe2e.digital_twin.scenarios
 
         self.assertTrue(True)
 
@@ -234,7 +230,7 @@ class TestPhase4AnomalyAndHealing(unittest.TestCase):
 
     def test_statistical_anomaly_detection(self):
         """测试统计异常检测"""
-        from phase4.anomaly_detection.statistical_detectors import (
+        from hydroe2e.phase4.anomaly_detection.statistical_detectors import (
             ThreeSigmaDetector, CUSUMDetector, EWMADetector
         )
 
@@ -261,7 +257,7 @@ class TestPhase4AnomalyAndHealing(unittest.TestCase):
 
     def test_fault_diagnosis(self):
         """测试故障诊断"""
-        from phase4.fault_diagnosis.diagnosis_engine import DiagnosisEngine
+        from hydroe2e.phase4.fault_diagnosis.diagnosis_engine import DiagnosisEngine
 
         engine = DiagnosisEngine()
 
@@ -280,7 +276,7 @@ class TestPhase4AnomalyAndHealing(unittest.TestCase):
 
     def test_self_healing_system(self):
         """测试自愈系统"""
-        from phase4.self_healing.self_healing_system import SelfHealingSystem
+        from hydroe2e.phase4.self_healing.self_healing_system import SelfHealingSystem
 
         system = SelfHealingSystem()
 
@@ -297,8 +293,8 @@ class TestPhase4AnomalyAndHealing(unittest.TestCase):
 
     def test_isolation_and_recovery(self):
         """测试隔离和恢复"""
-        from phase4.self_healing.isolation_strategy import FaultIsolationStrategy
-        from phase4.self_healing.recovery_manager import RecoveryManager
+        from hydroe2e.phase4.self_healing.isolation_strategy import FaultIsolationStrategy
+        from hydroe2e.phase4.self_healing.recovery_manager import RecoveryManager
 
         # 隔离策略
         isolation = FaultIsolationStrategy()
@@ -321,7 +317,7 @@ class TestPhase3ScenarioRecognition(unittest.TestCase):
 
     def test_scenario_types(self):
         """测试场景类型"""
-        from phase3.scenario_recognition.scenario_types import (
+        from hydroe2e.phase3.scenario_recognition.scenario_types import (
             ScenarioCategory, NormalScenario, FloodScenario,
             IceScenario, EmergencyScenario
         )
@@ -340,7 +336,7 @@ class TestPhase3ScenarioRecognition(unittest.TestCase):
 
     def test_feature_extractor(self):
         """测试特征提取器"""
-        from phase3.scenario_recognition.feature_extractor import FeatureExtractor
+        from hydroe2e.phase3.scenario_recognition.feature_extractor import FeatureExtractor
 
         extractor = FeatureExtractor(window_size=24)
 
@@ -359,7 +355,7 @@ class TestPhase3ScenarioRecognition(unittest.TestCase):
     def test_rule_engine(self):
         """测试规则引擎"""
         try:
-            from phase3.scenario_recognition.rule_engine import RuleEngine
+            from hydroe2e.phase3.scenario_recognition.rule_engine import RuleEngine
             engine = RuleEngine()
             self.assertIsNotNone(engine)
         except ImportError:
@@ -372,7 +368,7 @@ class TestConfigAndInfrastructure(unittest.TestCase):
 
     def test_config_manager(self):
         """测试配置管理器"""
-        from config_manager import ConfigManager
+        from hydroe2e.config_manager import ConfigManager
 
         if not os.path.exists('config.yaml'):
             self.skipTest("配置文件不存在")
@@ -389,7 +385,7 @@ class TestConfigAndInfrastructure(unittest.TestCase):
 
     def test_database_operations(self):
         """测试数据库操作"""
-        from database import SimulationDatabase
+        from hydroe2e.database import SimulationDatabase
 
         test_db = "test_e2e.db"
         if os.path.exists(test_db):
@@ -419,7 +415,7 @@ class TestConfigAndInfrastructure(unittest.TestCase):
 
     def test_monitoring_system(self):
         """测试监控系统"""
-        from monitor import MonitoringSystem
+        from hydroe2e.monitor import MonitoringSystem
 
         if not os.path.exists('config.yaml'):
             self.skipTest("配置文件不存在")
@@ -440,8 +436,8 @@ class TestCrossPhaseIntegration(unittest.TestCase):
 
     def test_phase1_to_phase2_integration(self):
         """测试Phase 1到Phase 2的集成"""
-        from brain import SemanticInterpreter
-        from phase2.models.cascaded_system import CascadedCanalSystem
+        from hydroe2e.brain import SemanticInterpreter
+        from hydroe2e.phase2.models.cascaded_system import CascadedCanalSystem
 
         # Phase 1: 解释指令
         interpreter = SemanticInterpreter()
@@ -459,8 +455,8 @@ class TestCrossPhaseIntegration(unittest.TestCase):
 
     def test_anomaly_detection_in_simulation(self):
         """测试仿真中的异常检测"""
-        from physics import CanalPoolSimulator
-        from phase4.anomaly_detection.statistical_detectors import ThreeSigmaDetector
+        from hydroe2e.physics import CanalPoolSimulator
+        from hydroe2e.phase4.anomaly_detection.statistical_detectors import ThreeSigmaDetector
 
         # 创建物理模拟器
         physics = CanalPoolSimulator(
@@ -506,9 +502,9 @@ class TestEndToEndScenarios(unittest.TestCase):
 
     def test_normal_operation_scenario(self):
         """测试正常运行场景"""
-        from brain import SemanticInterpreter
-        from physics import CanalPoolSimulator
-        from control import UniversalMPCSolver
+        from hydroe2e.brain import SemanticInterpreter
+        from hydroe2e.physics import CanalPoolSimulator
+        from hydroe2e.control import UniversalMPCSolver
 
         # 初始化
         interpreter = SemanticInterpreter()
@@ -533,9 +529,9 @@ class TestEndToEndScenarios(unittest.TestCase):
 
     def test_flood_emergency_scenario(self):
         """测试洪水应急场景"""
-        from brain import SemanticInterpreter
-        from physics import CanalPoolSimulator
-        from control import UniversalMPCSolver
+        from hydroe2e.brain import SemanticInterpreter
+        from hydroe2e.physics import CanalPoolSimulator
+        from hydroe2e.control import UniversalMPCSolver
 
         # 初始化
         interpreter = SemanticInterpreter()
@@ -566,7 +562,7 @@ class TestPerformanceMetrics(unittest.TestCase):
 
     def test_mpc_solve_time(self):
         """测试MPC求解时间"""
-        from control import UniversalMPCSolver
+        from hydroe2e.control import UniversalMPCSolver
 
         solver = UniversalMPCSolver(10, 3600.0, 10000.0, 1)
         config = {
@@ -592,7 +588,7 @@ class TestPerformanceMetrics(unittest.TestCase):
 
     def test_system_throughput(self):
         """测试系统吞吐量"""
-        from physics import CanalPoolSimulator
+        from hydroe2e.physics import CanalPoolSimulator
 
         physics = CanalPoolSimulator(10000.0, 3600.0, 1, 3.0)
 
@@ -602,7 +598,7 @@ class TestPerformanceMetrics(unittest.TestCase):
             physics.step(5.0, 5.0)
         elapsed = time.time() - start
 
-        throughput = steps / elapsed
+        throughput = steps / elapsed if elapsed > 0 else float('inf')
         print(f"\n物理仿真吞吐量: {throughput:.0f} steps/s")
 
         # 应该能达到高吞吐量

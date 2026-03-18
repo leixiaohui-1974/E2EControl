@@ -33,7 +33,7 @@ services:
       - db
       - redis
     healthcheck:
-      test: ["CMD", "python", "-c", "import phase5; print('OK')"]
+      test: ["CMD", "python", "-c", "import hydroe2e; print('OK')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -47,7 +47,7 @@ services:
       dockerfile: Dockerfile
     container_name: e2e-dashboard
     restart: unless-stopped
-    command: python -c "from phase5.web import WebDashboard; d = WebDashboard(); d.start(); import time; time.sleep(999999)"
+    command: python -c "from hydroe2e.phase5.web import WebDashboard; d = WebDashboard(); d.start(); import time; time.sleep(999999)"
     environment:
       - E2E_WEB_HOST=0.0.0.0
       - E2E_WEB_PORT=8080
@@ -75,7 +75,7 @@ services:
       dockerfile: Dockerfile
     container_name: e2e-api
     restart: unless-stopped
-    command: python api.py
+    command: python -m hydroe2e.api
     environment:
       - E2E_API_HOST=0.0.0.0
       - E2E_API_PORT=8000
@@ -146,7 +146,7 @@ services:
       - certification
     command: >
       python -c "
-      from phase5.hil_testing import CertificationRunner;
+      from hydroe2e.phase5.hil_testing import CertificationRunner;
       runner = CertificationRunner();
       report = runner.run_certification();
       runner.export_report(report, '/app/reports/certification.html', 'html');
