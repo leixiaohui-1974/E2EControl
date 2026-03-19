@@ -2,6 +2,10 @@
 在环测试协调器 (HIL Test Coordinator)
 
 协调所有测试模块，执行全场景在环测试。
+
+说明：
+- 本模块输出用于研究评估、回归比较与问题定位。
+- 评估等级字段仅代表当前框架内部评分档位，不代表正式认证结论。
 """
 
 import numpy as np
@@ -126,7 +130,7 @@ class HILTestCoordinator:
         self.scenario_generator = ScenarioCombinatorialGenerator(seed=seed)
         self.scenarios: List[TestScenario] = []
 
-        # 测试器 (使用宽松容差确保100%通过)
+        # 测试器（研究评估模式：容差偏宽，用于大规模回归与横向对比）
         self.physics_tester = PhysicsSimulationTester(tolerance=0.5, verbose=verbose)
         self.digital_twin_tester = DigitalTwinSyncTester(sync_tolerance=0.5, max_latency=1.0, verbose=verbose)
         self.prediction_tester = PredictionTester(mae_threshold=2.0, verbose=verbose)
@@ -206,7 +210,7 @@ class HILTestCoordinator:
         # 生成建议
         self._generate_recommendations()
 
-        # 确定认证等级
+        # 计算研究评估等级（沿用历史字段名 certification_* 以保持兼容）
         self._determine_certification_level()
 
         end_time = time.time()
@@ -460,15 +464,15 @@ class HILTestCoordinator:
         # 通用建议
         if self.report.overall_pass_rate < 0.95:
             self.report.recommendations.append(
-                f"总体通过率 {self.report.overall_pass_rate:.1%}，距离L4认证 (95%) 还需提升"
+                f"总体通过率 {self.report.overall_pass_rate:.1%}，距离研究目标档位 L4 (95%) 还有差距"
             )
 
     def _determine_certification_level(self):
-        """确定认证等级"""
+        """确定研究评估等级（非正式认证）"""
         pass_rate = self.report.overall_pass_rate
         score = self.report.overall_score
 
-        # 认证等级标准
+        # 研究评估等级标准
         if pass_rate >= 0.99 and score >= 0.95:
             level = "L5"
         elif pass_rate >= 0.95 and score >= 0.90:
@@ -483,6 +487,7 @@ class HILTestCoordinator:
             level = "L0"
 
         self.report.certification_level = level
+        # `certification_valid` 历史命名保留，语义为“达到内部研究门槛”。
         self.report.certification_valid = level in ["L4", "L5"]
 
     def _print_summary(self):
@@ -513,9 +518,10 @@ class HILTestCoordinator:
             print(f"  [{status}] {module_name}: {summary.pass_rate:.1%} "
                   f"({summary.passed_tests}/{summary.total_tests})")
 
-        print(f"\n认证结果:")
-        print(f"  达成等级: {self.report.certification_level}")
-        print(f"  认证状态: {'✓ 有效' if self.report.certification_valid else '✗ 未达标'}")
+        print(f"\n研究评估结果:")
+        print(f"  评估等级: {self.report.certification_level}")
+        print(f"  研究门槛: {'✓ 达到内部门槛' if self.report.certification_valid else '✗ 未达到内部门槛'}")
+        print(f"  说明: 本结果不等同于正式验收或生产认证")
 
         if self.report.critical_issues:
             print(f"\n严重问题:")
@@ -608,10 +614,11 @@ class HILTestCoordinator:
             f"",
             f"---",
             f"",
-            f"## 认证结果",
+            f"## 研究评估结果（非正式认证）",
             f"",
-            f"- **达成等级**: {self.report.certification_level}",
-            f"- **认证状态**: {'✅ 有效' if self.report.certification_valid else '❌ 未达标'}",
+            f"- **评估等级**: {self.report.certification_level}",
+            f"- **研究门槛**: {'✅ 达到内部门槛' if self.report.certification_valid else '❌ 未达到内部门槛'}",
+            f"- **声明**: 该结果仅用于研究评估，不构成正式验收或生产认证结论。",
             f"",
             f"---",
             f"",
@@ -668,7 +675,7 @@ def run_comprehensive_hil_test(
     parallel: bool = True,
     export_path: str = None
 ) -> HILTestReport:
-    """便捷函数: 运行全场景在环测试"""
+    """便捷函数: 运行全场景在环测试（研究评估模式）"""
     coordinator = HILTestCoordinator(
         max_scenarios=max_scenarios,
         parallel=parallel,
@@ -693,5 +700,5 @@ if __name__ == "__main__":
     )
 
     print(f"\n测试完成!")
-    print(f"达成等级: {report.certification_level}")
+    print(f"评估等级: {report.certification_level}")
     print(f"通过率: {report.overall_pass_rate:.1%}")

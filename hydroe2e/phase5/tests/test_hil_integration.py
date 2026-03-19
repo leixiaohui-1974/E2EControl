@@ -8,6 +8,8 @@ import unittest
 import tempfile
 import shutil
 import json
+import os
+import sys
 
 from hydroe2e.phase5.hil_testing.scenario_generator import (
     ScenarioGenerator, Scenario, AutonomousLevel,

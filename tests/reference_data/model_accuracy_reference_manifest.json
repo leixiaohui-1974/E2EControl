@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "generator": "scripts/generate_model_accuracy_reference.py",
+  "reference_pack": "tests\\reference_data\\model_accuracy_reference_pack.json",
+  "reference_pack_sha256": "96d7183c25725dd6e38cabfca1f86f78109b951fa1527f01deee070fa48c8bd1",
+  "reference_solver_family": "TVD-MUSCL",
+  "scenario_ids": [
+    "canonical_step_response_quick",
+    "canonical_step_response_full"
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "canonical_step_response_quick",
+      "grid_points": 201,
+      "total_seconds": 2400.0,
+      "n_steps": 240,
+      "steady_upstream_depth_m": 2.17624,
+      "steady_mid_depth_m": 2.121646,
+      "steady_downstream_depth_m": 2.031427
+    },
+    {
+      "scenario_id": "canonical_step_response_full",
+      "grid_points": 201,
+      "total_seconds": 7200.0,
+      "n_steps": 720,
+      "steady_upstream_depth_m": 2.17624,
+      "steady_mid_depth_m": 2.158934,
+      "steady_downstream_depth_m": 2.057428
+    }
+  ]
+}

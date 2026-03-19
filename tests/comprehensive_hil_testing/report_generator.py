@@ -2,6 +2,10 @@
 综合测试报告生成器 (Comprehensive Report Generator)
 
 生成详细的测试报告，支持多种格式。
+
+说明：
+- 本报告用于研究评估与回归比较。
+- 报告中的分级结果不应直接解读为正式验收/生产认证结论。
 """
 
 import json
@@ -57,7 +61,7 @@ class ComprehensiveReportGenerator:
         content = f"""
 ## 执行摘要
 
-本报告总结了智能水网控制系统的全场景在环测试结果。
+本报告总结了智能水网控制系统的研究型全场景在环测试结果。
 
 ### 测试概况
 - **测试日期**: {data.get('test_start_time', 'N/A')[:10]}
@@ -68,10 +72,10 @@ class ComprehensiveReportGenerator:
 ### 关键指标
 - **通过率**: {pass_rate:.1%}
 - **综合得分**: {score:.2f}/1.00
-- **认证等级**: {cert_level}
+- **评估等级**: {cert_level}
 
 ### 结论
-{'系统达到生产就绪状态，可以进行实际部署。' if cert_level in ['L4', 'L5'] else '系统需要进一步优化以达到认证标准。'}
+{'当前结果达到研究评估高档位（L4/L5），可用于进一步验收准备；不等同于生产就绪。' if cert_level in ['L4', 'L5'] else '当前结果尚未达到研究评估高档位，建议继续优化并补充验证证据。'}
 """
         return ReportSection(title="执行摘要", content=content)
 
@@ -139,7 +143,7 @@ class ComprehensiveReportGenerator:
         return ReportSection(title="模块测试结果", content=content)
 
     def generate_certification_section(self) -> ReportSection:
-        """生成认证章节"""
+        """生成评估分级章节（兼容历史字段名 certification）"""
         cert = self.report_data.get('certification', {})
         level = cert.get('level', 'L0')
         valid = cert.get('valid', False)
@@ -162,13 +166,14 @@ class ComprehensiveReportGenerator:
             'L5': {'pass_rate': 0.99, 'score': 0.95},
         }
 
-        content = f"""## 认证结果
+        content = f"""## 研究评估分级（非正式认证）
 
-### 达成等级: {level}
+### 评估等级: {level}
 
 **定义**: {level_descriptions.get(level, '未知')}
 
-**认证状态**: {'✅ 认证有效' if valid else '❌ 未达标'}
+**研究门槛**: {'✅ 达到内部门槛' if valid else '❌ 未达到内部门槛'}
+**声明**: 该分级仅反映研究框架内部评分，不构成正式验收或生产认证结论。
 
 ### 等级要求
 
@@ -185,7 +190,7 @@ class ComprehensiveReportGenerator:
             status = '✅' if (meets_pass and meets_score) else '❌'
             content += f"| {l} | ≥{req['pass_rate']:.0%} | ≥{req['score']:.2f} | {status} |\n"
 
-        return ReportSection(title="认证结果", content=content)
+        return ReportSection(title="研究评估分级", content=content)
 
     def generate_issues_recommendations(self) -> ReportSection:
         """生成问题与建议"""
@@ -231,7 +236,7 @@ class ComprehensiveReportGenerator:
         self.sections = sections
 
         # 组合报告
-        report_content = f"""# 智能水网控制系统全场景在环测试报告
+        report_content = f"""# 智能水网控制系统全场景在环测试研究报告（非正式验收）
 
 **报告ID**: {self.report_data.get('test_id', 'N/A')}
 **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
@@ -248,7 +253,7 @@ class ComprehensiveReportGenerator:
 ### A. 测试环境
 - 操作系统: Linux
 - Python版本: 3.8+
-- 测试框架: E2EControl HIL Testing Framework v1.0
+- 测试框架: E2EControl HIL Testing Framework v1.0（研究模式）
 
 ### B. 术语表
 - **HIL**: Hardware-in-the-Loop，在环测试
@@ -258,7 +263,7 @@ class ComprehensiveReportGenerator:
 
 ---
 
-*本报告由 E2EControl 测试框架自动生成*
+*本报告由 E2EControl 测试框架自动生成，仅用于研究评估与回归分析。*
 """
         return report_content
 

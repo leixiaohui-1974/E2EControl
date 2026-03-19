@@ -2,13 +2,16 @@
 """
 全场景在环测试主运行脚本 (Comprehensive HIL Test Runner)
 
-运行成千上万种场景的全功能在环测试：
+运行成千上万种场景的研究型在环测试：
 - 本体仿真 (Physics Simulation)
 - 同步孪生 (Digital Twin Synchronization)
 - 预测功能 (Prediction)
 - 调度优化 (Scheduling Optimization)
 - 控制功能 (Control)
 - 异常检测与自愈 (Anomaly Detection & Self-Healing)
+
+注意：
+- 本脚本输出用于研究评估与回归比较，不等同于正式验收或生产认证。
 
 用法:
     python run_comprehensive_hil_test.py [--scenarios N] [--parallel] [--output PATH]
@@ -35,7 +38,7 @@ def print_banner():
 ║   ███████╗███████╗███████╗╚██████╗╚██████╔╝██║ ╚████║   ██║   ██║  ██║╚██████╔╝║
 ║   ╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ║
 ║                                                                              ║
-║              全场景在环测试框架 v1.0 - Comprehensive HIL Testing              ║
+║          全场景在环研究测试框架 v1.0 - Comprehensive HIL Research             ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
@@ -45,7 +48,7 @@ def print_banner():
 def parse_args():
     """解析命令行参数"""
     parser = argparse.ArgumentParser(
-        description='智能水网控制系统全场景在环测试',
+        description='智能水网控制系统全场景在环研究测试',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 示例:
@@ -233,8 +236,9 @@ def run_comprehensive_test(args):
     print(f"  失败数: {report.failed_tests}")
     print(f"  通过率: {report.overall_pass_rate:.1%}")
     print(f"  综合得分: {report.overall_score:.2f}")
-    print(f"  认证等级: {report.certification_level}")
-    print(f"  认证状态: {'✓ 有效' if report.certification_valid else '✗ 未达标'}")
+    print(f"  评估等级: {report.certification_level}")
+    print(f"  研究门槛: {'✓ 达到内部门槛' if report.certification_valid else '✗ 未达到内部门槛'}")
+    print(f"  说明: 该结果仅用于研究评估，不构成正式验收或生产认证结论")
     print(f"  总耗时: {total_time:.1f}s")
 
     print(f"\n报告已生成:")

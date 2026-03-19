@@ -124,7 +124,7 @@ class SimulationEnvironment:
     def _init_physics(self):
         """初始化物理模型"""
         try:
-            from physics import CanalPoolSimulator
+            from hydroe2e.physics import CanalPoolSimulator
             # 适配接口: PoolPhysics -> CanalPoolSimulator
             # 这里我们直接使用 CanalPoolSimulator，但需要注意接口差异
             # HIL Runner 期望的 physics 对象可能需要适配
@@ -154,7 +154,7 @@ class SimulationEnvironment:
     def _init_controller(self):
         """初始化控制器"""
         try:
-            from control import UniversalMPCSolver
+            from hydroe2e.control import UniversalMPCSolver
             self.controller = UniversalMPCSolver(
                 horizon=10,
                 dt=self.dt,

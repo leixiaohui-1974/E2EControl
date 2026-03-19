@@ -160,6 +160,9 @@ class SegmentedHighFidelityModel:
 
         # 残差历史 (用于收敛监测)
         self.residual_history = []
+        self._last_total_volume = 0.0
+        self._last_face_inflow = 0.0
+        self._last_face_outflow = 0.0
 
         logger.info(f"HighFidelityModel initialized: {segment_id}, n={self.n}, dx={self.config.dx}m")
 
@@ -215,6 +218,18 @@ class SegmentedHighFidelityModel:
 
         # 计算过水面积和流速
         self._update_derived_variables()
+        self._last_total_volume = float(np.sum(self.A) * self.config.dx)
+        self._last_face_inflow = float(self.Q[0])
+        self._last_face_outflow = float(self.Q[-1])
+
+        if self.upstream_bc["type"] == BoundaryType.DIRICHLET_LEVEL:
+            self.upstream_bc["value"] = float(self.h[0])
+        elif self.upstream_bc["type"] == BoundaryType.DIRICHLET_FLOW:
+            self.upstream_bc["value"] = float(self.Q[0])
+        if self.downstream_bc["type"] == BoundaryType.DIRICHLET_LEVEL:
+            self.downstream_bc["value"] = float(self.h[-1])
+        elif self.downstream_bc["type"] == BoundaryType.DIRICHLET_FLOW:
+            self.downstream_bc["value"] = float(self.Q[-1])
 
         self.residual_history = []
 
@@ -241,9 +256,16 @@ class SegmentedHighFidelityModel:
             downstream: 下游边界 {"type": BoundaryType, "value": float}
         """
         if upstream:
-            self.upstream_bc = upstream
+            self.upstream_bc = self._normalize_boundary(upstream)
         if downstream:
-            self.downstream_bc = downstream
+            self.downstream_bc = self._normalize_boundary(downstream)
+
+    def _normalize_boundary(self, boundary: Dict[str, Any]) -> Dict[str, Any]:
+        normalized = dict(boundary)
+        boundary_type = normalized.get("type")
+        if isinstance(boundary_type, str):
+            normalized["type"] = BoundaryType(boundary_type)
+        return normalized
 
     def set_lateral_inflow(self, inflow: np.ndarray):
         """设置侧向入流分布"""
@@ -281,6 +303,8 @@ class SegmentedHighFidelityModel:
         h_old = self.h.copy()
         Q_old = self.Q.copy()
         A_old = self.A.copy()
+        previous_total_volume = float(np.sum(A_old) * dx)
+        face_fluxes = self._build_face_fluxes(Q_old)
 
         # 构建系数矩阵和右端向量
         # Saint-Venant方程:
@@ -295,10 +319,9 @@ class SegmentedHighFidelityModel:
         # 再求解动量方程更新Q
 
         # 1. 连续性方程 (显式处理)
-        for i in range(1, n-1):
-            dQdx = (Q_old[i+1] - Q_old[i-1]) / (2 * dx)
+        for i in range(n):
             q_L = self.lateral_inflow[i]
-            dAdt = -dQdx + q_L
+            dAdt = -(face_fluxes[i + 1] - face_fluxes[i]) / dx + q_L
 
             # 更新面积
             A_new = A_old[i] + dt * dAdt
@@ -317,8 +340,9 @@ class SegmentedHighFidelityModel:
             # 摩阻坡度 (Manning公式)
             R = section.hydraulic_radius(depth)
             if R > 0:
-                Sf = (section.manning_n * self.v[i])**2 / R**(4/3)
-                Sf = np.sign(self.v[i]) * Sf  # 保持方向
+                velocity = Q_old[i] / max(A_old[i], 1e-9)
+                Sf = (section.manning_n * velocity)**2 / R**(4/3)
+                Sf = np.sign(velocity) * Sf  # 保持方向
             else:
                 Sf = 0.0
 
@@ -343,6 +367,8 @@ class SegmentedHighFidelityModel:
 
         # 4. 更新派生变量
         self._update_derived_variables()
+        self._last_face_inflow = float(face_fluxes[0])
+        self._last_face_outflow = float(face_fluxes[-1])
 
         # 计算残差
         residual = np.max(np.abs(self.h - h_old)) + np.max(np.abs(self.Q - Q_old))
@@ -355,8 +381,27 @@ class SegmentedHighFidelityModel:
             "time": self.time,
             "max_residual": residual,
             "max_cfl": max_cfl,
-            "mass_balance": self._calculate_mass_balance(),
+            "mass_balance": self._calculate_mass_balance(previous_total_volume=previous_total_volume),
         }
+
+    def _build_face_fluxes(self, Q_ref: np.ndarray) -> np.ndarray:
+        face_fluxes = np.zeros(self.n + 1, dtype=float)
+        face_fluxes[0] = self._boundary_face_flux("upstream", Q_ref)
+        for i in range(self.n - 1):
+            face_fluxes[i + 1] = 0.5 * (Q_ref[i] + Q_ref[i + 1])
+        face_fluxes[-1] = self._boundary_face_flux("downstream", Q_ref)
+        return face_fluxes
+
+    def _boundary_face_flux(self, side: str, Q_ref: np.ndarray) -> float:
+        if side == "upstream":
+            boundary = self.upstream_bc
+            fallback = float(Q_ref[0])
+        else:
+            boundary = self.downstream_bc
+            fallback = float(Q_ref[-1])
+        if boundary["type"] == BoundaryType.DIRICHLET_FLOW:
+            return float(boundary["value"])
+        return fallback
 
     def _depth_from_area(self, node_idx: int, area: float) -> float:
         """从面积反算水深 (牛顿迭代)"""
@@ -380,22 +425,14 @@ class SegmentedHighFidelityModel:
         # 上游边界
         if self.upstream_bc["type"] == BoundaryType.DIRICHLET_FLOW:
             self.Q[0] = self.upstream_bc["value"]
-            # 使用特征线外推水位
-            self.h[0] = self.h[1]
         elif self.upstream_bc["type"] == BoundaryType.DIRICHLET_LEVEL:
             self.h[0] = self.upstream_bc["value"]
-            # 使用特征线外推流量
-            self.Q[0] = self.Q[1]
 
         # 下游边界
         if self.downstream_bc["type"] == BoundaryType.DIRICHLET_LEVEL:
             self.h[-1] = self.downstream_bc["value"]
-            # 使用特征线外推流量
-            self.Q[-1] = self.Q[-2]
         elif self.downstream_bc["type"] == BoundaryType.DIRICHLET_FLOW:
             self.Q[-1] = self.downstream_bc["value"]
-            # 使用特征线外推水位
-            self.h[-1] = self.h[-2]
 
     def _check_cfl(self) -> float:
         """检查CFL条件"""
@@ -408,19 +445,21 @@ class SegmentedHighFidelityModel:
                 max_cfl = max(max_cfl, cfl)
         return max_cfl
 
-    def _calculate_mass_balance(self) -> Dict[str, float]:
-        """计算质量平衡"""
-        inflow = self.Q[0]
-        outflow = self.Q[-1]
-        lateral = np.sum(self.lateral_inflow) * self.config.dx
-        storage_change = np.sum(self.A - self.A) / self.config.dt  # 简化
+    def _calculate_mass_balance(self, previous_total_volume: Optional[float] = None) -> Dict[str, float]:
+        inflow = float(self._last_face_inflow)
+        outflow = float(self._last_face_outflow)
+        lateral = float(np.sum(self.lateral_inflow) * self.config.dx)
+        volume_now = float(np.sum(self.A) * self.config.dx)
+        volume_prev = self._last_total_volume if previous_total_volume is None else float(previous_total_volume)
+        storage_change = (volume_now - volume_prev) / self.config.dt
+        self._last_total_volume = volume_now
 
         return {
             "inflow": inflow,
             "outflow": outflow,
             "lateral": lateral,
             "storage_change": storage_change,
-            "balance_error": inflow - outflow + lateral,
+            "balance_error": inflow - outflow + lateral - storage_change,
         }
 
     def get_state(self) -> SegmentState:

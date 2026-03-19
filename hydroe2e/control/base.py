@@ -56,6 +56,8 @@ class UniversalMPCSolver:
         self.Q_cap = MAX_FLOW_CAPACITY
         self.Z_min = MIN_WATER_LEVEL
         self.Z_max = MAX_WATER_LEVEL
+        self.last_status: str | None = None
+        self.last_fallback: bool = False
 
     def solve(
         self,
@@ -117,7 +119,7 @@ class UniversalMPCSolver:
                 if k == 0:
                     constraints.append(
                         Z[k, i] == current_level[i]
-                        + (q_prev[i] - outflow_i) * self.dt / self.area
+                        + (Q[k, i] - outflow_i) * self.dt / self.area
                     )
                 else:
                     constraints.append(
@@ -142,12 +144,20 @@ class UniversalMPCSolver:
 
         prob = cp.Problem(cp.Minimize(cost), constraints)
         prob.solve(solver=cp.OSQP, warm_start=True, verbose=False)
+        self.last_status = str(prob.status)
+        self.last_fallback = False
 
         if prob.status in ("infeasible", "unbounded"):
+            self.last_fallback = True
             logger.warning(
                 "Optimization status %s. Maintaining previous flow.",
                 prob.status,
             )
+            return q_prev
+
+        if Q.value is None:
+            self.last_fallback = True
+            logger.warning("Optimization produced no control action. Maintaining previous flow.")
             return q_prev
 
         optimal_action = Q.value[0, :]

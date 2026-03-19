@@ -1,7 +1,7 @@
 """
 全场景在环测试框架 (Comprehensive Hardware-in-the-Loop Testing Framework)
 
-本框架实现成千上万种场景组合的全功能测试，覆盖：
+本框架实现成千上万种场景组合的研究型全功能测试，覆盖：
 - 本体仿真 (Physics Simulation)
 - 同步孪生 (Synchronized Digital Twin)
 - 预测功能 (Prediction)
@@ -14,6 +14,9 @@
 - 全功能覆盖率 > 95%
 - 自动化报告生成
 - 并行测试支持
+
+注意：
+- 当前输出用于研究评估与回归对比，不等同于正式验收或生产认证结论。
 """
 
 from .scenario_combinatorial_generator import (
