@@ -77,3 +77,17 @@ data/
 reports/
 docker/grafana/dashboards/*.json
 _external/
+
+# Agent-team working files
+.team_*.md
+.team_*.txt
+OVERNIGHT_REPORT.md
+
+# Local experiment outputs
+e2e_test_result*.txt
+model_accuracy_summary.json
+phase5_certification.txt
+phase_tests_result.txt
+wt_*.txt
+tmp_fidelity_control*/
+tmp_model_accuracy*.json
