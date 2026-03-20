@@ -18,6 +18,10 @@ from datetime import datetime
 
 import numpy as np
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from hydroe2e.hydraulics.solvers import (
     create_all_solvers, ChannelParams, manning_Q, manning_h,
     BaseSolver, SWMMDynwave, SWMMKinwave, PINNSolver,
@@ -50,8 +54,8 @@ print("=" * 70)
 print("  水力学求解器验证程序")
 print("=" * 70)
 print(f"  渠道: L={L}m W={W}m S0={S0} n={n_m}")
-print(f"  初始: h0={h0}m V0={V0:.3f}m/s Q0={Q0:.2f}m³/s")
-print(f"  阶跃: Q→{Q_STEP:.2f}m³/s at t={STEP_T}s")
+print(f"  初始: h0={h0}m V0={V0:.3f}m/s Q0={Q0:.2f}m^3/s")
+print(f"  阶跃: Q→{Q_STEP:.2f}m^3/s at t={STEP_T}s")
 print(f"  解析解:")
 print(f"    Manning正常水深(Q0):  {h_normal_Q0:.4f}m")
 print(f"    Manning正常水深(Qs):  {h_normal_Qs:.4f}m")
@@ -111,9 +115,9 @@ def verify_mass_conservation(name, data, solver):
     """检验: 总入流体积 - 总出流体积 ≈ 蓄变量变化"""
     h_init = h0
     h_final_avg = np.mean(solver.get_h_profile())
-    delta_storage = W * L * (h_final_avg - h_init)  # m³
+    delta_storage = W * L * (h_final_avg - h_init)  # m^3
 
-    total_inflow = sum(data["q_in"]) * DT           # m³
+    total_inflow = sum(data["q_in"]) * DT           # m^3
     # 出流用 Manning 公式估算（下游水深）
     total_outflow = 0
     for h_d in data["h_down"]:
@@ -133,7 +137,7 @@ def verify_mass_conservation(name, data, solver):
         "balance_error_m3": round(balance, 1),
         "rel_error_pct": round(rel_error, 2),
         "threshold": "< 10%",
-        "detail": f"入流{total_inflow:.0f} - 出流{total_outflow:.0f} - 蓄变{delta_storage:.0f} = {balance:.0f}m³ ({rel_error:.1f}%)",
+        "detail": f"入流{total_inflow:.0f} - 出流{total_outflow:.0f} - 蓄变{delta_storage:.0f} = {balance:.0f}m^3 ({rel_error:.1f}%)",
     }
 
 
@@ -254,7 +258,7 @@ def verify_physical_reasonableness(name, data):
     h_before = np.mean(h_up[max(0, step_idx-10):step_idx])
     h_after = np.mean(h_up[-50:])
     if h_after < h_before - 0.01:
-        issues.append(f"正阶跃后上游水深反降({h_before:.3f}→{h_after:.3f})")
+        issues.append(f"正阶跃后上游水深反降({h_before:.3f}->{h_after:.3f})")
 
     # 水深不应过大（>10m 视为异常）
     if np.max(h_up) > 10.0: issues.append(f"上游水深异常大(max={h_up.max():.2f})")
@@ -352,7 +356,7 @@ def main():
             print(f"    [{icon}] {v['test']}: {v['detail']}")
 
         all_pass = all(v["passed"] for v in checks)
-        print(f"    → {'ALL PASS' if all_pass else 'HAS FAILURES'}\n")
+        print(f"    => {'ALL PASS' if all_pass else 'HAS FAILURES'}\n")
 
     # V5: 互验
     v5 = verify_cross_consistency(all_data)

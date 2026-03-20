@@ -32,7 +32,6 @@ def test_data_types():
     assert ConstraintType.FLOW_BOUND.value > 0
 
     print("  ✓ 数据类型定义正确")
-    return True
 
 
 def test_water_demand():
@@ -59,7 +58,6 @@ def test_water_demand():
     assert demand.flexibility == 0.3
 
     print("  ✓ 用水需求数据结构正确")
-    return True
 
 
 def test_objective_function():
@@ -97,7 +95,6 @@ def test_objective_function():
     assert cost2 > cost, "偏离状态成本应更高"
 
     print("  ✓ 目标函数正确")
-    return True
 
 
 def test_constraint_handler():
@@ -148,7 +145,6 @@ def test_constraint_handler():
     assert penalty > 0, "违反应有惩罚"
 
     print("  ✓ 约束处理器正确")
-    return True
 
 
 def test_constraint_projection():
@@ -177,7 +173,6 @@ def test_constraint_projection():
     assert projected2['level_0'] >= 1.0, "应投影到下界上"
 
     print("  ✓ 约束投影正确")
-    return True
 
 
 def test_multi_objective_optimizer():
@@ -219,7 +214,6 @@ def test_multi_objective_optimizer():
     assert len(result.schedule) > 0
 
     print("  ✓ 多目标优化器正确")
-    return True
 
 
 def test_water_allocator_priority():
@@ -272,7 +266,6 @@ def test_water_allocator_priority():
     assert allocations.get("D2", 0) == 0.0, "最低优先级应无分配"
 
     print("  ✓ 优先级分配正确")
-    return True
 
 
 def test_water_allocator_proportional():
@@ -317,7 +310,6 @@ def test_water_allocator_proportional():
     assert abs(satisfaction - 0.5) < 0.01, "满足率应为50%"
 
     print("  ✓ 比例分配正确")
-    return True
 
 
 def test_allocation_summary():
@@ -361,7 +353,6 @@ def test_allocation_summary():
     assert 'agricultural' in summary['by_category']
 
     print("  ✓ 分配汇总正确")
-    return True
 
 
 def test_schedule_generator():
@@ -400,7 +391,6 @@ def test_schedule_generator():
     assert schedule[23].slot_id == "H23"
 
     print("  ✓ 调度生成器正确")
-    return True
 
 
 def test_emergency_schedule():
@@ -433,7 +423,6 @@ def test_emergency_schedule():
     assert pollution_schedule[0].gate_positions.get(2, 0.5) == 0.0  # 关闭污染区闸门
 
     print("  ✓ 应急调度正确")
-    return True
 
 
 def test_optimization_system():
@@ -493,7 +482,6 @@ def test_optimization_system():
     assert slot is not None
 
     print("  ✓ 综合优化调度系统正确")
-    return True
 
 
 def test_schedule_evaluation():
@@ -528,7 +516,6 @@ def test_schedule_evaluation():
     assert 'schedule_adherence' in evaluation
 
     print("  ✓ 调度评估正确")
-    return True
 
 
 def test_allocation_strategies():
@@ -582,7 +569,6 @@ def test_allocation_strategies():
         assert total_allocated <= 1500.0, f"策略 {strategy.name} 分配超额"
 
     print("  ✓ 所有分配策略正确")
-    return True
 
 
 def run_all_tests():
@@ -614,11 +600,8 @@ def run_all_tests():
 
     for test in tests:
         try:
-            if test():
-                passed += 1
-            else:
-                failed += 1
-                print(f"  ✗ {test.__name__} 失败")
+            test()
+            passed += 1
         except Exception as e:
             failed += 1
             print(f"  ✗ {test.__name__} 异常: {e}")

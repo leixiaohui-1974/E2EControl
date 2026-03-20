@@ -69,6 +69,16 @@ class MultiObjectiveMPC:
         
         # Pareto前沿
         self.pareto_front = []
+        self._solver_candidates = self._detect_solvers()
+
+    def _detect_solvers(self) -> List[str]:
+        """选择当前环境中可用的凸优化求解器。"""
+        preferred = ["ECOS", "CLARABEL", "SCS", "OSQP"]
+        try:
+            installed = set(cp.installed_solvers())
+        except Exception:
+            installed = set()
+        return [solver for solver in preferred if solver in installed]
     
     def solve(self, 
               current_level: float,
@@ -182,9 +192,17 @@ class MultiObjectiveMPC:
         prob = cp.Problem(cp.Minimize(total_cost), constraints)
         
         try:
-            prob.solve(solver=cp.ECOS, verbose=False)
+            solved = False
+            for solver_name in self._solver_candidates:
+                try:
+                    prob.solve(solver=solver_name, verbose=False)
+                    solved = prob.status in {"optimal", "optimal_inaccurate"}
+                    if solved:
+                        break
+                except Exception:
+                    continue
             
-            if prob.status == "optimal":
+            if solved:
                 # 计算各目标实际值
                 cost_values = {
                     obj: float(cost.value) if hasattr(cost, 'value') else 0.0

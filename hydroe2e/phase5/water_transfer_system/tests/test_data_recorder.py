@@ -4,6 +4,8 @@ Test suite for Data Recording and Replay System
 """
 
 import math
+import os
+import sys
 import tempfile
 
 from hydroe2e.phase5.water_transfer_system.data_recorder import (
@@ -35,7 +37,6 @@ def test_data_types():
     assert PlaybackState.PAUSED.value > 0
 
     print("  ✓ 数据类型定义正确")
-    return True
 
 
 def test_time_series_segment():
@@ -68,7 +69,6 @@ def test_time_series_segment():
     assert all(20.0 <= t <= 40.0 for t in slice_seg.timestamps)
 
     print("  ✓ 时间序列片段正确")
-    return True
 
 
 def test_time_series_storage():
@@ -120,7 +120,6 @@ def test_time_series_storage():
     assert stats['total_events'] == 1
 
     print("  ✓ 时序存储引擎正确")
-    return True
 
 
 def test_simulation_recorder():
@@ -164,7 +163,6 @@ def test_simulation_recorder():
     assert info['total_snapshots'] == 1
 
     print("  ✓ 仿真记录器正确")
-    return True
 
 
 def test_simulation_replayer():
@@ -236,7 +234,6 @@ def test_simulation_replayer():
     assert 'current_time' in info
 
     print("  ✓ 仿真回放器正确")
-    return True
 
 
 def test_data_analyzer():
@@ -296,7 +293,6 @@ def test_data_analyzer():
     assert 'channel_statistics' in report
 
     print("  ✓ 数据分析器正确")
-    return True
 
 
 def test_correlation_analysis():
@@ -330,7 +326,6 @@ def test_correlation_analysis():
     assert abs(corr - 1.0) < 0.01
 
     print("  ✓ 相关性分析正确")
-    return True
 
 
 def test_data_export_import():
@@ -393,7 +388,6 @@ def test_data_export_import():
             os.remove(temp_path)
 
     print("  ✓ 数据导入导出正确")
-    return True
 
 
 def test_compressed_export():
@@ -434,7 +428,6 @@ def test_compressed_export():
             os.remove(temp_path)
 
     print("  ✓ 压缩导出正确")
-    return True
 
 
 def test_recording_system():
@@ -476,7 +469,6 @@ def test_recording_system():
     assert report['total_data_points'] > 0
 
     print("  ✓ 综合记录系统正确")
-    return True
 
 
 def test_sampled_recording():
@@ -501,7 +493,6 @@ def test_sampled_recording():
     assert info['total_points'] >= 20  # 至少20个采样点
 
     print("  ✓ 采样记录模式正确")
-    return True
 
 
 def test_playback_events():
@@ -544,7 +535,6 @@ def test_playback_events():
     assert len(triggered_events) == 5
 
     print("  ✓ 回放事件处理正确")
-    return True
 
 
 def run_all_tests():
@@ -574,11 +564,8 @@ def run_all_tests():
 
     for test in tests:
         try:
-            if test():
-                passed += 1
-            else:
-                failed += 1
-                print(f"  ✗ {test.__name__} 失败")
+            test()
+            passed += 1
         except Exception as e:
             failed += 1
             print(f"  ✗ {test.__name__} 异常: {e}")

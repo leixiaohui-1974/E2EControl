@@ -234,14 +234,14 @@ def test_physics_mass_conservation_prefers_backend_outflow(monkeypatch):
     assert result.metrics["imbalance_volume"] == 0.0
 
 
-def test_auto_backend_prefers_single_channel_over_segmented_hf_when_available():
+def test_auto_backend_prefers_segmented_hf_over_single_channel_when_available():
     control_tester = ControlTester(physics_backend="auto")
     physics_tester = PhysicsSimulationTester(physics_backend="auto")
 
-    if control_tester.single_channel_available:
-        assert control_tester.preferred_physics_backend == "single_channel"
-    if physics_tester.single_channel_available:
-        assert physics_tester.preferred_physics_backend == "single_channel"
+    if control_tester.segmented_hf_available:
+        assert control_tester.preferred_physics_backend == "segmented_hf"
+    if physics_tester.segmented_hf_available:
+        assert physics_tester.preferred_physics_backend == "segmented_hf"
 
 
 def test_segmented_hf_backend_runs_small_step_strict_scenario():

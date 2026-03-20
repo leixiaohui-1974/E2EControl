@@ -16,6 +16,11 @@ Full Integration Test Suite for Water Transfer Autonomous System
 import time
 import math
 from datetime import datetime
+import sys
+
+from hydroe2e.phase5 import water_transfer_system as _water_transfer_system
+
+sys.modules.setdefault("water_transfer_system", _water_transfer_system)
 
 
 # ============================================================

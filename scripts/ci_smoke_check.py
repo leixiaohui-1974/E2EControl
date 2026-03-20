@@ -13,7 +13,11 @@ import hashlib
 import json
 from pathlib import Path
 import sys
-import tomllib
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 local fallback
+    import tomli as tomllib
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

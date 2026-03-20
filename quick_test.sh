@@ -58,19 +58,19 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "2. 测试核心模块"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-test_module "配置管理器" "python3 config_manager.py"
-test_module "日志系统" "python3 logger.py"
-test_module "语义解释器" "python3 -c 'from brain_enhanced import EnhancedSemanticInterpreter; EnhancedSemanticInterpreter()'"
-test_module "监控系统" "python3 -c 'from monitor import MonitoringSystem; MonitoringSystem()'"
-test_module "数据库系统" "python3 -c 'from database import SimulationDatabase; db = SimulationDatabase(\"test.db\"); import os; os.remove(\"test.db\")'"
+test_module "配置管理器" "python3 -c 'from hydroe2e.config_manager import ConfigManager; print(ConfigManager.__name__)'"
+test_module "日志系统" "python3 -c 'from hydroe2e.logger import get_logger; print(get_logger(\"quick_test\").name)'"
+test_module "语义解释器" "python3 -c 'from hydroe2e.brain_enhanced import EnhancedSemanticInterpreter; EnhancedSemanticInterpreter()'"
+test_module "监控系统" "python3 -c 'from hydroe2e.monitor import MonitoringSystem; MonitoringSystem()'"
+test_module "数据库系统" "python3 -c 'from hydroe2e.database import SimulationDatabase; db = SimulationDatabase(\"test.db\"); import os; os.remove(\"test.db\")'"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "3. 运行单元测试"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-test_module "原始单元测试" "python3 test_units.py 2>&1 | grep -q OK"
-test_module "API测试" "python3 -m unittest test_api.TestAPI 2>&1 | grep -q OK"
+test_module "模型精度 gate 回归" "python3 -m pytest tests/test_model_accuracy_gate.py -q"
+test_module "控制 gate 回归" "python3 -m pytest tests/test_strict_revalidation_gate.py -q"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -80,7 +80,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 test_module "config.yaml存在" "test -f config.yaml"
 test_module "README.md存在" "test -f README.md"
 test_module "requirements.txt存在" "test -f requirements.txt"
-test_module "api.py存在" "test -f api.py"
+test_module "hydroe2e/api.py存在" "test -f hydroe2e/api.py"
 test_module "main_enhanced.py存在" "test -f main_enhanced.py"
 
 echo ""
@@ -103,7 +103,7 @@ if [ $FAILED -eq 0 ]; then
     echo ""
     echo "可以运行以下命令:"
     echo "  • python3 main_enhanced.py    - 运行完整仿真"
-    echo "  • python3 api.py              - 启动API服务器"
+    echo "  • python3 -m hydroe2e.api     - 启动API服务器"
     echo "  • python3 demo.py             - 运行交互式演示"
     echo "  • python3 benchmark.py        - 性能测试"
     exit 0
@@ -117,7 +117,7 @@ else
     echo ""
     echo "请检查失败的测试，确保:"
     echo "  1. 安装了所有依赖: pip3 install -r requirements.txt"
-    echo "  2. Python版本 >= 3.8"
+    echo "  2. Python版本 >= 3.11"
     echo "  3. 配置文件正确"
     exit 1
 fi

@@ -530,6 +530,33 @@ class L2L1Coordinator:
 
         return commands
 
+    def handle_cross_region(self,
+                            source_region: int,
+                            coord_type: CoordinationType) -> None:
+        """接收来自其他区域的跨区域协调通知。"""
+        self.region_state['emergency_mode'] = True
+        self.region_state.setdefault('cross_region_sources', set()).add(source_region)
+
+        logger.info(
+            "L2[%s]收到跨区域协调: source=%s, type=%s",
+            self.region_id,
+            source_region,
+            coord_type.value,
+        )
+
+        # 为本区域生成一个轻量级协调请求，确保后续协调步可见并可继续下发。
+        affected_pools = list(range(self.pool_start, min(self.pool_end, self.num_pools)))
+        request = CoordinationRequest(
+            request_id=f"CROSS_{source_region}_{self.region_id}_{int(time.time())}",
+            coordination_type=coord_type,
+            source_pool=self.pool_start,
+            priority=8,
+            affected_pools=affected_pools,
+            request_time=time.time(),
+            deadline=time.time() + self._get_deadline(coord_type),
+        )
+        self.pending_requests.append(request)
+
     def monitor_active_coordinations(self) -> Dict[str, Any]:
         """监控活跃协调"""
         status = {}

@@ -14,7 +14,7 @@ echo "==========================================================================
 echo ""
 echo "[1/5] 检查Python环境..."
 if ! command -v python3 &> /dev/null; then
-    echo "❌ 错误: 未找到python3，请先安装Python 3.8+"
+    echo "❌ 错误: 未找到python3，请先安装Python 3.11+"
     exit 1
 fi
 
@@ -48,8 +48,8 @@ echo "==========================================================================
 echo "[3/5] Phase 1: 基础MPC控制演示"
 echo "================================================================================"
 echo ""
-echo "运行 main.py ..."
-python3 main.py
+echo "运行 hydroe2e.main ..."
+python3 -m hydroe2e.main
 
 if [ $? -eq 0 ]; then
     echo "✓ Phase 1演示完成"
@@ -68,8 +68,8 @@ echo "==========================================================================
 echo "[4/5] Phase 3: 数字孪生系统演示"
 echo "================================================================================"
 echo ""
-echo "运行 digital_twin/scenarios/deep_dive_simulation.py ..."
-python3 digital_twin/scenarios/deep_dive_simulation.py
+echo "运行 hydroe2e/digital_twin/scenarios/deep_dive_simulation.py ..."
+python3 hydroe2e/digital_twin/scenarios/deep_dive_simulation.py
 
 if [ $? -eq 0 ]; then
     echo "✓ Phase 3演示完成"
@@ -86,12 +86,12 @@ echo "==========================================================================
 echo "[5/5] Phase 4: 自愈系统演示"
 echo "================================================================================"
 echo ""
-echo "运行 phase4/self_healing/self_healing_system.py ..."
-python3 phase4/self_healing/self_healing_system.py 2>&1 | head -n 100
+echo "运行 hydroe2e/phase4/self_healing/self_healing_system.py ..."
+python3 hydroe2e/phase4/self_healing/self_healing_system.py 2>&1 | head -n 100
 
 if [ $? -eq 0 ]; then
     echo "✓ Phase 4演示完成"
-    [ -f "phase4/self_healing/self_healing_report.png" ] && cp phase4/self_healing/self_healing_report.png demo_outputs/
+    [ -f "hydroe2e/phase4/self_healing/self_healing_report.png" ] && cp hydroe2e/phase4/self_healing/self_healing_report.png demo_outputs/
 else
     echo "❌ Phase 4演示失败（可能缺少依赖）"
 fi
@@ -104,12 +104,12 @@ echo "==========================================================================
 echo "[Bonus] Phase 5: 完整系统集成演示"
 echo "================================================================================"
 echo ""
-echo "运行 phase5/integrated_system.py ..."
-python3 phase5/integrated_system.py 2>&1 | tail -n 50
+echo "运行 hydroe2e/phase5/integrated_system.py ..."
+python3 hydroe2e/phase5/integrated_system.py 2>&1 | tail -n 50
 
 if [ $? -eq 0 ]; then
     echo "✓ Phase 5演示完成"
-    [ -f "phase5/integrated_system_results.png" ] && cp phase5/integrated_system_results.png demo_outputs/
+    [ -f "hydroe2e/phase5/integrated_system_results.png" ] && cp hydroe2e/phase5/integrated_system_results.png demo_outputs/
 else
     echo "❌ Phase 5演示失败"
 fi

@@ -1,0 +1,8 @@
+# Experiment implementation commands
+pytest -q tests/test_fidelity_control_experiment.py
+# Default preset = bounded quick analysis (configs/experiments/fidelity_control_bounded.yaml)
+python scripts/run_fidelity_control_experiment.py
+python scripts/run_fidelity_control_experiment.py --config configs/experiments/fidelity_control_bounded.yaml
+python scripts/run_fidelity_control_experiment.py --config configs/experiments/fidelity_control_experiment.smoke.yaml
+python scripts/run_fidelity_control_experiment.py --config configs/experiments/fidelity_control_experiment.yaml
+python scripts/run_fidelity_control_experiment.py --config configs/experiments/fidelity_control_experiment.yaml --output-dir reports/experiments/fidelity_control_effectiveness_custom

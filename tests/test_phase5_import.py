@@ -1,23 +1,16 @@
+import importlib
 
-import sys
-import os
+import pytest
 
-try:
-    from hydroe2e.phase5.integrated_system import IntegratedWaterNetworkSystem
-    print("Successfully imported IntegratedWaterNetworkSystem")
-    
-    system = IntegratedWaterNetworkSystem(
-        num_pools=3,
-        enable_digital_twin=False,
-        enable_self_healing=True,
-        enable_anomaly_detection=True
-    )
-    print("Successfully instantiated IntegratedWaterNetworkSystem")
-    
-    status = system.get_system_status()
-    print("System Status:", status)
-    
-except Exception as e:
-    print(f"Failed: {e}")
-    import traceback
-    traceback.print_exc()
+
+def test_phase5_package_import_is_lightweight():
+    phase5 = importlib.import_module("hydroe2e.phase5")
+    assert phase5.__version__ == "1.0.0"
+    assert hasattr(phase5, "__all__")
+    assert "CentralizedScheduler" in phase5.__all__
+
+
+def test_phase5_integrated_system_import_when_optional_stack_available():
+    pytest.importorskip("cvxpy")
+    module = importlib.import_module("hydroe2e.phase5.integrated_system")
+    assert hasattr(module, "IntegratedWaterNetworkSystem")

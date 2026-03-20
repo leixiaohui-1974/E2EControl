@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.11', '3.12']
 
     steps:
     - name: Checkout code
@@ -42,15 +42,19 @@ jobs:
       run: |
         bandit -r . -x ./tests,./test_*.py,./comprehensive_test_*.py,./benchmark.py,./performance_test.py -s B101 -q
 
+    - name: Run validation smoke checks
+      run: |
+        python scripts/ci_smoke_check.py
+
     - name: Run tests with coverage
       run: |
         python -m pytest --cov=. --cov-report=xml --cov-report=term-missing \
           tests/ \
-          phase2/tests/ \
-          phase4/tests/ \
-          test_units.py \
-          test_api.py \
-          test_enhanced.py \
+          hydroe2e/phase2/tests/ \
+          hydroe2e/phase4/tests/ \
+          hydroe2e/phase5/tests/ \
+          hydroe2e/phase5/distributed_sil/tests/ \
+          hydroe2e/phase5/water_transfer_system/tests/ \
           -v --tb=short
 
     - name: Upload coverage reports
@@ -59,3 +63,78 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: false
       continue-on-error: true
+
+  model-accuracy-gate:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+
+    - name: Simulation Fidelity Gate
+      run: |
+        python scripts/generate_model_accuracy_reference.py
+        python scripts/check_model_accuracy.py --quick --json-out reports/acceptance/model_accuracy_summary.json
+
+    - name: Upload model accuracy artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: model-accuracy-gate
+        path: reports/acceptance/model_accuracy_summary.json
+        if-no-files-found: error
+
+  control-release-gate:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+
+    - name: Run strict control revalidation
+      run: |
+        python scripts/run_strict_revalidation.py \
+          --modules control \
+          --scenarios 20 \
+          --physics-backend single_channel \
+          --controller-backend base_mpc \
+          --output reports/acceptance/strict_revalidation_summary.json
+
+    - name: Control Effectiveness Gate
+      run: |
+        python scripts/check_strict_revalidation_gate.py \
+          --summary reports/acceptance/strict_revalidation_summary.json \
+          --module control \
+          --json-out reports/acceptance/acc_ctrl001_gate_status.json
+
+    - name: Upload control gate artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: control-release-gate
+        path: |
+          reports/acceptance/strict_revalidation_summary.json
+          reports/acceptance/acc_ctrl001_gate_status.json
+        if-no-files-found: error

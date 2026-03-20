@@ -4,6 +4,69 @@ import sys
 from pathlib import Path
 
 
+def test_hydraulics_import_does_not_require_cvxpy():
+    repo_root = Path(__file__).resolve().parents[1]
+    cmd = [
+        sys.executable,
+        "-c",
+        (
+            "import sys; "
+            "sys.path.insert(0, '.'); "
+            "from hydroe2e.hydraulics.solvers import ChannelParams; "
+            "print('ok')"
+        ),
+    ]
+    proc = subprocess.run(
+        cmd,
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stdout.strip() == "ok"
+
+
+def test_phase5_hydraulics_import_does_not_require_cvxpy():
+    repo_root = Path(__file__).resolve().parents[1]
+    cmd = [
+        sys.executable,
+        "-c",
+        (
+            "import sys; "
+            "sys.path.insert(0, '.'); "
+            "from hydroe2e.phase5.water_transfer_system.hydraulic_simulator import IDZDynamicModel; "
+            "print(IDZDynamicModel.__name__)"
+        ),
+    ]
+    proc = subprocess.run(
+        cmd,
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stdout.strip() == "IDZDynamicModel"
+
+
+def test_model_accuracy_gate_help_is_self_contained():
+    repo_root = Path(__file__).resolve().parents[1]
+    script_path = repo_root / "scripts" / "check_model_accuracy.py"
+    proc = subprocess.run(
+        [sys.executable, str(script_path), "--help"],
+        cwd=repo_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stderr
+    assert "Run a minimal model-accuracy gate" in proc.stdout
+
+
 def test_model_accuracy_gate_default_gate_matches_summary(tmp_path):
     repo_root = Path(__file__).resolve().parents[1]
     script_path = repo_root / "scripts" / "check_model_accuracy.py"

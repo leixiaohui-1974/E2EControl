@@ -1,53 +1,40 @@
 """
-Phase 5 Controllers - 双层MPC架构
+Phase 5 controllers.
 
-包含:
-- L3 上层调度层: CentralizedScheduler (线性库容平衡模型)
-- L2 下层控制层: ParameterizedLocalMPC, ParameterizedDistributedMPC (参数化物理模型)
-- 集成控制器: HierarchicalMPCController (双层协调)
+Expose controller classes lazily so importing non-control Phase 5 modules does
+not require optional optimization dependencies.
 """
 
-from .centralized_scheduler import (
-    CentralizedScheduler,
-    NetworkTopology,
-    SchedulingMode,
-    SchedulingForecast,
-    SchedulingResult,
-    SchedulerConfig
-)
+from __future__ import annotations
 
-from .parameterized_mpc import (
-    ParameterizedLocalMPC,
-    ParameterizedDistributedMPC,
-    PhysicalParameters,
-    ScenarioPhysics
-)
+from importlib import import_module
 
-from .hierarchical_mpc import (
-    HierarchicalMPCController,
-    HierarchicalConfig,
-    HierarchicalState,
-    PhysicalScenario
-)
+_LAZY_EXPORTS = {
+    "CentralizedScheduler": ("hydroe2e.phase5.controllers.centralized_scheduler", "CentralizedScheduler"),
+    "NetworkTopology": ("hydroe2e.phase5.controllers.centralized_scheduler", "NetworkTopology"),
+    "SchedulingMode": ("hydroe2e.phase5.controllers.centralized_scheduler", "SchedulingMode"),
+    "SchedulingForecast": ("hydroe2e.phase5.controllers.centralized_scheduler", "SchedulingForecast"),
+    "SchedulingResult": ("hydroe2e.phase5.controllers.centralized_scheduler", "SchedulingResult"),
+    "SchedulerConfig": ("hydroe2e.phase5.controllers.centralized_scheduler", "SchedulerConfig"),
+    "ParameterizedLocalMPC": ("hydroe2e.phase5.controllers.parameterized_mpc", "ParameterizedLocalMPC"),
+    "ParameterizedDistributedMPC": ("hydroe2e.phase5.controllers.parameterized_mpc", "ParameterizedDistributedMPC"),
+    "PhysicalParameters": ("hydroe2e.phase5.controllers.parameterized_mpc", "PhysicalParameters"),
+    "ScenarioPhysics": ("hydroe2e.phase5.controllers.parameterized_mpc", "ScenarioPhysics"),
+    "HierarchicalMPCController": ("hydroe2e.phase5.controllers.hierarchical_mpc", "HierarchicalMPCController"),
+    "HierarchicalConfig": ("hydroe2e.phase5.controllers.hierarchical_mpc", "HierarchicalConfig"),
+    "HierarchicalState": ("hydroe2e.phase5.controllers.hierarchical_mpc", "HierarchicalState"),
+    "PhysicalScenario": ("hydroe2e.phase5.controllers.hierarchical_mpc", "PhysicalScenario"),
+}
 
-__all__ = [
-    # L3 调度层
-    'CentralizedScheduler',
-    'NetworkTopology',
-    'SchedulingMode',
-    'SchedulingForecast',
-    'SchedulingResult',
-    'SchedulerConfig',
+__all__ = list(_LAZY_EXPORTS.keys())
 
-    # L2 控制层
-    'ParameterizedLocalMPC',
-    'ParameterizedDistributedMPC',
-    'PhysicalParameters',
-    'ScenarioPhysics',
 
-    # 集成控制器
-    'HierarchicalMPCController',
-    'HierarchicalConfig',
-    'HierarchicalState',
-    'PhysicalScenario',
-]
+def __getattr__(name: str):
+    if name not in _LAZY_EXPORTS:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    module_name, attr_name = _LAZY_EXPORTS[name]
+    module = import_module(module_name)
+    value = getattr(module, attr_name)
+    globals()[name] = value
+    return value

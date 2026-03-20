@@ -8,13 +8,33 @@ import logging
 logger = logging.getLogger(__name__)
 
 import numpy as np
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 from collections import deque
 
 from .base_detector import (
     BaseDetector, MultiVariateDetector, AnomalyReport,
     AnomalyType, SeverityLevel, calculate_severity
 )
+
+
+def _default_variable_names(variable_names: Optional[List[str]]) -> List[str]:
+    return variable_names or ["value"]
+
+
+def _coerce_training_data(data, variable_names: List[str]) -> Dict[str, np.ndarray]:
+    if isinstance(data, dict):
+        return data
+    return {variable_names[0]: np.asarray(data)}
+
+
+def _coerce_detect_values(values, variable_names: List[str], variable_name: Optional[str] = None) -> Dict[str, float]:
+    if isinstance(values, dict):
+        return values
+    scalar = float(values)
+    coerced = {variable_names[0]: scalar}
+    if variable_name:
+        coerced[variable_name] = scalar
+    return coerced
 
 
 class IsolationForestDetector(MultiVariateDetector):
@@ -28,7 +48,7 @@ class IsolationForestDetector(MultiVariateDetector):
     - 训练速度快
     """
     
-    def __init__(self, variable_names: List[str], window_size: int = 50,
+    def __init__(self, variable_names: Optional[List[str]] = None, window_size: int = 50,
                  contamination: float = 0.1, n_estimators: int = 100):
         """
         初始化Isolation Forest检测器
@@ -39,6 +59,7 @@ class IsolationForestDetector(MultiVariateDetector):
             contamination: 污染率（预期异常比例）
             n_estimators: 树的数量
         """
+        variable_names = _default_variable_names(variable_names)
         super().__init__("IsolationForest", variable_names, window_size)
         self.contamination = contamination
         self.n_estimators = n_estimators
@@ -47,7 +68,7 @@ class IsolationForestDetector(MultiVariateDetector):
         self.trees = []
         self.threshold = 0.0
         
-    def fit(self, data: dict):
+    def fit(self, data):
         """
         训练Isolation Forest模型
         
@@ -55,6 +76,7 @@ class IsolationForestDetector(MultiVariateDetector):
             data: 训练数据字典 {variable_name: array}
         """
         # 构建特征矩阵
+        data = _coerce_training_data(data, self.variable_names)
         X = self._build_feature_matrix(data)
         
         if len(X) < 10:
@@ -69,7 +91,7 @@ class IsolationForestDetector(MultiVariateDetector):
         
         # 这里使用简化版本：基于统计距离
         self.mean = np.mean(X, axis=0)
-        self.cov = np.cov(X.T)
+        self.cov = np.atleast_2d(np.cov(X.T))
         self.cov_inv = np.linalg.pinv(self.cov)
         
         # 计算马氏距离作为异常分数
@@ -84,7 +106,7 @@ class IsolationForestDetector(MultiVariateDetector):
         
         self.is_trained = True
     
-    def detect(self, values: dict, timestamp: int) -> List[AnomalyReport]:
+    def detect(self, values, timestamp: int, variable_name: Optional[str] = None):
         """
         检测异常
         
@@ -98,6 +120,7 @@ class IsolationForestDetector(MultiVariateDetector):
         if not self.is_trained:
             return []
         
+        values = _coerce_detect_values(values, self.variable_names, variable_name)
         self.add_history(values)
         
         reports = []
@@ -131,6 +154,8 @@ class IsolationForestDetector(MultiVariateDetector):
             )
             reports.append(report)
         
+        if variable_name is not None:
+            return reports[0] if reports else None
         return reports
     
     def _build_feature_matrix(self, data: dict) -> np.ndarray:
@@ -149,7 +174,7 @@ class OneClassSVMDetector(MultiVariateDetector):
     - 核技巧处理复杂分布
     """
     
-    def __init__(self, variable_names: List[str], window_size: int = 50,
+    def __init__(self, variable_names: Optional[List[str]] = None, window_size: int = 50,
                  nu: float = 0.1):
         """
         初始化One-Class SVM检测器
@@ -159,6 +184,7 @@ class OneClassSVMDetector(MultiVariateDetector):
             window_size: 窗口大小
             nu: 异常比例上界（类似contamination）
         """
+        variable_names = _default_variable_names(variable_names)
         super().__init__("OneClassSVM", variable_names, window_size)
         self.nu = nu
         
@@ -167,8 +193,9 @@ class OneClassSVMDetector(MultiVariateDetector):
         self.center = None
         self.radius = 0.0
         
-    def fit(self, data: dict):
+    def fit(self, data):
         """训练One-Class SVM模型"""
+        data = _coerce_training_data(data, self.variable_names)
         X = self._build_feature_matrix(data)
         
         if len(X) < 10:
@@ -191,11 +218,12 @@ class OneClassSVMDetector(MultiVariateDetector):
         
         self.is_trained = True
     
-    def detect(self, values: dict, timestamp: int) -> List[AnomalyReport]:
+    def detect(self, values, timestamp: int, variable_name: Optional[str] = None):
         """检测异常"""
         if not self.is_trained:
             return []
         
+        values = _coerce_detect_values(values, self.variable_names, variable_name)
         self.add_history(values)
         
         reports = []
@@ -228,6 +256,8 @@ class OneClassSVMDetector(MultiVariateDetector):
             )
             reports.append(report)
         
+        if variable_name is not None:
+            return reports[0] if reports else None
         return reports
     
     def _build_feature_matrix(self, data: dict) -> np.ndarray:
@@ -246,7 +276,7 @@ class LOFDetector(MultiVariateDetector):
     - 适应不同密度区域
     """
     
-    def __init__(self, variable_names: List[str], window_size: int = 50,
+    def __init__(self, variable_names: Optional[List[str]] = None, window_size: int = 50,
                  n_neighbors: int = 20, contamination: float = 0.1):
         """
         初始化LOF检测器
@@ -257,6 +287,7 @@ class LOFDetector(MultiVariateDetector):
             n_neighbors: 邻居数量
             contamination: 污染率
         """
+        variable_names = _default_variable_names(variable_names)
         super().__init__("LOF", variable_names, window_size)
         self.n_neighbors = n_neighbors
         self.contamination = contamination
@@ -265,8 +296,9 @@ class LOFDetector(MultiVariateDetector):
         self.training_data = None
         self.threshold = 0.0
         
-    def fit(self, data: dict):
+    def fit(self, data):
         """训练LOF模型"""
+        data = _coerce_training_data(data, self.variable_names)
         X = self._build_feature_matrix(data)
         
         if len(X) < self.n_neighbors + 5:
@@ -285,11 +317,12 @@ class LOFDetector(MultiVariateDetector):
         
         self.is_trained = True
     
-    def detect(self, values: dict, timestamp: int) -> List[AnomalyReport]:
+    def detect(self, values, timestamp: int, variable_name: Optional[str] = None):
         """检测异常"""
         if not self.is_trained:
             return []
         
+        values = _coerce_detect_values(values, self.variable_names, variable_name)
         self.add_history(values)
         
         reports = []
@@ -320,6 +353,8 @@ class LOFDetector(MultiVariateDetector):
             )
             reports.append(report)
         
+        if variable_name is not None:
+            return reports[0] if reports else None
         return reports
     
     def _compute_lof(self, point: np.ndarray, data: np.ndarray) -> float:

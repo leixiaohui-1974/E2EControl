@@ -2,262 +2,135 @@
 Phase 5: 系统集成与优化
 System Integration and Optimization
 
-Complete autonomous water network control system with:
-- Phase 5.1: HIL Testing Framework
-- Phase 5.2: Scenario Library (64 test conditions)
-- Phase 5.3: Hierarchical MPC Architecture (L3+L2)
-- Phase 5.4: L4 Self-Healing Capabilities
-- Phase 5.5: Performance Monitoring & System Integration
-- Phase 5.6: Web Dashboard for Real-time Monitoring
-- Phase 5.7: Full Scenario Certification Testing (103 scenarios)
-- Phase 5.8: Docker Containerization
-- Phase 5.9: Real-time Data Interface (OPC-UA, Modbus, SCADA)
-- Phase 5.10: L5 Autonomous Learning and Decision Making
+Keep Phase 5 imports lazy so physics-only tools and tests can run without
+installing optional control dependencies such as cvxpy.
 """
+
+from __future__ import annotations
+
+from importlib import import_module
 
 __version__ = "1.0.0"
 
-# Phase 5.1 & 5.2: HIL Testing Framework and Scenario Library
-from .hil_testing import (
-    ScenarioGenerator,
-    Scenario,
-    Condition,
-    ScenarioCategory,
-    DifficultyLevel,
-    AutonomousLevel,
-    ConditionInjector,
-    InjectionType,
-    EvaluationEngine,
-    TestResult,
-    HILTestRunner,
-    ReportGenerator
-)
+_LAZY_EXPORTS = {
+    # Phase 5.1 & 5.2: HIL Testing Framework and Scenario Library
+    "ScenarioGenerator": ("hydroe2e.phase5.hil_testing", "ScenarioGenerator"),
+    "Scenario": ("hydroe2e.phase5.hil_testing", "Scenario"),
+    "Condition": ("hydroe2e.phase5.hil_testing", "Condition"),
+    "ScenarioCategory": ("hydroe2e.phase5.hil_testing", "ScenarioCategory"),
+    "DifficultyLevel": ("hydroe2e.phase5.hil_testing", "DifficultyLevel"),
+    "AutonomousLevel": ("hydroe2e.phase5.hil_testing", "AutonomousLevel"),
+    "ConditionInjector": ("hydroe2e.phase5.hil_testing", "ConditionInjector"),
+    "InjectionType": ("hydroe2e.phase5.hil_testing", "InjectionType"),
+    "EvaluationEngine": ("hydroe2e.phase5.hil_testing", "EvaluationEngine"),
+    "TestResult": ("hydroe2e.phase5.hil_testing", "TestResult"),
+    "HILTestRunner": ("hydroe2e.phase5.hil_testing", "HILTestRunner"),
+    "ReportGenerator": ("hydroe2e.phase5.hil_testing", "ReportGenerator"),
 
-# Phase 5.3: Hierarchical MPC Architecture
-from .controllers import (
-    HierarchicalMPCController,
-    HierarchicalConfig,
-    HierarchicalState,
-    CentralizedScheduler,
-    ParameterizedLocalMPC,
-    ParameterizedDistributedMPC
-)
+    # Phase 5.3: Hierarchical MPC Architecture
+    "HierarchicalMPCController": ("hydroe2e.phase5.controllers", "HierarchicalMPCController"),
+    "HierarchicalConfig": ("hydroe2e.phase5.controllers", "HierarchicalConfig"),
+    "HierarchicalState": ("hydroe2e.phase5.controllers", "HierarchicalState"),
+    "CentralizedScheduler": ("hydroe2e.phase5.controllers", "CentralizedScheduler"),
+    "ParameterizedLocalMPC": ("hydroe2e.phase5.controllers", "ParameterizedLocalMPC"),
+    "ParameterizedDistributedMPC": ("hydroe2e.phase5.controllers", "ParameterizedDistributedMPC"),
 
-# Phase 5.4: L4 Self-Healing Capabilities
-from .self_healing import (
-    EnhancedDiagnosisEngine,
-    ExtendedFaultType,
-    FaultSeverity,
-    FaultPattern,
-    OptimizedIsolationStrategy,
-    IsolationAction,
-    PredictiveRecoveryEngine,
-    RecoveryPlan,
-    FaultLearningEngine,
-    MacroCognitiveLayer,
-    SystemHealthLevel,
-    RiskLevel,
-    StrategicAdvice
-)
+    # Phase 5.4: L4 Self-Healing Capabilities
+    "EnhancedDiagnosisEngine": ("hydroe2e.phase5.self_healing", "EnhancedDiagnosisEngine"),
+    "ExtendedFaultType": ("hydroe2e.phase5.self_healing", "ExtendedFaultType"),
+    "FaultSeverity": ("hydroe2e.phase5.self_healing", "FaultSeverity"),
+    "FaultPattern": ("hydroe2e.phase5.self_healing", "FaultPattern"),
+    "OptimizedIsolationStrategy": ("hydroe2e.phase5.self_healing", "OptimizedIsolationStrategy"),
+    "IsolationAction": ("hydroe2e.phase5.self_healing", "IsolationAction"),
+    "PredictiveRecoveryEngine": ("hydroe2e.phase5.self_healing", "PredictiveRecoveryEngine"),
+    "RecoveryPlan": ("hydroe2e.phase5.self_healing", "RecoveryPlan"),
+    "FaultLearningEngine": ("hydroe2e.phase5.self_healing", "FaultLearningEngine"),
+    "MacroCognitiveLayer": ("hydroe2e.phase5.self_healing", "MacroCognitiveLayer"),
+    "SystemHealthLevel": ("hydroe2e.phase5.self_healing", "SystemHealthLevel"),
+    "RiskLevel": ("hydroe2e.phase5.self_healing", "RiskLevel"),
+    "StrategicAdvice": ("hydroe2e.phase5.self_healing", "StrategicAdvice"),
 
-# Phase 5.5: Performance Monitoring and System Integration
-from .monitoring import (
-    PerformanceMonitor,
-    MetricType,
-    MetricLevel,
-    PerformanceAlert,
-    UnifiedControlSystem,
-    SystemMode,
-    SystemStatus,
-    ControlCommand,
-    SystemAPI,
-    CommandType
-)
+    # Phase 5.5: Performance Monitoring and System Integration
+    "PerformanceMonitor": ("hydroe2e.phase5.monitoring", "PerformanceMonitor"),
+    "MetricType": ("hydroe2e.phase5.monitoring", "MetricType"),
+    "MetricLevel": ("hydroe2e.phase5.monitoring", "MetricLevel"),
+    "PerformanceAlert": ("hydroe2e.phase5.monitoring", "PerformanceAlert"),
+    "UnifiedControlSystem": ("hydroe2e.phase5.monitoring", "UnifiedControlSystem"),
+    "SystemMode": ("hydroe2e.phase5.monitoring", "SystemMode"),
+    "SystemStatus": ("hydroe2e.phase5.monitoring", "SystemStatus"),
+    "ControlCommand": ("hydroe2e.phase5.monitoring", "ControlCommand"),
+    "SystemAPI": ("hydroe2e.phase5.monitoring", "SystemAPI"),
+    "CommandType": ("hydroe2e.phase5.monitoring", "CommandType"),
 
-# Phase 5.6: Web Dashboard
-from .web import (
-    WebDashboard,
-    DashboardConfig
-)
+    # Phase 5.6: Web Dashboard
+    "WebDashboard": ("hydroe2e.phase5.web", "WebDashboard"),
+    "DashboardConfig": ("hydroe2e.phase5.web", "DashboardConfig"),
 
-# Phase 5.7: Certification Testing
-from .hil_testing import (
-    CertificationRunner,
-    CertificationReport,
-    CertificationResult,
-    CertLevel,
-    LevelRequirement,
-    ScenarioResult,
-    CategorySummary,
-    run_certification
-)
+    # Phase 5.7: Certification Testing
+    "CertificationRunner": ("hydroe2e.phase5.hil_testing", "CertificationRunner"),
+    "CertificationReport": ("hydroe2e.phase5.hil_testing", "CertificationReport"),
+    "CertificationResult": ("hydroe2e.phase5.hil_testing", "CertificationResult"),
+    "CertLevel": ("hydroe2e.phase5.hil_testing", "CertLevel"),
+    "LevelRequirement": ("hydroe2e.phase5.hil_testing", "LevelRequirement"),
+    "ScenarioResult": ("hydroe2e.phase5.hil_testing", "ScenarioResult"),
+    "CategorySummary": ("hydroe2e.phase5.hil_testing", "CategorySummary"),
+    "run_certification": ("hydroe2e.phase5.hil_testing", "run_certification"),
 
-# Phase 5.9: Real-time Data Interface
-from .data_interface import (
-    # OPC-UA Protocol
-    OPCUAAdapter,
-    OPCUANode,
-    OPCUASubscription,
-    OPCUADataPoint,
-    OPCUAConnectionConfig,
-    # Modbus Protocol
-    ModbusAdapter,
-    ModbusRegister,
-    ModbusDeviceConfig,
-    ModbusDataType,
-    ModbusReadResult,
-    # SCADA Integration
-    SCADAInterface,
-    SCADATag,
-    SCADAAlarm,
-    SCADACommand,
-    SCADAConnectionStatus,
-    # Data Replay
-    DataReplayEngine,
-    ReplaySession,
-    ReplayConfig,
-    TimeScaleMode,
-    DataSource,
-)
+    # Phase 5.9: Real-time Data Interface
+    "OPCUAAdapter": ("hydroe2e.phase5.data_interface", "OPCUAAdapter"),
+    "OPCUANode": ("hydroe2e.phase5.data_interface", "OPCUANode"),
+    "OPCUASubscription": ("hydroe2e.phase5.data_interface", "OPCUASubscription"),
+    "OPCUADataPoint": ("hydroe2e.phase5.data_interface", "OPCUADataPoint"),
+    "OPCUAConnectionConfig": ("hydroe2e.phase5.data_interface", "OPCUAConnectionConfig"),
+    "ModbusAdapter": ("hydroe2e.phase5.data_interface", "ModbusAdapter"),
+    "ModbusRegister": ("hydroe2e.phase5.data_interface", "ModbusRegister"),
+    "ModbusDeviceConfig": ("hydroe2e.phase5.data_interface", "ModbusDeviceConfig"),
+    "ModbusDataType": ("hydroe2e.phase5.data_interface", "ModbusDataType"),
+    "ModbusReadResult": ("hydroe2e.phase5.data_interface", "ModbusReadResult"),
+    "SCADAInterface": ("hydroe2e.phase5.data_interface", "SCADAInterface"),
+    "SCADATag": ("hydroe2e.phase5.data_interface", "SCADATag"),
+    "SCADAAlarm": ("hydroe2e.phase5.data_interface", "SCADAAlarm"),
+    "SCADACommand": ("hydroe2e.phase5.data_interface", "SCADACommand"),
+    "SCADAConnectionStatus": ("hydroe2e.phase5.data_interface", "SCADAConnectionStatus"),
+    "DataReplayEngine": ("hydroe2e.phase5.data_interface", "DataReplayEngine"),
+    "ReplaySession": ("hydroe2e.phase5.data_interface", "ReplaySession"),
+    "ReplayConfig": ("hydroe2e.phase5.data_interface", "ReplayConfig"),
+    "TimeScaleMode": ("hydroe2e.phase5.data_interface", "TimeScaleMode"),
+    "DataSource": ("hydroe2e.phase5.data_interface", "DataSource"),
 
-# Phase 5.10: L5 Autonomous Learning
-from .autonomous_learning import (
-    # Online Learning
-    OnlineLearningEngine,
-    LearningAlgorithm,
-    ModelUpdate,
-    LearningRate,
-    AdaptiveOptimizer,
-    # Experience Memory
-    ExperienceMemory,
-    Experience,
-    ExperienceType,
-    MemoryPriority,
-    ReplayBuffer,
-    # Knowledge Transfer
-    KnowledgeTransferEngine,
-    KnowledgeBase,
-    Pattern,
-    PatternType,
-    TransferStrategy,
-    # Autonomous Decision
-    AutonomousDecisionEngine,
-    DecisionContext,
-    Decision,
-    ConfidenceLevel,
-    DecisionOutcome,
-    L5Controller,
-)
+    # Phase 5.10: L5 Autonomous Learning
+    "OnlineLearningEngine": ("hydroe2e.phase5.autonomous_learning", "OnlineLearningEngine"),
+    "LearningAlgorithm": ("hydroe2e.phase5.autonomous_learning", "LearningAlgorithm"),
+    "ModelUpdate": ("hydroe2e.phase5.autonomous_learning", "ModelUpdate"),
+    "LearningRate": ("hydroe2e.phase5.autonomous_learning", "LearningRate"),
+    "AdaptiveOptimizer": ("hydroe2e.phase5.autonomous_learning", "AdaptiveOptimizer"),
+    "ExperienceMemory": ("hydroe2e.phase5.autonomous_learning", "ExperienceMemory"),
+    "Experience": ("hydroe2e.phase5.autonomous_learning", "Experience"),
+    "ExperienceType": ("hydroe2e.phase5.autonomous_learning", "ExperienceType"),
+    "MemoryPriority": ("hydroe2e.phase5.autonomous_learning", "MemoryPriority"),
+    "ReplayBuffer": ("hydroe2e.phase5.autonomous_learning", "ReplayBuffer"),
+    "KnowledgeTransferEngine": ("hydroe2e.phase5.autonomous_learning", "KnowledgeTransferEngine"),
+    "KnowledgeBase": ("hydroe2e.phase5.autonomous_learning", "KnowledgeBase"),
+    "Pattern": ("hydroe2e.phase5.autonomous_learning", "Pattern"),
+    "PatternType": ("hydroe2e.phase5.autonomous_learning", "PatternType"),
+    "TransferStrategy": ("hydroe2e.phase5.autonomous_learning", "TransferStrategy"),
+    "AutonomousDecisionEngine": ("hydroe2e.phase5.autonomous_learning", "AutonomousDecisionEngine"),
+    "DecisionContext": ("hydroe2e.phase5.autonomous_learning", "DecisionContext"),
+    "Decision": ("hydroe2e.phase5.autonomous_learning", "Decision"),
+    "ConfidenceLevel": ("hydroe2e.phase5.autonomous_learning", "ConfidenceLevel"),
+    "DecisionOutcome": ("hydroe2e.phase5.autonomous_learning", "DecisionOutcome"),
+    "L5Controller": ("hydroe2e.phase5.autonomous_learning", "L5Controller"),
+}
 
-__all__ = [
-    # Version
-    '__version__',
+__all__ = ["__version__", *_LAZY_EXPORTS.keys()]
 
-    # HIL Testing (5.1, 5.2)
-    'ScenarioGenerator',
-    'Scenario',
-    'Condition',
-    'ScenarioCategory',
-    'DifficultyLevel',
-    'AutonomousLevel',
-    'ConditionInjector',
-    'InjectionType',
-    'EvaluationEngine',
-    'TestResult',
-    'HILTestRunner',
-    'ReportGenerator',
 
-    # Hierarchical MPC (5.3)
-    'HierarchicalMPCController',
-    'HierarchicalConfig',
-    'HierarchicalState',
-    'CentralizedScheduler',
-    'ParameterizedLocalMPC',
-    'ParameterizedDistributedMPC',
+def __getattr__(name: str):
+    if name not in _LAZY_EXPORTS:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-    # Self-Healing (5.4)
-    'EnhancedDiagnosisEngine',
-    'ExtendedFaultType',
-    'FaultSeverity',
-    'FaultPattern',
-    'OptimizedIsolationStrategy',
-    'IsolationAction',
-    'PredictiveRecoveryEngine',
-    'RecoveryPlan',
-    'FaultLearningEngine',
-    'MacroCognitiveLayer',
-    'SystemHealthLevel',
-    'RiskLevel',
-    'StrategicAdvice',
-
-    # Monitoring & Integration (5.5)
-    'PerformanceMonitor',
-    'MetricType',
-    'MetricLevel',
-    'PerformanceAlert',
-    'UnifiedControlSystem',
-    'SystemMode',
-    'SystemStatus',
-    'ControlCommand',
-    'SystemAPI',
-    'CommandType',
-
-    # Web Dashboard (5.6)
-    'WebDashboard',
-    'DashboardConfig',
-
-    # Certification Testing (5.7)
-    'CertificationRunner',
-    'CertificationReport',
-    'CertificationResult',
-    'CertLevel',
-    'LevelRequirement',
-    'ScenarioResult',
-    'CategorySummary',
-    'run_certification',
-
-    # Real-time Data Interface (5.9)
-    'OPCUAAdapter',
-    'OPCUANode',
-    'OPCUASubscription',
-    'OPCUADataPoint',
-    'OPCUAConnectionConfig',
-    'ModbusAdapter',
-    'ModbusRegister',
-    'ModbusDeviceConfig',
-    'ModbusDataType',
-    'ModbusReadResult',
-    'SCADAInterface',
-    'SCADATag',
-    'SCADAAlarm',
-    'SCADACommand',
-    'SCADAConnectionStatus',
-    'DataReplayEngine',
-    'ReplaySession',
-    'ReplayConfig',
-    'TimeScaleMode',
-    'DataSource',
-
-    # L5 Autonomous Learning (5.10)
-    'OnlineLearningEngine',
-    'LearningAlgorithm',
-    'ModelUpdate',
-    'LearningRate',
-    'AdaptiveOptimizer',
-    'ExperienceMemory',
-    'Experience',
-    'ExperienceType',
-    'MemoryPriority',
-    'ReplayBuffer',
-    'KnowledgeTransferEngine',
-    'KnowledgeBase',
-    'Pattern',
-    'PatternType',
-    'TransferStrategy',
-    'AutonomousDecisionEngine',
-    'DecisionContext',
-    'Decision',
-    'ConfidenceLevel',
-    'DecisionOutcome',
-    'L5Controller',
-]
+    module_name, attr_name = _LAZY_EXPORTS[name]
+    module = import_module(module_name)
+    value = getattr(module, attr_name)
+    globals()[name] = value
+    return value

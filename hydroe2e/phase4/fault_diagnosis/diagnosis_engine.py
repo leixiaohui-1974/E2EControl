@@ -104,6 +104,8 @@ class DiagnosisEngine:
     def __init__(self):
         """初始化诊断引擎"""
         self.rules: List[DiagnosisRule] = self._build_rules()
+        # Backward-compatible alias used by older integration tests/code.
+        self.diagnosis_rules = self.rules
         self.knowledge_base: Dict = self._build_knowledge_base()
         self.diagnosis_history: List[Dict] = []
 
@@ -722,24 +724,29 @@ class DiagnosisEngine:
             return {
                 "total_diagnoses": 0,
                 "category_distribution": {},
+                "fault_type_distribution": {},
                 "severity_distribution": {},
                 "average_confidence": 0.0,
             }
 
         categories: Dict[str, int] = {}
+        fault_types: Dict[str, int] = {}
         severities: Dict[str, int] = {}
         total_confidence = 0.0
 
         for record in self.diagnosis_history:
             cat = record["fault_category"]
+            fault_type = record["fault_type"]
             sev = record["severity"]
             categories[cat] = categories.get(cat, 0) + 1
+            fault_types[fault_type] = fault_types.get(fault_type, 0) + 1
             severities[sev] = severities.get(sev, 0) + 1
             total_confidence += record["confidence"]
 
         return {
             "total_diagnoses": len(self.diagnosis_history),
             "category_distribution": categories,
+            "fault_type_distribution": fault_types,
             "severity_distribution": severities,
             "average_confidence": round(
                 total_confidence / len(self.diagnosis_history), 4

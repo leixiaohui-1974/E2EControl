@@ -161,14 +161,31 @@ class IDZDynamicModel:
 
     def __init__(self, pool_params: PoolPhysicalParams):
         self.params = pool_params
-
-        # 延迟缓冲区
-        self.delay_buffer: deque = deque(maxlen=1000)
+        self.delay_steps = 0
+        self._buffer_dt: Optional[float] = None
+        self.delay_buffer: deque = deque(maxlen=1)
 
         # 状态
         self.current_level = pool_params.target_level
         self.current_inflow = 50.0
         self.current_outflow = 50.0
+        self._configure_delay_buffer(dt=60.0, initial_inflow=self.current_inflow)
+
+    def _configure_delay_buffer(self, dt: float, initial_inflow: Optional[float] = None) -> None:
+        """Rebuild the inflow delay buffer when the effective delay resolution changes."""
+        dt = max(float(dt), 1e-9)
+        delay_steps = max(0, int(np.ceil(self.params.delay_time / dt)))
+        initial = self.current_inflow if initial_inflow is None else float(initial_inflow)
+
+        if self._buffer_dt == dt and self.delay_steps == delay_steps:
+            return
+
+        self.delay_steps = delay_steps
+        self._buffer_dt = dt
+        self.delay_buffer = deque(
+            [initial] * (self.delay_steps + 1),
+            maxlen=self.delay_steps + 1,
+        )
 
     def step(self, dt: float, inflow: float, outflow: float) -> float:
         """
@@ -182,8 +199,12 @@ class IDZDynamicModel:
         Returns:
             新水位 [m]
         """
+        self._configure_delay_buffer(dt, initial_inflow=self.current_inflow)
+        self.delay_buffer.append(float(inflow))
+        delayed_inflow = self.delay_buffer[0]
+
         # 计算水量平衡
-        dV = (inflow - outflow) * dt
+        dV = (delayed_inflow - outflow) * dt
 
         # 计算水面面积
         A_s = self.params.get_surface_area(self.current_level)
@@ -198,7 +219,7 @@ class IDZDynamicModel:
         new_level = max(self.params.min_level, min(self.params.max_level, new_level))
 
         self.current_level = new_level
-        self.current_inflow = inflow
+        self.current_inflow = delayed_inflow
         self.current_outflow = outflow
 
         return new_level
@@ -211,6 +232,10 @@ class IDZDynamicModel:
             return flow_history[0]
         else:
             return self.current_inflow
+
+    def get_delayed_inflow(self) -> float:
+        """获取当前内部延迟缓冲对应的有效入流。"""
+        return float(self.delay_buffer[0]) if self.delay_buffer else self.current_inflow
 
 
 # ==============================================================================

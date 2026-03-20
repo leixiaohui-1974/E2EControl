@@ -4,7 +4,7 @@ version = "1.1.0"
 description = "HydroE2E - End-to-End Intelligent Water Network Control System"
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 authors = [
     {name = "Lei Xiaohui", email = "leixiaohui@iwhr.com"},
 ]
@@ -14,6 +14,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
@@ -25,6 +26,7 @@ dependencies = [
     "matplotlib>=3.6",
     "cvxpy>=1.3",
     "networkx>=3.0",
+    "requests>=2.31",
     "flask>=2.3",
     "flask-cors>=4.0",
     "pandas>=2.0",
@@ -59,7 +61,7 @@ hydroe2e-api = "hydroe2e.api:run_app"
 e2e_controller = "hydroe2e.role:E2ERoleModule"
 
 [project.entry-points."hydromind.engines"]
-hydroe2e = "hydroe2e.mcp_servers.e2e_server"
+hydroe2e = "hydroe2e.mcp_servers.e2e_server:_create_server"
 
 [tool.setuptools.packages.find]
 include = ["hydroe2e*"]

@@ -251,6 +251,24 @@ class TestIDZDynamicModel:
         delayed = model.get_delayed_flow(flow_history, 5)
         assert delayed == model.current_inflow
 
+    def test_step_respects_configured_delay_time(self):
+        """测试阶跃入流在延迟窗口内不会立即作用到水位。"""
+        params = PoolPhysicalParams(pool_id=0, delay_time=180.0)
+        model = IDZDynamicModel(params)
+        initial_level = model.current_level
+
+        # dt=60s, delay_time=180s -> 3步延迟
+        levels = []
+        for _ in range(3):
+            levels.append(model.step(60.0, 100.0, 50.0))
+
+        # 延迟窗口内仍由历史入流50驱动，因此水位基本不变
+        assert all(abs(level - initial_level) < 1e-9 for level in levels)
+
+        delayed_level = model.step(60.0, 100.0, 50.0)
+        assert delayed_level > initial_level
+        assert model.get_delayed_inflow() == 100.0
+
 
 # ==============================================================================
 # 闸门动态模型测试
@@ -455,6 +473,21 @@ class TestFullLineHydraulicSimulator:
             sim.step()
 
         assert sim.state.step_count == 10
+
+    def test_upstream_boundary_step_uses_pool_delay_buffer(self):
+        """测试全线仿真会把上游边界入流送入IDZ延迟链。"""
+        sim = FullLineHydraulicSimulator(num_pools=2, dt=60.0)
+        sim.pool_params[0].delay_time = 180.0
+        sim.pool_models[0] = IDZDynamicModel(sim.pool_params[0])
+
+        sim.set_upstream_inflow(100.0)
+
+        for _ in range(3):
+            sim.step()
+            assert sim.pool_models[0].get_delayed_inflow() == 50.0
+
+        sim.step()
+        assert sim.pool_models[0].get_delayed_inflow() == 100.0
 
     def test_inject_scenario(self):
         """测试场景注入"""

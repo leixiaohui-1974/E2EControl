@@ -30,6 +30,7 @@ class SimulationDatabase:
         self.db_path = db_path
         self.logger = get_logger()
         self.conn: Optional[sqlite3.Connection] = None
+        self._pending_state_writes = 0
         
         self._init_database()
     
@@ -38,6 +39,10 @@ class SimulationDatabase:
         try:
             self.conn = sqlite3.connect(self.db_path)
             self.conn.row_factory = sqlite3.Row  # 使用字典式访问
+            self.conn.execute("PRAGMA journal_mode = WAL")
+            self.conn.execute("PRAGMA synchronous = NORMAL")
+            self.conn.execute("PRAGMA temp_store = MEMORY")
+            self.conn.execute("PRAGMA foreign_keys = ON")
             
             cursor = self.conn.cursor()
             
@@ -184,9 +189,11 @@ class SimulationDatabase:
                 json.dumps(config, ensure_ascii=False)
             ))
             
-            # 批量插入时不每次提交
-            if time_step % 10 == 0:  # 每10步提交一次
+            # 批量插入时降低提交频率，避免性能测试中频繁 fsync。
+            self._pending_state_writes += 1
+            if self._pending_state_writes >= 100:
                 self.conn.commit()
+                self._pending_state_writes = 0
                 
         except sqlite3.Error as e:
             self.logger.error("保存状态失败: %s", e)
@@ -255,6 +262,7 @@ class SimulationDatabase:
         """
         try:
             self.conn.commit()  # 提交所有未提交的数据
+            self._pending_state_writes = 0
             
             cursor = self.conn.cursor()
             cursor.execute("""

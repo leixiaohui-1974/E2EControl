@@ -144,10 +144,10 @@ class PhysicsSimulationTester:
             if self.physics_backend == "fidelity":
                 return "single_channel"
             return self.physics_backend
-        if self.single_channel_available:
-            return "single_channel"
         if self.segmented_hf_available:
             return "segmented_hf"
+        if self.single_channel_available:
+            return "single_channel"
         if self.physics_backend == "tank":
             return "tank"
         return "tank"
@@ -240,7 +240,7 @@ class PhysicsSimulationTester:
         if not self.physics_available:
             raise RuntimeError("physics model unavailable")
         return build_single_pool_backend(
-            backend=self.physics_backend,
+            backend=self.preferred_physics_backend,
             area=scenario.area,
             slope=scenario.slope,
             time_step=scenario.time_step,

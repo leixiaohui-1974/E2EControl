@@ -38,7 +38,6 @@ def test_fault_types():
     assert ControlMode.EMERGENCY.value > 0
 
     print("  ✓ 故障类型定义正确")
-    return True
 
 
 def test_sensor_fault_detector():
@@ -74,7 +73,6 @@ def test_sensor_fault_detector():
     assert FaultType.SENSOR_DRIFT in faults, "应检测到漂移故障"
 
     print("  ✓ 传感器故障检测正确")
-    return True
 
 
 def test_actuator_fault_detector():
@@ -106,7 +104,6 @@ def test_actuator_fault_detector():
     assert len(stuck_faults) > 0 and stuck_faults[0][1] > 0.5, "应检测到卡死故障"
 
     print("  ✓ 执行器故障检测正确")
-    return True
 
 
 def test_residual_generator():
@@ -140,7 +137,6 @@ def test_residual_generator():
     assert residual['level_alarm'] == True, "持续偏差应触发告警"
 
     print("  ✓ 残差生成器正确")
-    return True
 
 
 def test_fault_detection_engine():
@@ -171,7 +167,6 @@ def test_fault_detection_engine():
     assert len(pool1_faults) > 0, "pool_1 应有故障"
 
     print("  ✓ 综合故障检测正确")
-    return True
 
 
 def test_fault_diagnosis():
@@ -200,7 +195,6 @@ def test_fault_diagnosis():
     assert len(diagnosis[0].recommended_actions) > 0, "应有推荐动作"
 
     print("  ✓ 故障诊断正确")
-    return True
 
 
 def test_fault_tolerant_controller():
@@ -252,7 +246,6 @@ def test_fault_tolerant_controller():
     assert reconfig.mode == ControlMode.SAFE_SHUTDOWN, "紧急故障应触发安全停机"
 
     print("  ✓ 容错控制器正确")
-    return True
 
 
 def test_emergency_response():
@@ -291,7 +284,6 @@ def test_emergency_response():
     assert len(active) == 0
 
     print("  ✓ 应急响应系统正确")
-    return True
 
 
 def test_rule_conditions():
@@ -314,7 +306,6 @@ def test_rule_conditions():
     assert time_check({'current_hour': 12}) == False
 
     print("  ✓ 规则条件正确")
-    return True
 
 
 def test_rule_engine():
@@ -353,7 +344,6 @@ def test_rule_engine():
     assert test_actions[0]['action'] == 'alert'
 
     print("  ✓ 运行规则引擎正确")
-    return True
 
 
 def test_integrated_fault_tolerant_system():
@@ -425,7 +415,6 @@ def test_integrated_fault_tolerant_system():
     assert status['active_faults'] > 0, "卡死情况应检测到故障"
 
     print("  ✓ 综合系统正确")
-    return True
 
 
 def test_control_mode_transitions():
@@ -475,7 +464,6 @@ def test_control_mode_transitions():
     assert reconfig.mode == ControlMode.SAFE_SHUTDOWN
 
     print("  ✓ 控制模式切换正确")
-    return True
 
 
 def test_rule_execution():
@@ -502,7 +490,6 @@ def test_rule_execution():
     assert stats['total_executions'] > 0
 
     print("  ✓ 规则执行正确")
-    return True
 
 
 def test_fault_propagation_analysis():
@@ -536,7 +523,6 @@ def test_fault_propagation_analysis():
     assert 'pool_2' in affected
 
     print("  ✓ 故障传播分析正确")
-    return True
 
 
 def run_all_tests():
@@ -568,11 +554,8 @@ def run_all_tests():
 
     for test in tests:
         try:
-            if test():
-                passed += 1
-            else:
-                failed += 1
-                print(f"  ✗ {test.__name__} 失败")
+            test()
+            passed += 1
         except Exception as e:
             failed += 1
             print(f"  ✗ {test.__name__} 异常: {e}")

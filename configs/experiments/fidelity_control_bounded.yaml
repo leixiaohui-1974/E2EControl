@@ -1,0 +1,26 @@
+experiment_name: fidelity_control_bounded
+seed: 42
+scenario_count: 8
+scenario_pool_factor: 2
+
+strict_revalidation:
+  enabled: true
+  modules:
+    - physics
+    - control
+  physics_backend: auto
+  controller_backend: base_mpc
+
+backend_comparison:
+  enabled: true
+  modules:
+    - physics
+    - control
+  controller_backend: base_mpc
+
+outputs:
+  directory: reports/experiments/fidelity_control_bounded
+  strict_json: strict_revalidation.json
+  backend_json: backend_comparison.json
+  summary_json: summary.json
+  summary_md: summary.md

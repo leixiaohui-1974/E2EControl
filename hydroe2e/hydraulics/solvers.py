@@ -13,9 +13,12 @@ Saint-Venant 方程多种数值求解格式
 """
 
 from __future__ import annotations
+import os
+import sys
 import numpy as np
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -622,8 +625,23 @@ class PreissmannImplicit(BaseSolver):
         self._init_vendor()
 
     def _init_vendor(self):
-        import sys
-        sys.path.insert(0, "D:/research/HydroClaw/vendor/Hydrology")
+        repo_root = Path(__file__).resolve().parents[2]
+        env_path = os.environ.get("HYDROLOGY_PATH")
+        candidates: list[Path] = [
+            Path("Z:/research/Hydrology"),
+            repo_root.parent / "Hydrology",
+        ]
+        if env_path:
+            candidates.append(Path(env_path))
+
+        for candidate in candidates:
+            if not candidate.exists():
+                continue
+            candidate_str = str(candidate)
+            if candidate_str not in sys.path:
+                sys.path.insert(0, candidate_str)
+            break
+
         try:
             from preissmann_model.model import HydraulicModel
             from preissmann_model.reach import RiverReach

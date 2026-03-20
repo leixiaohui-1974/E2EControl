@@ -190,6 +190,21 @@ class TimeSeriesStorage:
         """获取片段键"""
         return f"{channel.name}_{source_id}"
 
+    @staticmethod
+    def _stable_value_proxy(value: Union[float, Dict, str]) -> float:
+        """为复杂值生成稳定的数值代理，避免进程级 hash 随机化。"""
+        if isinstance(value, (int, float)):
+            return float(value)
+
+        payload = json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            default=str,
+        ).encode("utf-8")
+        digest = hashlib.sha256(payload).hexdigest()[:12]
+        return float(int(digest, 16) % 1_000_000)
+
     def add_data_point(self, point: DataPoint):
         """添加数据点"""
         key = self._get_segment_key(point.channel, point.source_id)
@@ -205,11 +220,7 @@ class TimeSeriesStorage:
 
         segment = self.segments[key]
 
-        if isinstance(point.value, (int, float)):
-            segment.add_point(point.timestamp, float(point.value))
-        else:
-            # 复杂类型存储为JSON字符串的哈希值作为参考
-            segment.add_point(point.timestamp, hash(str(point.value)) % 1000000)
+        segment.add_point(point.timestamp, self._stable_value_proxy(point.value))
 
         self.total_points += 1
         self.point_count_by_channel[key] += 1
@@ -947,8 +958,9 @@ class DataExporter:
     def __init__(self, storage: TimeSeriesStorage):
         self.storage = storage
 
-    def export_to_json(self, filepath: str, compress: bool = False):
+    def export_to_json(self, filepath: Union[str, Path], compress: bool = False):
         """导出为JSON"""
+        filepath = Path(filepath)
         data = {
             'metadata': self.storage.get_statistics(),
             'segments': {},
@@ -997,7 +1009,7 @@ class DataExporter:
             with gzip.open(filepath, 'wt', encoding='utf-8') as f:
                 f.write(json_str)
         else:
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with filepath.open('w', encoding='utf-8') as f:
                 f.write(json_str)
 
     def export_to_csv(self, filepath: str, channel: DataChannel,
@@ -1028,14 +1040,27 @@ class DataImporter:
     def __init__(self, storage: TimeSeriesStorage):
         self.storage = storage
 
-    def import_from_json(self, filepath: str):
+    @staticmethod
+    def _normalize_snapshot_mapping(data: Dict[Any, Any]) -> Dict[int, Any]:
+        """将 JSON round-trip 后的字符串数字键恢复为 int。"""
+        normalized: Dict[int, Any] = {}
+        for key, value in (data or {}).items():
+            try:
+                normalized[int(key)] = value
+            except (TypeError, ValueError):
+                normalized[key] = value
+        return normalized
+
+    def import_from_json(self, filepath: Union[str, Path]):
         """从JSON导入"""
+        filepath = Path(filepath)
+
         # 检测是否压缩
-        if filepath.endswith('.gz'):
+        if filepath.suffix == '.gz':
             with gzip.open(filepath, 'rt', encoding='utf-8') as f:
                 data = json.load(f)
         else:
-            with open(filepath, 'r', encoding='utf-8') as f:
+            with filepath.open('r', encoding='utf-8') as f:
                 data = json.load(f)
 
         # 导入时间序列
@@ -1068,8 +1093,8 @@ class DataImporter:
             snapshot = SimulationSnapshot(
                 snapshot_id=snap_data['snapshot_id'],
                 timestamp=snap_data['timestamp'],
-                pool_states=snap_data['pool_states'],
-                gate_states=snap_data['gate_states'],
+                pool_states=self._normalize_snapshot_mapping(snap_data.get('pool_states', {})),
+                gate_states=self._normalize_snapshot_mapping(snap_data.get('gate_states', {})),
                 control_states=snap_data.get('control_states', {}),
                 active_events=snap_data.get('active_events', []),
                 system_metrics=snap_data.get('system_metrics', {}),
@@ -1167,13 +1192,14 @@ class DataRecordingSystem:
         """获取分析报告"""
         return self.analyzer.generate_summary_report()
 
-    def save(self, filepath: str, compress: bool = True):
+    def save(self, filepath: Union[str, Path], compress: bool = True):
         """保存数据"""
-        if compress and not filepath.endswith('.gz'):
-            filepath += '.gz'
+        filepath = Path(filepath)
+        if compress and filepath.suffix != '.gz':
+            filepath = filepath.with_suffix(filepath.suffix + '.gz') if filepath.suffix else Path(f"{filepath}.gz")
         self.exporter.export_to_json(filepath, compress)
 
-    def load(self, filepath: str):
+    def load(self, filepath: Union[str, Path]):
         """加载数据"""
         self.storage.clear()
         self.importer.import_from_json(filepath)

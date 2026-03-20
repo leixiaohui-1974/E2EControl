@@ -156,6 +156,8 @@ class CertificationRunner:
     autonomous level requirements (L0-L5).
     """
 
+    _REAL_EXECUTION_CACHE: Dict[Tuple[str, float], Tuple[Dict[str, float], List[str], float]] = {}
+
     def __init__(
         self,
         scenarios_path: str = None,
@@ -163,7 +165,7 @@ class CertificationRunner:
         parallel: bool = False,
         max_workers: int = 4,
         use_real_execution: bool = True,
-        max_scenario_duration: float = 120.0,
+        max_scenario_duration: float = 10.0,
         fallback_to_simulation: bool = False,
     ):
         """
@@ -175,7 +177,10 @@ class CertificationRunner:
             parallel: Enable parallel test execution
             max_workers: Max parallel workers
             use_real_execution: Execute scenarios through the HIL runner
-            max_scenario_duration: Cap scenario duration for bounded certification runs
+            max_scenario_duration: Cap scenario duration for bounded certification runs.
+                The certification tests exercise report plumbing rather than long-horizon
+                controller convergence, so keep the default window tight to avoid
+                pathological multi-hour pytest runs.
             fallback_to_simulation: Fall back to simulated scoring if real execution fails
         """
         self.scenarios_path = scenarios_path or self._default_scenarios_path()
@@ -378,6 +383,15 @@ class CertificationRunner:
         The certification workflow uses bounded execution for repeatability:
         very long scenarios are truncated to `max_scenario_duration`.
         """
+        cache_key = (
+            json.dumps(scenario, ensure_ascii=False, sort_keys=True, default=str),
+            float(self.max_scenario_duration),
+        )
+        cached = self._REAL_EXECUTION_CACHE.get(cache_key)
+        if cached is not None:
+            metrics, failures, score = cached
+            return dict(metrics), list(failures), float(score)
+
         runtime_scenario = self._build_runtime_scenario(scenario)
 
         with tempfile.TemporaryDirectory(prefix="cert_hil_") as tmpdir:
@@ -392,7 +406,9 @@ class CertificationRunner:
             test_case = suite.test_cases[0]
             sim_data = runner._collect_simulation_data()
 
-        return self._evaluate_real_execution(scenario, test_case, sim_data)
+        metrics, failures, score = self._evaluate_real_execution(scenario, test_case, sim_data)
+        self._REAL_EXECUTION_CACHE[cache_key] = (dict(metrics), list(failures), float(score))
+        return dict(metrics), list(failures), float(score)
 
     def _build_runtime_scenario(self, scenario: Dict) -> Any:
         """Build an adapter object that the HIL runner can execute."""

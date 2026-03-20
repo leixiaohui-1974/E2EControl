@@ -255,12 +255,23 @@ class EnhancedParameterizedMPC:
 
         # CVXPY问题
         self._problem_built = False
+        self._available_solvers = []
         if CVXPY_AVAILABLE:
+            try:
+                installed = set(cp.installed_solvers())
+            except Exception:
+                installed = set()
+            self._available_solvers = [
+                solver_name
+                for solver_name in ("ECOS", "CLARABEL", "SCS", "OSQP")
+                if solver_name in installed
+            ]
             self._build_problem()
 
         # 状态
         self.last_solve_time = 0.0
         self.last_solve_status = "not_solved"
+        self._warned_fallback_reasons: set[str] = set()
 
         # 场景切换平滑
         self._transition_steps = 0
@@ -538,24 +549,47 @@ class EnhancedParameterizedMPC:
         self.Q_in_prev_param.value = q_in_prev
 
         try:
-            self.problem.solve(solver=cp.ECOS, verbose=False, warm_start=True)
-
-            if self.problem.status == "optimal":
-                self.last_solve_status = "optimal"
-                self.last_solve_time = time.time()
-                return (
-                    float(self.Q_in_var.value[0]),
-                    float(self.Q_out_var.value[0]),
-                    True
-                )
-            else:
-                # CVXPY未找到最优解，回退到简化求解器
-                logger.warning(f"池{self.pool_id} CVXPY状态={self.problem.status}，使用简化求解器")
+            if not self._available_solvers:
                 return self._solve_simple(current_level, q_in_prev)
 
-        except Exception as e:
-            logger.warning(f"池{self.pool_id} CVXPY求解异常: {e}，使用简化求解器")
+            for solver_name in self._available_solvers:
+                self.problem.solve(
+                    solver=solver_name,
+                    verbose=False,
+                    warm_start=True,
+                )
+
+                if self.problem.status in {"optimal", "optimal_inaccurate"}:
+                    self.last_solve_status = str(self.problem.status)
+                    self.last_solve_time = time.time()
+                    return (
+                        float(self.Q_in_var.value[0]),
+                        float(self.Q_out_var.value[0]),
+                        True
+                    )
+
+            # CVXPY未找到最优解，回退到简化求解器
+            self._log_solver_fallback(
+                f"status:{self.problem.status}",
+                f"池{self.pool_id} CVXPY状态={self.problem.status}，使用简化求解器",
+            )
             return self._solve_simple(current_level, q_in_prev)
+
+        except Exception as e:
+            self._log_solver_fallback(
+                f"exception:{type(e).__name__}:{e}",
+                f"池{self.pool_id} CVXPY求解异常: {e}，使用简化求解器",
+            )
+            return self._solve_simple(current_level, q_in_prev)
+
+    def _log_solver_fallback(self, reason_key: str, message: str) -> None:
+        """同类回退原因仅首条发 warning，后续降级为 debug。"""
+        if reason_key in self._warned_fallback_reasons:
+            logger.debug(message)
+            return
+
+        self._warned_fallback_reasons.add(reason_key)
+        logger.warning(message)
 
     def _solve_simple(self, current_level: float, q_in_prev: float) -> Tuple[float, float, bool]:
         """简化求解 (无CVXPY时使用)"""
